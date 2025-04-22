@@ -49,8 +49,9 @@ double SphericalLens::detectCollisionTime(const Ray& ray) const {
     * if no collision occurs, the return value is -1!
     * 
     * */ 
+   std::cout << "A" << "\n";
    if (ray.energyDensity < MIN_ENERGY_DENSITY) { return Inf; }
-   Vector o = origin;
+   Vector o = ray.origin;
    Vector d = ray.direction;
    Vector c = origin;
    double R = radius;
@@ -66,7 +67,7 @@ double SphericalLens::detectCollisionTime(const Ray& ray) const {
    if (dSquared > R * R) {
        // endT = MAX_T;
        // end = origin + endT * d;
-       return -1;
+       return Inf;
    } else if (dSquared == R * R) {
        /* ray "touches" sphere
        * what is the interaction here?
