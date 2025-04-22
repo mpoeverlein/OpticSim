@@ -4,6 +4,7 @@
 #include <iomanip> 
 #include "lenses.hpp"
 #include "mirror.hpp"
+#include "optdev.hpp"
 
 Ray::Ray () {
     origin = Vector();
@@ -37,6 +38,9 @@ Ray::Ray(Vector origin_, Vector direction_, double energyDensity_, double n, dou
     wavelength = wavelength_;     
 }
 
+Type Ray::type() {
+    return Type::Mirror;
+}
 
 std::string Ray::forPythonPlot () {
     std::ostringstream oss;
@@ -74,6 +78,107 @@ std::vector<Ray> Ray::createReflectionAndRefraction (Vector surfaceNormal, Vecto
     newRays.push_back(Ray(end, reflectionDirection, energyDensity*0.02, refractiveIndex));
     
     return newRays;
+}
+
+double Ray::detectCollisionTime (SphericalLens lens) {
+    /** the ray trajectory is given by
+     *    r(t) = o + t * d
+     * r: position at time t,
+     * o: origin of ray,
+     * d: unit direction of ray.
+     * 
+     * the shortest distance between ray and sphere center
+     * can be derived from projection. 
+     *     t_p = v (dot) d
+     * v: vector between sphere origin and ray origin, c - o
+     * 
+     * if t_p < 0, ray will never collide
+     * 
+     * The point of the ray closest to the sphere is here:
+     *     p = o + t_p * d
+     * 
+     * Compute squared distance:
+     *     D^2 = norm(p - c)^2
+     * 
+     * Scenarios:
+     *     D^2 < R^2: two collisions
+     *     D^2 > R^2: miss
+     *     D^2 = R^2: exactly one collision
+     * 
+     * if no collision occurs, the return value is -1!
+     * 
+     * */ 
+    if (energyDensity < MIN_ENERGY_DENSITY) { return -1; }
+    Vector o = origin;
+    Vector d = direction;
+    std::cout << "LENS" << lens << "\n";
+    Vector c = lens.getOrigin();
+    double R = lens.getRadius();
+    Vector v = (c - o);
+    double t_p = v.dot(d);
+    if (t_p <= MIN_EPS ) {
+        endT = MAX_T;
+        end = origin + endT * d;
+        return -1; 
+    } 
+
+    Vector p = o + t_p * d;
+    double dSquared = (p - c).magnitude() * (p - c).magnitude();
+
+    if (dSquared > R * R) {
+        // endT = MAX_T;
+        // end = origin + endT * d;
+        return -1;
+    } else if (dSquared == R * R) {
+        /* ray "touches" sphere
+        * what is the interaction here?
+        * kept as an individual case for later
+        * */
+        // endT = MAX_T;
+        // end = origin + endT * d;
+        return -1;
+    }
+    /* from here: dSquared < R * R, so a hit!
+    * hit! create new ray based on first collision
+    * we need to find t for
+    * R^2 = | o + t*d - c |^2
+    *    = | t*d - v |^2
+    * the resulting quadratic is
+    * (d(dot)d) t^2 - 2t d(dot)v + v(dot)v - R^2 = 0
+    * we solve for t
+    * */
+    double t = mitternacht(d.dot(d), -2*d.dot(v), v.dot(v)-R*R);
+    return t; 
+}
+
+double Ray::detectCollisionTime(Mirror mirror) {
+    /** the ray meets the mirror at
+     *  a * x(t) + b * y(t) + c * z(t) = d
+     * see definitions of a,b,c,d in code (define over three points of mirror)
+     * We since x,y,z are linear in t, we can solve for t
+     */
+    std::vector<Ray> newRays;
+    Vector p1, p2, p3;
+    p1 = mirror.getOrigin();
+    p2 = mirror.getSideA() + p1;
+    p3 = mirror.getSideB() + p1;
+
+    double a, b, c, d;
+    a = p1.y*p2.z - p2.y*p1.z + p2.y*p3.z - p3.y*p2.z + p3.y*p1.z - p1.y*p3.z;
+    b = p1.z*p2.x - p2.z*p1.x + p2.z*p3.x - p3.z*p2.x + p3.z*p1.x - p1.z*p3.x;
+    c = p1.x*p2.y - p2.x*p1.y + p2.x*p3.y - p3.x*p2.y + p3.x*p1.y - p1.x*p3.y;
+    d = p1.x*p2.y*p3.z - p1.x*p3.y*p2.z + p2.x*p3.y*p1.z - p2.x*p1.y*p3.z + p3.x*p1.y*p2.z - p3.x*p2.y*p1.z;
+    
+    Vector mirrorVector(a,b,c);
+
+    // check if ray is parrallel to mirror
+    if (mirrorVector.dot(direction) == 0) {
+        return -1; 
+    }
+
+    // solve for t and find hitting point
+    double t_hit = d / (mirrorVector.dot(direction));
+    return t_hit;
 }
 
 std::vector<Ray> Ray::createRayFromNewCollision (Mirror mirror) {

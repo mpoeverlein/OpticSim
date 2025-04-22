@@ -9,6 +9,7 @@ SphericalLens::SphericalLens(Vector origin_, double radius_, double n_) {
     refractiveIndex = n_;
 }
 
+Type SphericalLens::type() { return Type::SphericalLens; }
 Vector SphericalLens::getOrigin() { return origin; }
 double SphericalLens::getRadius() { return radius; }
 double SphericalLens::getRefractiveIndex() { return refractiveIndex; }

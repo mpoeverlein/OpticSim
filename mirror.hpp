@@ -2,8 +2,10 @@
 #define MIRROR_HPP
 
 #include "mpvector.hpp"
+#include "optdev.hpp"
 
-class Mirror {
+
+class Mirror : public OpticalDevice {
     private:
         Vector origin; // original start in meters
         Vector sideA; // 
@@ -14,6 +16,7 @@ class Mirror {
     public:
         // Mirror();
         Mirror(Vector origin_, Vector sideA_, Vector sideB_, double reflectance_);
+        Type type();
         Vector getOrigin();
         Vector getSideA();
         Vector getSideB();
