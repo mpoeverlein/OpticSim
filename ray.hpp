@@ -10,11 +10,11 @@
 class Ray {
     public:
         Vector origin = Vector(0,0,0); // original start in meters
-        Vector direction; // vector travelled by ray in 1 second given in meters if travelling in vacuum
+        Vector direction = Vector(0,0,0); // vector travelled by ray in 1 second given in meters if travelling in vacuum
         // double wavelength;
-        double energyDensity; // energy density of photons in Joules per cubic meter
-        double wavelength; // in m (describes color of photon)
-        double refractiveIndex; //
+        double energyDensity = 0; // energy density of photons in Joules per cubic meter
+        double wavelength = 550e-9; // in m (describes color of photon)
+        double refractiveIndex = 1.; //
         double startT = 0;
         double endT;
         Vector end = Vector(0,0,0);

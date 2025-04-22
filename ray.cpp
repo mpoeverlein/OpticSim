@@ -18,8 +18,8 @@ Ray::Ray (Vector origin_, Vector direction_, double energyDensity_) {
     origin = origin_;
     direction = direction_.normalized();
     energyDensity = energyDensity_;
-    refractiveIndex = 1.;
-    wavelength = 550e-9;
+    // refractiveIndex = 1.;
+    // wavelength = 550e-9;
 }
 
 Ray::Ray(Vector origin_, Vector direction_, double energyDensity_, double n) {
@@ -27,7 +27,7 @@ Ray::Ray(Vector origin_, Vector direction_, double energyDensity_, double n) {
     direction = direction_.normalized();
     energyDensity = energyDensity_;
     refractiveIndex = n;
-    wavelength = 550e-9;    
+    // wavelength = 550e-9;    
 }
 
 Ray::Ray(Vector origin_, Vector direction_, double energyDensity_, double n, double wavelength_) {
