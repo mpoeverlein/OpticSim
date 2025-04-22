@@ -68,7 +68,10 @@ int main()
 
         std::cout << "MIN" << *std::min_element(t_times.begin(), t_times.end()) << "\n";
         auto it = std::min_element(std::begin(t_times), std::end(t_times));
-        std::cout << "MININDE" << std::distance(std::begin(t_times), it) << "\n";
+        // std::cout << "MININDE" << std::distance(std::begin(t_times), it) << "\n";
+        int min_index = std::distance(t_times.begin(), it);
+
+        OpticalDevice* collisionDevice = devices[min_index].get();
 
         // for (Ray& r: raysToAdd) {
         //     if (rays.size() < MAX_RAYS) {
