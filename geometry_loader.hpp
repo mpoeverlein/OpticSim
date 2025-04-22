@@ -5,6 +5,7 @@ class Ray;
 class OpticalDevice;
 class Vector;
 class SphericalLens;
+class Mirror;
 
 #include <string>
 #include <unordered_map>
@@ -17,6 +18,7 @@ public:
     static Vector parseVector(const std::string& str);
     static Ray parseRayLine (const std::string& line);
     static SphericalLens parseSphericalLensLine (const std::string& line);
+    static Mirror parseMirror (const std::string& line); 
 };
 
 #endif /* GEOMETRY_LOADER_HPP */

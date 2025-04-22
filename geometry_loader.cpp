@@ -6,6 +6,7 @@
 #include <iostream>
 #include "ray.hpp"
 #include "lenses.hpp"
+#include "mirror.hpp"
 
 void GeometryLoader::loadFromFile(const std::string& filename) {
     std::ifstream file(filename);
@@ -30,11 +31,19 @@ void GeometryLoader::loadFromFile(const std::string& filename) {
 
         if (line.find("$sphericalLens") == 0) {
             try {
-                // rays.push_back(parseRayLine(line));
                 SphericalLens lens = parseSphericalLensLine(line);
                 devices.push_back(std::make_unique<SphericalLens>(lens.origin, lens.radius, lens.refractiveIndex));
             } catch (const std::exception& e) {
-                std::cerr << "Error parsing ray: " << e.what() << "\n";
+                std::cerr << "Error parsing SphericalLens: " << e.what() << "\n";
+                continue;
+            }
+        }
+        if (line.find("$mirror") == 0) {
+            try {
+                Mirror mirror = parseMirror(line);
+                devices.push_back(std::make_unique<Mirror>(mirror.origin, mirror.sideA, mirror.sideB, mirror.reflectance));
+            } catch (const std::exception& e) {
+                std::cerr << "Error parsing Mirror: " << e.what() << "\n";
                 continue;
             }
         }
@@ -100,6 +109,40 @@ SphericalLens GeometryLoader::parseSphericalLensLine (const std::string& line) {
 
     return lens;
 }
+
+Mirror GeometryLoader::parseMirror (const std::string& line) {
+    Mirror mirror{};
+    std::istringstream iss(line.substr(7));  // Skip "$mirror"
+    std::string token;
+
+    while (iss >> token) {
+        size_t eq_pos = token.find('=');
+        if (eq_pos == std::string::npos) continue;
+
+        std::string key = token.substr(0, eq_pos);
+        std::string value_str = token.substr(eq_pos + 1);
+
+        if (key == "o") {
+            mirror.origin = parseVector(value_str);
+        } else if (key == "a") {
+            mirror.sideA = parseVector(value_str);
+        } else if (key == "b") {
+            mirror.sideB = parseVector(value_str);
+        } else if (key == "reflectance") {
+            mirror.reflectance = std::stod(value_str);
+            mirror.transmittance = 1 - mirror.reflectance;
+        }
+    }
+
+    if (mirror.sideA.cross(mirror.sideB).magnitude() == 0) { // also catches uninitialized
+        throw line;
+    }
+
+    mirror.surfaceNormal = mirror.sideA.cross(mirror.sideB).normalized();
+
+    return mirror;
+}
+
 
 
 Vector GeometryLoader::parseVector(const std::string& str) {

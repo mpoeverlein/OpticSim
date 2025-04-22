@@ -14,9 +14,9 @@ class Mirror : public OpticalDevice {
         Vector sideA; // 
         Vector sideB; //
         Vector surfaceNormal;
-        double reflectance;
-        double transmittance;
-        // Mirror();
+        double reflectance = 1;
+        double transmittance = 0;
+        Mirror();
         Mirror(Vector origin_, Vector sideA_, Vector sideB_, double reflectance_);
         Type type();
         Vector getOrigin();

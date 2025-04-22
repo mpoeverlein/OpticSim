@@ -6,6 +6,7 @@
 //     // all defaults already set
 //     surfaceNormal = sideA.cross(sideB).normalized();
 // }
+Mirror::Mirror () { }
 
 Mirror::Mirror(Vector origin_, Vector sideA_, Vector sideB_, double reflectance_) {
     origin = origin_;
