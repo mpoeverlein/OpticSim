@@ -12,11 +12,11 @@ class Ray;
 enum class Type;
 
 class SphericalLens : public OpticalDevice {
-    private:
-        Vector origin;
-        double radius;
-        double refractiveIndex;
     public:
+        Vector origin = Vector();
+        double radius = 0;
+        double refractiveIndex = 1;
+        SphericalLens();
         SphericalLens(Vector origin_, double radius_, double n_);
         Type type();
         friend std::ostream& operator<<(std::ostream& os, const SphericalLens& l);

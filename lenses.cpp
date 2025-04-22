@@ -5,6 +5,8 @@
 #include <sstream>
 #include <iomanip> 
 
+SphericalLens::SphericalLens() {}
+
 SphericalLens::SphericalLens(Vector origin_, double radius_, double n_) {
     origin = origin_;
     radius = radius_;
