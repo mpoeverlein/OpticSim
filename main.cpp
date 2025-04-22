@@ -8,6 +8,7 @@
 #include "mirror.hpp"
 #include "optdev.hpp"
 #include "mpio.hpp"
+#include "config_loader.hpp"
 #include <typeinfo>
 #include <memory>  // For std::shared_ptr or std::unique_ptr
 
@@ -42,6 +43,7 @@ void rayTracing(std::vector<Ray>& rays, const std::vector<std::unique_ptr<Optica
 
 int main()
 {
+    ConfigLoader::loadFromFile("config.conf");
     std::vector<Ray> rays;
     rays.push_back(Ray(Vector(0,0,0.1), Vector(1,0,0), 1.));
     std::vector<Ray> raysToAdd;
