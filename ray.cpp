@@ -76,7 +76,7 @@ std::vector<Ray> Ray::createReflectionAndRefraction (Vector surfaceNormal, Vecto
     return newRays;
 }
 
-std::vector<double> Ray::detectAllCollisionTimes(std::vector<std::unique_ptr<OpticalDevice>> devices) {
+std::vector<double> Ray::detectAllCollisionTimes(const std::vector<std::unique_ptr<OpticalDevice>>& devices) const {
     std::vector<double> t_times;
     for (const auto& device : devices) {
         t_times.push_back(device->detectCollisionTime(*this));           

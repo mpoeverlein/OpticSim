@@ -27,7 +27,6 @@ int main()
     while (current < rays.size()) {
         std::vector<double> t_times = rays[current].detectAllCollisionTimes(devices);
 
-        std::cout << "MIN" << *std::min_element(t_times.begin(), t_times.end()) << "\n";
         auto it = std::min_element(std::begin(t_times), std::end(t_times));
         int min_index = std::distance(t_times.begin(), it);
 

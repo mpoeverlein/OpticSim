@@ -34,12 +34,8 @@ class Ray {
         double getRefractiveIndex() { return refractiveIndex; }
         Vector getEndPoint() { return origin + endT * direction; }
         std::string forPythonPlot();
-        // double detectCollisionTime (OpticalDevice device);
-        // double detectCollisionTime (SphericalLens lens);
-        // double detectCollisionTime (Mirror mirror);
-        // std::vector<Ray> createRayFromNewCollision (SphericalLens lens);
-        // std::vector<Ray> createRayFromNewCollision (Mirror mirror);
         std::vector<Ray> createReflectionAndRefraction (Vector surfaceNormal, Vector rotationAxis, double n2);
+        std::vector<double> detectAllCollisionTimes (const std::vector<std::unique_ptr<OpticalDevice>>& device) const;
 };
 
 std::vector<Ray> makeParallelRays(Vector direction, Vector first, Vector last, int steps,
