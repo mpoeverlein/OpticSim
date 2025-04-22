@@ -50,5 +50,35 @@ double Mirror::detectCollisionTime(const Ray& ray) const {
 
     // solve for t and find hitting point
     double t_hit = d / (mirrorVector.dot(ray.direction));
-    return t_hit;
+    Vector p_hit = ray.origin + t_hit * ray.direction;
+
+    // check if ray hits within actual boundaries of mirror
+    double a_component, b_component;
+    a_component = sideA.normalized().dot(p_hit-origin) / sideA.magnitude();
+    b_component = sideB.normalized().dot(p_hit-origin) / sideB.magnitude();
+    if ( (a_component > 0) && (a_component < 1) && (b_component > 0) && (b_component < 1) ) {
+        return t_hit;
+    } else {
+        return Inf;
+    }
+}
+
+std::vector<Ray> Mirror::createNewRays (const Ray& ray) const {
+    std::vector<Ray> newRays;
+    Vector p_hit = ray.end;
+    Vector reflectionDirection;
+    if (ray.direction.cross(surfaceNormal).magnitude() == 0) {
+        std::cout << "PARA:\n";
+        reflectionDirection = -1 * ray.direction;
+        std::cout << ray.direction << " " << reflectionDirection << "\n";
+    } else {
+        Vector rotationAxis = ray.direction.cross(surfaceNormal).normalized();
+        double theta1 = angle(surfaceNormal, ray.direction);
+
+        // create reflection
+        reflectionDirection = rotateVectorAboutAxis(ray.direction, rotationAxis, -(M_PI-2*theta1));
+    }
+
+    newRays.push_back(Ray(ray.end, reflectionDirection, ray.energyDensity*reflectance, ray.refractiveIndex));
+    return newRays;
 }

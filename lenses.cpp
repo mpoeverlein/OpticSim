@@ -49,7 +49,6 @@ double SphericalLens::detectCollisionTime(const Ray& ray) const {
     * if no collision occurs, the return value is -1!
     * 
     * */ 
-   std::cout << "A" << "\n";
    if (ray.energyDensity < MIN_ENERGY_DENSITY) { return Inf; }
    Vector o = ray.origin;
    Vector d = ray.direction;
@@ -88,4 +87,42 @@ double SphericalLens::detectCollisionTime(const Ray& ray) const {
    * */
    double t = mitternacht(d.dot(d), -2*d.dot(v), v.dot(v)-R*R);
    return t; 
+}
+
+
+std::vector<Ray> SphericalLens::createNewRays (const Ray& ray) const {
+    // std::vector<Ray> Ray::createReflectionAndRefraction (Vector surfaceNormal, Vector rotationAxis, double n2) {
+    /* Create reflection and refraction rays according to Snell's law
+    * n1 * sin(theta1) = n2 * sin(theta2)
+    * surfaceNormal: direction of surface normal
+    * rotationAxis: new rays created based on rotation of old about rotation axis
+    * n2: refractive index of other medium (n1 is stored in the Ray object)
+    */
+    std::vector<Ray> newRays;
+    Vector surfaceNormal;
+    double n2;
+    if (ray.refractiveIndex != refractiveIndex) {
+        // outside
+        surfaceNormal = (origin - ray.end).normalized();
+        n2 = refractiveIndex;
+    } else {
+        // inside
+        surfaceNormal = (ray.end - origin).normalized();
+        n2 = 1.;
+    }
+    Vector rotationAxis = ray.direction.cross(surfaceNormal).normalized();
+
+    double theta1 = angle(surfaceNormal, ray.direction);
+    double theta2 = refractiveIndex / n2 * sin(theta1);
+    // we create a new direction for the ray by rotating
+    // the old direction by theta2-theta1
+    double dtheta = theta2 - theta1;
+    Vector refractionDirection = rotateVectorAboutAxis(ray.direction, rotationAxis, -dtheta);
+    newRays.push_back(Ray(ray.end, refractionDirection, ray.energyDensity*0.98, n2));
+
+    // create reflection
+    Vector reflectionDirection = rotateVectorAboutAxis(ray.direction, rotationAxis, -(M_PI-2*theta1));
+    newRays.push_back(Ray(ray.end, reflectionDirection, ray.energyDensity*0.02, refractiveIndex));
+    
+    return newRays;
 }

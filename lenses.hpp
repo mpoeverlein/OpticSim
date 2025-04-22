@@ -5,6 +5,7 @@
 #include "optdev.hpp"
 #include "ray.hpp"
 #include <iostream>
+#include <vector>
 
 class OpticalDevice;
 class Ray;
@@ -23,6 +24,7 @@ class SphericalLens : public OpticalDevice {
         double getRadius();
         double getRefractiveIndex();
         double detectCollisionTime(const Ray& ray) const;
+        std::vector<Ray> createNewRays (const Ray& ray) const;
 };
 
 

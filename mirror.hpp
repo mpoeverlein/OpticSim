@@ -4,6 +4,7 @@
 #include "mpvector.hpp"
 #include "optdev.hpp"
 #include "ray.hpp"
+#include <vector>
 
 class OpticalDevice;
 
@@ -24,6 +25,7 @@ class Mirror : public OpticalDevice {
         Vector getSurfaceNormal();
         double getReflectance();
         double detectCollisionTime(const Ray& ray) const ;
+        std::vector<Ray> createNewRays(const Ray& ray) const;
 };
 
 #endif /* MIRROR_HPP */

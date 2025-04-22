@@ -39,9 +39,7 @@ int main()
     while (current < rays.size()) {
         std::vector<double> t_times;
         for (const auto& device : devices) {
-            t_times.push_back(device->detectCollisionTime(rays[current]));
-            // t_times.push_back(rays[current].detectCollisionTime(device));
-            
+            t_times.push_back(device->detectCollisionTime(rays[current]));           
         }
 
         for (double& t: t_times) {
@@ -50,18 +48,23 @@ int main()
 
         std::cout << "MIN" << *std::min_element(t_times.begin(), t_times.end()) << "\n";
         auto it = std::min_element(std::begin(t_times), std::end(t_times));
-        // std::cout << "MININDE" << std::distance(std::begin(t_times), it) << "\n";
         int min_index = std::distance(t_times.begin(), it);
 
-        OpticalDevice* collisionDevice = devices[min_index].get();
+        if (t_times[min_index] == Inf) {
+            rays[current].endT = MAX_T;
+            rays[current].end = rays[current].getEndPoint();
+            current++;
+            continue;
+        }
 
-        // for (Ray& r: raysToAdd) {
-        //     if (rays.size() < MAX_RAYS) {
-        //         rays.push_back(r);
-        //     } else {
-        //         break;
-        //     }
-        // }
+        OpticalDevice* collisionDevice = devices[min_index].get();
+        rays[current].endT = *std::min_element(t_times.begin(), t_times.end());
+        rays[current].end = rays[current].getEndPoint();
+
+        std::vector<Ray> raysToAdd = collisionDevice->createNewRays(rays[current]);
+        rays.insert(rays.end(),
+        raysToAdd.begin(),
+        raysToAdd.begin() + std::min(raysToAdd.size(), MAX_RAYS - rays.size()));
 
         current++;
     }
