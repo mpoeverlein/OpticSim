@@ -38,6 +38,18 @@ void GeometryLoader::loadFromFile(const std::string& filename) {
                 continue;
             }
         }
+        if (line.find("$parallelRays") == 0) {
+            try {
+                std::vector<Ray> raysToAdd = parseParallelRays(line);
+                std::cout << " AAAA " << raysToAdd.size() << "\n";
+                rays.insert(rays.end(),
+                raysToAdd.begin(),
+                raysToAdd.begin() + std::min(raysToAdd.size(), Config::MAX_RAYS - rays.size()));
+            } catch (const std::exception& e) {
+                std::cerr << "Error parsing Mirror: " << e.what() << "\n";
+                continue;
+            }
+        }
         if (line.find("$mirror") == 0) {
             try {
                 Mirror mirror = parseMirror(line);
@@ -80,6 +92,49 @@ Ray GeometryLoader::parseRayLine (const std::string& line) {
     }
 
     return ray;
+}
+
+std::vector<Ray> GeometryLoader::parseParallelRays (const std::string& line) {
+    std::istringstream iss(line.substr(13));  // Skip "$parallelRays"
+    std::string token;
+    Vector direction;
+    Vector first;
+    Vector last;
+    int steps = 1;
+    double energyDensity = 0;
+    double refractiveIndex = 1;
+    double wavelength = 550e-9;
+
+    while (iss >> token) {
+        size_t eq_pos = token.find('=');
+        if (eq_pos == std::string::npos) continue;
+
+        std::string key = token.substr(0, eq_pos);
+        std::string value_str = token.substr(eq_pos + 1);
+
+        if (key == "direction") {
+            direction = parseVector(value_str);
+        } else if (key == "first") {
+            first = parseVector(value_str);
+        } else if (key == "last") {
+            last = parseVector(value_str);
+        } else if (key == "steps") {
+            steps = std::stod(value_str);  
+        } else if (key == "e") {
+            energyDensity = std::stod(value_str);        
+        } else if (key == "n") {
+            refractiveIndex = std::stod(value_str);
+        } else if (key == "lambda") {
+            wavelength = std::stod(value_str);
+        }
+    }
+
+    if (direction.magnitude() * first.magnitude() * last.magnitude() == 0) {
+        throw line;
+    }
+
+    return makeParallelRays(direction, first, last, steps,
+        energyDensity, refractiveIndex, wavelength);
 }
 
 SphericalLens GeometryLoader::parseSphericalLensLine (const std::string& line) {

@@ -17,6 +17,7 @@ public:
     void loadFromFile(const std::string& filename);
     static Vector parseVector(const std::string& str);
     static Ray parseRayLine (const std::string& line);
+    static std::vector<Ray> parseParallelRays (const std::string& line);
     static SphericalLens parseSphericalLensLine (const std::string& line);
     static Mirror parseMirror (const std::string& line); 
 };

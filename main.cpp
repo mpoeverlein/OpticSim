@@ -49,7 +49,5 @@ int main()
     geometry.loadFromFile("geometry.geo");
 
     rayTracing(geometry.rays, geometry.devices);
-
-    // std::cout << printRays(geometry.rays);
     std::cout << printGeometry2D(geometry);
 }
