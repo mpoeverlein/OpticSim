@@ -79,6 +79,9 @@ std::vector<Ray> Mirror::createNewRays (const Ray& ray) const {
         reflectionDirection = rotateVectorAboutAxis(ray.direction, rotationAxis, -(M_PI-2*theta1));
     }
 
+    // reflected ray
     newRays.push_back(Ray(ray.end, reflectionDirection, ray.energyDensity*reflectance, ray.refractiveIndex));
+    // transmitted ray
+    newRays.push_back(Ray(ray.end, ray.direction, ray.energyDensity*(1-reflectance), ray.refractiveIndex));
     return newRays;
 }
