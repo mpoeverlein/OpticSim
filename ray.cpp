@@ -108,7 +108,7 @@ double Ray::detectCollisionTime (SphericalLens lens) {
      * if no collision occurs, the return value is -1!
      * 
      * */ 
-    if (energyDensity < MIN_ENERGY_DENSITY) { return -1; }
+    if (energyDensity < MIN_ENERGY_DENSITY) { return Inf; }
     Vector o = origin;
     Vector d = direction;
     std::cout << "LENS" << lens << "\n";
@@ -119,7 +119,7 @@ double Ray::detectCollisionTime (SphericalLens lens) {
     if (t_p <= MIN_EPS ) {
         endT = MAX_T;
         end = origin + endT * d;
-        return -1; 
+        return Inf; 
     } 
 
     Vector p = o + t_p * d;
@@ -136,7 +136,7 @@ double Ray::detectCollisionTime (SphericalLens lens) {
         * */
         // endT = MAX_T;
         // end = origin + endT * d;
-        return -1;
+        return Inf;
     }
     /* from here: dSquared < R * R, so a hit!
     * hit! create new ray based on first collision
@@ -173,7 +173,7 @@ double Ray::detectCollisionTime(Mirror mirror) {
 
     // check if ray is parrallel to mirror
     if (mirrorVector.dot(direction) == 0) {
-        return -1; 
+        return Inf; 
     }
 
     // solve for t and find hitting point
