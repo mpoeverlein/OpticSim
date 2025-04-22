@@ -86,6 +86,7 @@ double SphericalLens::detectCollisionTime(const Ray& ray) const {
    * we solve for t
    * */
    double t = mitternacht(d.dot(d), -2*d.dot(v), v.dot(v)-R*R);
+   if (t < 0) { return Inf; }
    return t; 
 }
 

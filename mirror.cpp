@@ -50,6 +50,7 @@ double Mirror::detectCollisionTime(const Ray& ray) const {
 
     // solve for t and find hitting point
     double t_hit = d / (mirrorVector.dot(ray.direction));
+    if (t_hit < 0) { return Inf; }
     Vector p_hit = ray.origin + t_hit * ray.direction;
 
     // check if ray hits within actual boundaries of mirror
