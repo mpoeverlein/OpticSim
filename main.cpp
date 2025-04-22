@@ -38,28 +38,10 @@ int main()
     int current = 0;
     while (current < rays.size()) {
         std::vector<double> t_times;
-        // for (const auto& dev: devices) {
-        // for (OpticalDevice dev: devices) {
         for (const auto& device : devices) {
-            switch (device->type()) {
-            case Type::Mirror: {
-                    Mirror* mirror = static_cast<Mirror*>(device.get());
-                    std::cout << "MIRROR\n";
-                    std::cout << mirror->getOrigin() << "\n";
-                    t_times.push_back(rays[current].detectCollisionTime(*mirror));
-                    break;
-                }
-                case Type::SphericalLens: {
-                    SphericalLens* lens = static_cast<SphericalLens*>(device.get());
-                    std::cout << "LENS\n";
-                    std::cout << lens->getOrigin() << "\n";
-                    t_times.push_back(rays[current].detectCollisionTime(*lens));
-                    break;
-                }
-                case Type::Base:
-                default:
-                    break;
-            }
+            t_times.push_back(device->detectCollisionTime(rays[current]));
+            // t_times.push_back(rays[current].detectCollisionTime(device));
+            
         }
 
         for (double& t: t_times) {

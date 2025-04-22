@@ -3,7 +3,12 @@
 
 #include "mpvector.hpp"
 #include "optdev.hpp"
+#include "ray.hpp"
 #include <iostream>
+
+class OpticalDevice;
+class Ray;
+enum class Type;
 
 class SphericalLens : public OpticalDevice {
     private:
@@ -17,6 +22,7 @@ class SphericalLens : public OpticalDevice {
         Vector getOrigin();
         double getRadius();
         double getRefractiveIndex();
+        double detectCollisionTime(const Ray& ray) const;
 };
 
 

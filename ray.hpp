@@ -5,10 +5,10 @@
 #include "constants.hpp"
 #include "lenses.hpp"
 #include "mirror.hpp"
-#include "optdev.hpp"
+// #include "optdev.hpp"
 
-class Ray : public OpticalDevice {
-    private:
+class Ray {
+    public:
         Vector origin = Vector(0,0,0); // original start in meters
         Vector direction; // vector travelled by ray in 1 second given in meters if travelling in vacuum
         // double wavelength;
@@ -18,13 +18,10 @@ class Ray : public OpticalDevice {
         double startT = 0;
         double endT;
         Vector end = Vector(0,0,0);
-    public:
         Ray();
         Ray(Vector origin_, Vector direction_, double energyDensity_);
         Ray(Vector origin_, Vector direction_, double energyDensity_, double n);       
         Ray(Vector origin_, Vector direction_, double energyDensity_, double n, double wavelength_);
-
-        Type type();
 
         friend std::ostream& operator<<(std::ostream& os, const Ray& r) {
             os << "Ray: Origin: " << r.origin << " Direction: " << r.direction  
@@ -37,10 +34,11 @@ class Ray : public OpticalDevice {
         double getRefractiveIndex() { return refractiveIndex; }
         Vector getEndPoint() { return origin + endT * direction; }
         std::string forPythonPlot();
-        double detectCollisionTime (SphericalLens lens);
-        double detectCollisionTime (Mirror mirror);
-        std::vector<Ray> createRayFromNewCollision (SphericalLens lens);
-        std::vector<Ray> createRayFromNewCollision (Mirror mirror);
+        // double detectCollisionTime (OpticalDevice device);
+        // double detectCollisionTime (SphericalLens lens);
+        // double detectCollisionTime (Mirror mirror);
+        // std::vector<Ray> createRayFromNewCollision (SphericalLens lens);
+        // std::vector<Ray> createRayFromNewCollision (Mirror mirror);
         std::vector<Ray> createReflectionAndRefraction (Vector surfaceNormal, Vector rotationAxis, double n2);
 };
 
