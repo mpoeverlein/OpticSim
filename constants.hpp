@@ -3,10 +3,15 @@
 
 #include <limits>
 
-const double MAX_T = 10; // maximum time
-const double MIN_EPS = 1e-10; // minimum distance
-const int MAX_RAYS = 1000;
-const double MIN_ENERGY_DENSITY = 1.e-2; // minimum energy density for rays to be simulated
+namespace Config {
+    extern double VACUUM_REFRACTIVE_INDEX;
+    extern double MAX_T;
+    extern double MIN_EPS;
+    extern int MAX_RAYS;
+    extern double MIN_ENERGY_DENSITY;
+}
+
+
 
 const double Inf = std::numeric_limits<double>::infinity();
 const double negative_Inf= Inf*-1;

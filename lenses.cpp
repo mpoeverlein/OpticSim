@@ -49,14 +49,14 @@ double SphericalLens::detectCollisionTime(const Ray& ray) const {
     * if no collision occurs, the return value is -1!
     * 
     * */ 
-   if (ray.energyDensity < MIN_ENERGY_DENSITY) { return Inf; }
+   if (ray.energyDensity < Config::MIN_ENERGY_DENSITY) { return Inf; }
    Vector o = ray.origin;
    Vector d = ray.direction;
    Vector c = origin;
    double R = radius;
    Vector v = (c - o);
    double t_p = v.dot(d);
-   if (t_p <= MIN_EPS ) {
+   if (t_p <= Config::MIN_EPS ) {
        return Inf; 
    } 
 

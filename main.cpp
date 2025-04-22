@@ -21,7 +21,7 @@ void rayTracing(std::vector<Ray>& rays, const std::vector<std::unique_ptr<Optica
         int min_index = std::distance(t_times.begin(), it);
 
         if (t_times[min_index] == Inf) {
-            rays[current].endT = MAX_T;
+            rays[current].endT = Config::MAX_T;
             rays[current].end = rays[current].getEndPoint();
             current++;
             continue;
@@ -34,7 +34,7 @@ void rayTracing(std::vector<Ray>& rays, const std::vector<std::unique_ptr<Optica
         std::vector<Ray> raysToAdd = collisionDevice->createNewRays(rays[current]);
         rays.insert(rays.end(),
         raysToAdd.begin(),
-        raysToAdd.begin() + std::min(raysToAdd.size(), MAX_RAYS - rays.size()));
+        raysToAdd.begin() + std::min(raysToAdd.size(), Config::MAX_RAYS - rays.size()));
 
         current++;
     }
@@ -52,32 +52,6 @@ int main()
     devices.push_back(std::make_unique<SphericalLens>(Vector(12,0,0), 1.0, 1.33));
 
     rayTracing(rays, devices);
-
-    // int current = 0;
-    // while (current < rays.size()) {
-    //     std::vector<double> t_times = rays[current].detectAllCollisionTimes(devices);
-
-    //     auto it = std::min_element(std::begin(t_times), std::end(t_times));
-    //     int min_index = std::distance(t_times.begin(), it);
-
-    //     if (t_times[min_index] == Inf) {
-    //         rays[current].endT = MAX_T;
-    //         rays[current].end = rays[current].getEndPoint();
-    //         current++;
-    //         continue;
-    //     }
-
-    //     OpticalDevice* collisionDevice = devices[min_index].get();
-    //     rays[current].endT = *std::min_element(t_times.begin(), t_times.end());
-    //     rays[current].end = rays[current].getEndPoint();
-
-    //     std::vector<Ray> raysToAdd = collisionDevice->createNewRays(rays[current]);
-    //     rays.insert(rays.end(),
-    //     raysToAdd.begin(),
-    //     raysToAdd.begin() + std::min(raysToAdd.size(), MAX_RAYS - rays.size()));
-
-    //     current++;
-    // }
 
     std::cout << printRays(rays);
     

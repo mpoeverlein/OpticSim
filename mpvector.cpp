@@ -77,7 +77,7 @@ double mitternacht(double a, double b, double c) {
    double Delta = sqrt(b*b - 4*a*c); // always > 0 when we call this
    double x0 = (-b + Delta) / (2*a);
    double x1 = (-b - Delta) / (2*a);
-   if (x1 > MIN_EPS) {
+   if (x1 > Config::MIN_EPS) {
     return x1;
    }
    return x0;
