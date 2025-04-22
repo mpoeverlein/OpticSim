@@ -30,7 +30,6 @@ double Mirror::detectCollisionTime(const Ray& ray) const {
     * see definitions of a,b,c,d in code (define over three points of mirror)
     * We since x,y,z are linear in t, we can solve for t
     */
-    std::vector<Ray> newRays;
     Vector p1, p2, p3;
     p1 = origin;
     p2 = p1 + sideA;
@@ -46,7 +45,7 @@ double Mirror::detectCollisionTime(const Ray& ray) const {
 
     // check if ray is parrallel to mirror
     if (mirrorVector.dot(ray.direction) == 0) {
-    return Inf; 
+        return Inf; 
     }
 
     // solve for t and find hitting point
