@@ -47,20 +47,9 @@ int main()
     ConfigLoader::loadFromFile("config.conf");
     GeometryLoader geometry;
     geometry.loadFromFile("geometry.geo");
-    // std::vector<Ray> rays = geometry.rays;
-    // rays.push_back(Ray(Vector(0,0,0.1), Vector(1,0,0), 1.));
-    // std::vector<Ray> raysToAdd;
-    
-    // std::vector<std::unique_ptr<OpticalDevice>> devices = geometry.devices;
-    // for (auto& l: geometry.devices) {
-    //     devices.push_back(std::make_unique<SphericalLens>())
-    // }
-    // devices.push_back(std::make_unique<Mirror>(Vector(5,-1,0), Vector(0,5,0), Vector(1,0,5), 1));
-    // devices.push_back(std::make_unique<SphericalLens>(Vector(10,0,0), 1.0, 1.33));
-    // devices.push_back(std::make_unique<SphericalLens>(Vector(12,0,0), 1.0, 1.33));
 
     rayTracing(geometry.rays, geometry.devices);
 
-    std::cout << printRays(geometry.rays);
-    
+    // std::cout << printRays(geometry.rays);
+    std::cout << printGeometry2D(geometry);
 }

@@ -129,3 +129,11 @@ std::vector<Ray> SphericalLens::createNewRays (const Ray& ray) const {
     
     return newRays;
 }
+
+
+std::string SphericalLens::forPythonPlot() const {
+    std::ostringstream oss;
+    oss << "circ = Circle((" << origin.x << ", " << origin.z << "), " << radius << ", alpha=0.05, ec='blue')\n"
+    << "ax.add_patch(circ)\n";
+    return oss.str();
+}

@@ -1,6 +1,8 @@
 #include "mirror.hpp"
 #include "mpvector.hpp"
 #include "optdev.hpp"
+#include <sstream>
+
 
 // Mirror::Mirror () {
 //     // all defaults already set
@@ -84,4 +86,13 @@ std::vector<Ray> Mirror::createNewRays (const Ray& ray) const {
     // transmitted ray
     newRays.push_back(Ray(ray.end, ray.direction, ray.energyDensity*(1-reflectance), ray.refractiveIndex));
     return newRays;
+}
+
+std::string Mirror::forPythonPlot() const {
+    std::ostringstream oss;
+    oss << "ax.plot((" << origin.x << "," << origin.x+sideA.x << "), (" 
+    << origin.z << "," << origin.z+sideA.z <<  "), linewidth=1, color='k')\n";
+    oss << "ax.plot((" << origin.x << "," << origin.x+sideB.x << "), (" 
+    << origin.z << "," << origin.z+sideB.z <<  "), linewidth=1, color='k')\n";
+    return oss.str();
 }

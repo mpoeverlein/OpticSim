@@ -25,6 +25,7 @@ class SphericalLens : public OpticalDevice {
         double getRefractiveIndex();
         double detectCollisionTime(const Ray& ray) const;
         std::vector<Ray> createNewRays (const Ray& ray) const;
+        std::string forPythonPlot() const;
 };
 
 

@@ -26,6 +26,7 @@ class Mirror : public OpticalDevice {
         double getReflectance();
         double detectCollisionTime(const Ray& ray) const ;
         std::vector<Ray> createNewRays(const Ray& ray) const;
+        std::string forPythonPlot() const;
 };
 
 #endif /* MIRROR_HPP */

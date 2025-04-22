@@ -15,6 +15,7 @@ class OpticalDevice {
     virtual Type type();
     virtual double detectCollisionTime(const Ray& ray) const = 0;
     virtual std::vector<Ray> createNewRays(const Ray& ray) const = 0;
+    virtual std::string forPythonPlot() const = 0;
 };
 
 #endif /* optdev_HPP */
