@@ -14,17 +14,17 @@ class Vector
     double x, y, z;
     Vector();
     Vector(double x_, double y_, double z_);
-    Vector operator+(const Vector& other);
+    Vector operator+(const Vector& other) const;
     Vector& operator+=(const Vector& other);
-    Vector operator-(const Vector& other);
+    Vector operator-(const Vector& other) const;
     Vector& operator-=(const Vector& other);
     Vector operator*(const double scalar);
     Vector& operator*=(const double scalar);
     Vector operator/(const double scalar);
-    Vector cross(const Vector& other);
+    Vector cross(const Vector& other) const;
     double dot(const Vector& other);
-    double magnitude();
-    Vector normalized();
+    double magnitude() const;
+    Vector normalized() const;
 };
 
 Vector operator*(const double scalar, const Vector& v);

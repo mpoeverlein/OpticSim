@@ -12,7 +12,7 @@ Vector::Vector (double x_, double y_, double z_) {
     z = z_;
 }
 
-Vector Vector::operator+(const Vector& other) {
+Vector Vector::operator+(const Vector& other) const {
     return {x + other.x, y + other.y, z + other.z};
 }
 
@@ -21,7 +21,7 @@ Vector& Vector::operator+=(const Vector& other) {
     return *this;
 }
 
-Vector Vector::operator-(const Vector& other) {
+Vector Vector::operator-(const Vector& other) const {
     return {x - other.x, y - other.y, z - other.z};
 }
 
@@ -43,7 +43,7 @@ Vector Vector::operator/(const double scalar) {
     return {x/scalar, y/scalar, z/scalar};
 }
 
-Vector Vector::cross(const Vector& other) {
+Vector Vector::cross(const Vector& other) const {
     return Vector(
         y * other.z - z * other.y,
         z * other.x - x * other.z,
@@ -55,11 +55,11 @@ double Vector::dot(const Vector& other) {
     return x * other.x + y * other.y + z * other.z;
 }
 
-double Vector::magnitude() {
+double Vector::magnitude() const {
     return std::sqrt(x*x + y*y + z*z);
 }
 
-Vector Vector::normalized() {
+Vector Vector::normalized() const {
     double mag = magnitude();
     return Vector(x / mag, y / mag, z / mag);
 }
