@@ -69,9 +69,7 @@ std::vector<Ray> Mirror::createNewRays (const Ray& ray) const {
     Vector p_hit = ray.end;
     Vector reflectionDirection;
     if (ray.direction.cross(surfaceNormal).magnitude() == 0) {
-        std::cout << "PARA:\n";
         reflectionDirection = -1 * ray.direction;
-        std::cout << ray.direction << " " << reflectionDirection << "\n";
     } else {
         Vector rotationAxis = ray.direction.cross(surfaceNormal).normalized();
         double theta1 = angle(surfaceNormal, ray.direction);
