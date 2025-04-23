@@ -29,9 +29,6 @@ class Ray {
                << "\n";
             return os;
         }
-        Vector getOrigin() { return origin; }
-        Vector getDirection() { return direction; }
-        double getRefractiveIndex() { return refractiveIndex; }
         Vector getEndPoint() { return origin + endT * direction; }
         std::string forPythonPlot();
         std::vector<Ray> createReflectionAndRefraction (Vector surfaceNormal, Vector rotationAxis, double n2);
