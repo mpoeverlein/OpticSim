@@ -7,19 +7,13 @@
 #include "optdev.hpp"
 
 Ray::Ray () {
-    origin = Vector();
-    direction = Vector();
-    energyDensity = 0.0;
-    refractiveIndex = 1.;
-    wavelength = 550e-9;
-}
+    // use default values of ray.hpp
+ }
 
 Ray::Ray (Vector origin_, Vector direction_, double energyDensity_) {
     origin = origin_;
     direction = direction_.normalized();
     energyDensity = energyDensity_;
-    // refractiveIndex = 1.;
-    // wavelength = 550e-9;
 }
 
 Ray::Ray(Vector origin_, Vector direction_, double energyDensity_, double n) {
@@ -27,7 +21,6 @@ Ray::Ray(Vector origin_, Vector direction_, double energyDensity_, double n) {
     direction = direction_.normalized();
     energyDensity = energyDensity_;
     refractiveIndex = n;
-    // wavelength = 550e-9;    
 }
 
 Ray::Ray(Vector origin_, Vector direction_, double energyDensity_, double n, double wavelength_) {
@@ -49,7 +42,6 @@ std::string Ray::forPythonPlot () {
     oss << "ax.plot((" << origin.x << "," << end.x << "), (" 
         << origin.z << "," << end.z << "), linewidth=" 
         << std::setprecision(6) << 2*energyDensity << ", color='" << color << "')\n"; // Adjust precision as needed
-    // oss << "ax.scatter(" << origin.x << "," << origin.z << ", marker='o')" << "\n";
     return oss.str();
 }
 
