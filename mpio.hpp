@@ -4,6 +4,7 @@
 #include "ray.hpp"
 #include "geometry_loader.hpp"
 
+std::string printImports();
 std::string printRays(std::vector<Ray> rays);
 std::string printGeometry2D(GeometryLoader& geometry);
 

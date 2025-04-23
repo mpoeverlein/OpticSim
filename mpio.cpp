@@ -14,7 +14,6 @@ std::string printImports() {
 }
 
 std::string printGeometry2D(GeometryLoader& geometry) {
-    // return "A\n";
     std::ostringstream oss;
     oss << printImports();
     oss << "mpl.rcParams['lines.linewidth'] = 0.4\n"
@@ -35,9 +34,7 @@ std::string printRays(std::vector<Ray> rays) {
     std::ostringstream oss;
     oss << printImports();
     oss << "mpl.rcParams['lines.linewidth'] = 0.4\n"
-    << "fig, ax = plt.subplots()\n"
-    << "circ = Circle((10, 0.), 1, alpha=0.05, ec='blue')\n"
-    << "ax.add_patch(circ)\n";
+    << "fig, ax = plt.subplots()\n";
 
     for (Ray& r: rays) {
         oss << r.forPythonPlot();
