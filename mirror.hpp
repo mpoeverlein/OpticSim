@@ -19,11 +19,6 @@ class Mirror : public OpticalDevice {
         Mirror();
         Mirror(Vector origin_, Vector sideA_, Vector sideB_, double reflectance_);
         Type type();
-        Vector getOrigin();
-        Vector getSideA();
-        Vector getSideB();
-        Vector getSurfaceNormal();
-        double getReflectance();
         double detectCollisionTime(const Ray& ray) const ;
         std::vector<Ray> createNewRays(const Ray& ray) const;
         std::string forPythonPlot() const;

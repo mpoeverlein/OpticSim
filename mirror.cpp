@@ -4,11 +4,14 @@
 #include <sstream>
 
 
-// Mirror::Mirror () {
-//     // all defaults already set
-//     surfaceNormal = sideA.cross(sideB).normalized();
-// }
-Mirror::Mirror () { }
+Mirror::Mirror () {
+    origin = Vector();
+    sideA = Vector(1,0,0);
+    sideB = Vector(0,1,0);
+    surfaceNormal = sideA.cross(sideB).normalized();
+    reflectance = 1;
+    transmittance = 0;    
+ }
 
 Mirror::Mirror(Vector origin_, Vector sideA_, Vector sideB_, double reflectance_) {
     origin = origin_;
@@ -20,12 +23,6 @@ Mirror::Mirror(Vector origin_, Vector sideA_, Vector sideB_, double reflectance_
 }
 
 Type Mirror::type() { return Type::Mirror; }
-
-Vector Mirror::getOrigin() { return origin; }
-Vector Mirror::getSideA() { return sideA; }
-Vector Mirror::getSideB() { return sideB; }
-Vector Mirror::getSurfaceNormal() { return surfaceNormal; };
-double Mirror::getReflectance() { return reflectance; }
 
 double Mirror::detectCollisionTime(const Ray& ray) const {
     /** the ray meets the mirror at
@@ -72,12 +69,11 @@ std::vector<Ray> Mirror::createNewRays (const Ray& ray) const {
     Vector p_hit = ray.end;
     Vector reflectionDirection;
     if (ray.direction.cross(surfaceNormal).magnitude() == 0) {
+        // 90 deg angle between ray and mirror surface
         reflectionDirection = -1 * ray.direction;
     } else {
         Vector rotationAxis = ray.direction.cross(surfaceNormal).normalized();
         double theta1 = angle(surfaceNormal, ray.direction);
-
-        // create reflection
         reflectionDirection = rotateVectorAboutAxis(ray.direction, rotationAxis, -(M_PI-2*theta1));
     }
 
