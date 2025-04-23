@@ -31,7 +31,6 @@ class Ray {
         }
         Vector getEndPoint() { return origin + endT * direction; }
         std::string forPythonPlot();
-        std::vector<Ray> createReflectionAndRefraction (Vector surfaceNormal, Vector rotationAxis, double n2);
         std::vector<double> detectAllCollisionTimes (const std::vector<std::unique_ptr<OpticalDevice>>& device) const;
 };
 

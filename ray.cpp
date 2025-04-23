@@ -53,29 +53,6 @@ std::string Ray::forPythonPlot () {
     return oss.str();
 }
 
-std::vector<Ray> Ray::createReflectionAndRefraction (Vector surfaceNormal, Vector rotationAxis, double n2) {
-    /* Create reflection and refraction rays according to Snell's law
-    * n1 * sin(theta1) = n2 * sin(theta2)
-    * surfaceNormal: direction of surface normal
-    * rotationAxis: new rays created based on rotation of old about rotation axis
-    * n2: refractive index of other medium (n1 is stored in the Ray object)
-    */
-    std::vector<Ray> newRays;
-    double theta1 = angle(surfaceNormal, direction);
-    double theta2 = refractiveIndex / n2 * sin(theta1);
-    // we create a new direction for the ray by rotating
-    // the old direction by theta2-theta1
-    double dtheta = theta2 - theta1;
-    Vector refractionDirection = rotateVectorAboutAxis(direction, rotationAxis, -dtheta);
-    newRays.push_back(Ray(end, refractionDirection, energyDensity*0.98, n2));
-
-    // create reflection
-    Vector reflectionDirection = rotateVectorAboutAxis(direction, rotationAxis, -(M_PI-2*theta1));
-    newRays.push_back(Ray(end, reflectionDirection, energyDensity*0.02, refractiveIndex));
-    
-    return newRays;
-}
-
 std::vector<double> Ray::detectAllCollisionTimes(const std::vector<std::unique_ptr<OpticalDevice>>& devices) const {
     std::vector<double> t_times;
     for (const auto& device : devices) {
