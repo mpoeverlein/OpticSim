@@ -107,3 +107,63 @@ std::ostream& operator<<(std::ostream& os, const Vector& v) {
     os << "(" << v.x << ", " << v.y << ", " << v.z << ")";
     return os;
 }
+
+double calculateCollisionTime(Vector rayOrigin, Vector rayDirection, Vector sphereOrigin, double sphereRadius) {
+    /** the ray trajectory is given by
+    *    r(t) = o + t * d
+    * r: position at time t,
+    * o: origin of ray,
+    * d: unit direction of ray.
+    * 
+    * the shortest distance between ray and sphere center
+    * can be derived from projection. 
+    *     t_p = v (dot) d
+    * v: vector between sphere origin and ray origin, c - o
+    * 
+    * if t_p < 0, ray will never collide
+    * 
+    * The point of the ray closest to the sphere is here:
+    *     p = o + t_p * d
+    * 
+    * Compute squared distance:
+    *     D^2 = norm(p - c)^2
+    * 
+    * Scenarios:
+    *     D^2 < R^2: two collisions
+    *     D^2 > R^2: miss
+    *     D^2 = R^2: exactly one collision
+    * 
+    * if no collision occurs, the return value is -1!
+    * 
+    * */
+   Vector o = rayOrigin;
+   Vector d = rayDirection;
+   Vector c = sphereOrigin;
+   double R = sphereRadius;
+   Vector v = (c - o);
+   double t_p = v.dot(d);
+   if (t_p <= Config::MIN_EPS ) {
+       return Inf; 
+   } 
+
+   Vector p = o + t_p * d;
+   double dSquared = (p - c).magnitude() * (p - c).magnitude();
+
+   if (dSquared > R * R) {
+       return Inf;
+   } else if (dSquared == R * R) {
+       return Inf;
+   }
+   /* from here: dSquared < R * R, so a hit!
+   * hit! create new ray based on first collision
+   * we need to find t for
+   * R^2 = | o + t*d - c |^2
+   *    = | t*d - v |^2
+   * the resulting quadratic is
+   * (d(dot)d) t^2 - 2t d(dot)v + v(dot)v - R^2 = 0
+   * we solve for t
+   * */
+   double t = mitternacht(d.dot(d), -2*d.dot(v), v.dot(v)-R*R);
+   if (t < 0) { return Inf; }
+   return t;   
+}

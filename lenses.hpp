@@ -28,5 +28,14 @@ class SphericalLens : public OpticalDevice {
         std::string forPythonPlot() const;
 };
 
+// class PlanoConvex : public OpticalDevice {
+//     public:
+//         Vector origin = Vector();
+//         double radius = 0;
+//         double refractiveIndex = 1;
+//         Vector height = Vector();
+//         double detectCollisionTime(const Ray& ray) const;
+// };
+
 
 #endif /* LENSES_HPP */
