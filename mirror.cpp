@@ -43,16 +43,7 @@ double Mirror::detectCollisionTime(const Ray& ray) const {
 std::vector<Ray> Mirror::createNewRays (const Ray& ray) const {
     std::vector<Ray> newRays;
     Vector p_hit = ray.end;
-    Vector reflectionDirection;
-    if (ray.direction.cross(surfaceNormal).magnitude() == 0) {
-        // 90 deg angle between ray and mirror surface
-        reflectionDirection = -1 * ray.direction;
-    } else {
-        Vector rotationAxis = ray.direction.cross(surfaceNormal).normalized();
-        double theta1 = angle(surfaceNormal, ray.direction);
-        reflectionDirection = rotateVectorAboutAxis(ray.direction, rotationAxis, -(M_PI-2*theta1));
-    }
-
+    Vector reflectionDirection = calculateReflectionDirection(ray.direction, surfaceNormal);
     // reflected ray
     newRays.push_back(Ray(ray.end, reflectionDirection, ray.energyDensity*reflectance, ray.refractiveIndex));
     // transmitted ray

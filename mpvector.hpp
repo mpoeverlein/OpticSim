@@ -33,6 +33,7 @@ std::ostream& operator<<(std::ostream& os, const Vector& v);
 
 double calculateCollisionTime(Vector rayOrigin, Vector rayDirection, Vector sphereOrigin, double sphereRadius);
 double calculateCollisionTime(Vector rayOrigin, Vector rayDirection, Vector planeOrigin, Vector planeSideA, Vector planeSideB);
+Vector calculateReflectionDirection(Vector rayDirection, Vector surfaceNormal);
 
 // double angle(Vector& a, Vector& b);
 double angle(Vector a, Vector b);

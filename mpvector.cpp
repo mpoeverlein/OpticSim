@@ -196,3 +196,13 @@ double calculateCollisionTime(Vector rayOrigin, Vector rayDirection, Vector plan
    double t_hit = d / (mirrorVector.dot(rayDirection));
    return t_hit;    
 }
+
+Vector calculateReflectionDirection(Vector rayDirection, Vector surfaceNormal) {
+    if (rayDirection.cross(surfaceNormal).magnitude() == 0) {
+        // 90 deg angle between ray and mirror surface
+        return -1 * rayDirection;
+    }
+    Vector rotationAxis = rayDirection.cross(surfaceNormal).normalized();
+    double theta1 = angle(surfaceNormal, rayDirection);
+    return rotateVectorAboutAxis(rayDirection, rotationAxis, -(M_PI-2*theta1));
+}
