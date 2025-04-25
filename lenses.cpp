@@ -48,21 +48,23 @@ std::vector<Ray> SphericalLens::createNewRays (const Ray& ray) const {
         surfaceNormal = (ray.end - origin).normalized();
         n2 = 1.;
     }
-    Vector rotationAxis = ray.direction.cross(surfaceNormal).normalized();
+    // Vector rotationAxis = ray.direction.cross(surfaceNormal).normalized();
 
-    double theta1 = angle(surfaceNormal, ray.direction);
-    double theta2 = refractiveIndex / n2 * sin(theta1);
-    // we create a new direction for the ray by rotating
-    // the old direction by theta2-theta1
-    double dtheta = theta2 - theta1;
-    Vector refractionDirection = rotateVectorAboutAxis(ray.direction, rotationAxis, -dtheta);
-    newRays.push_back(Ray(ray.end, refractionDirection, ray.energyDensity*0.98, n2));
+    return ::createNewRays(ray, surfaceNormal, n2, 0);
 
-    // create reflection
-    Vector reflectionDirection = rotateVectorAboutAxis(ray.direction, rotationAxis, -(M_PI-2*theta1));
-    newRays.push_back(Ray(ray.end, reflectionDirection, ray.energyDensity*0.02, refractiveIndex));
+    // double theta1 = angle(surfaceNormal, ray.direction);
+    // double theta2 = refractiveIndex / n2 * sin(theta1);
+    // // we create a new direction for the ray by rotating
+    // // the old direction by theta2-theta1
+    // double dtheta = theta2 - theta1;
+    // Vector refractionDirection = rotateVectorAboutAxis(ray.direction, rotationAxis, -dtheta);
+    // newRays.push_back(Ray(ray.end, refractionDirection, ray.energyDensity*0.98, n2));
+
+    // // create reflection
+    // Vector reflectionDirection = rotateVectorAboutAxis(ray.direction, rotationAxis, -(M_PI-2*theta1));
+    // newRays.push_back(Ray(ray.end, reflectionDirection, ray.energyDensity*0.02, refractiveIndex));
     
-    return newRays;
+    // return newRays;
 }
 
 
