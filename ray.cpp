@@ -65,3 +65,6 @@ std::vector<Ray> makeParallelRays(Vector direction, Vector first, Vector last, i
     return rays;
 }
 
+Vector Ray::getPositionAtTime(double t) const {
+    return origin + t * direction;
+}

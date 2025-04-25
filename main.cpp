@@ -45,9 +45,18 @@ void rayTracing(std::vector<Ray>& rays, const std::vector<std::unique_ptr<Optica
 int main()
 {
     ConfigLoader::loadFromFile("config.conf");
-    GeometryLoader geometry;
-    geometry.loadFromFile("geometry.geo");
+    // GeometryLoader geometry;
+    // geometry.loadFromFile("geometry.geo");
 
-    rayTracing(geometry.rays, geometry.devices);
-    std::cout << printGeometry2D(geometry);
+    // rayTracing(geometry.rays, geometry.devices);
+    // std::cout << printGeometry2D(geometry);
+
+    std::vector<Ray> rays = makeParallelRays(Vector(1,0,0), Vector(0,0,-2), Vector(0,0,2), 20,
+        1, 1, 550e-9);
+
+    std::vector<std::unique_ptr<OpticalDevice>> devices;
+    devices.push_back(std::make_unique<PlanoConvex>(Vector(5,0,0), 1, 1.5, Vector(-0.5,0,0)));
+    rayTracing(rays, devices);
+    // std::cout << rays.size() << "\n";
+    std::cout << printRays(rays);
 }

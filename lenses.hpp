@@ -28,14 +28,26 @@ class SphericalLens : public OpticalDevice {
         std::string forPythonPlot() const;
 };
 
-// class PlanoConvex : public OpticalDevice {
-//     public:
-//         Vector origin = Vector();
-//         double radius = 0;
-//         double refractiveIndex = 1;
-//         Vector height = Vector();
-//         double detectCollisionTime(const Ray& ray) const;
-// };
+class PlanoConvex : public OpticalDevice {
+    public:
+        Vector origin = Vector(); // origin of sphere describing convex surface
+        double radius = 0; // radius of this sphere
+        double refractiveIndex = 1;
+        double reflectance = 0.5;
+        Vector height = Vector(); // height is the vector between the center of the planar surface and the apex of the convex surface
+        Vector planeOrigin;
+        Vector sideA;
+        Vector sideB;
+        double planeRadius;
+        Vector apex;
+        double openingAngle;
+        PlanoConvex(Vector origin_, double radius_, double n_, Vector height_);
+        double detectCollisionTime(const Ray& ray) const;
+        std::vector<Ray> createNewRays (const Ray& ray) const;
+        std::string forPythonPlot() const;
+};
+
+std::vector<Ray> createNewRays (const Ray& ray, Vector surfaceNormal, double refractiveIndex, double reflectance);
 
 
 #endif /* LENSES_HPP */
