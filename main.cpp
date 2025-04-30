@@ -17,6 +17,7 @@ void rayTracing(std::vector<Ray>& rays, const std::vector<std::unique_ptr<Optica
     std::vector<Ray> raysToAdd;
     int current = 0;
     while (current < rays.size()) {
+        std::cout << "CURRENT " << current << "\n";
         std::vector<double> t_times = rays[current].detectAllCollisionTimes(devices);
 
         auto it = std::min_element(std::begin(t_times), std::end(t_times));
@@ -35,8 +36,9 @@ void rayTracing(std::vector<Ray>& rays, const std::vector<std::unique_ptr<Optica
 
         std::vector<Ray> raysToAdd = collisionDevice->createNewRays(rays[current]);
         rays.insert(rays.end(),
-        raysToAdd.begin(),
-        raysToAdd.begin() + std::min(raysToAdd.size(), Config::MAX_RAYS - rays.size()));
+            raysToAdd.begin(),
+            raysToAdd.begin() + std::min(raysToAdd.size(), Config::MAX_RAYS - rays.size())
+        );
 
         current++;
     }
@@ -51,12 +53,12 @@ int main()
     // rayTracing(geometry.rays, geometry.devices);
     // std::cout << printGeometry2D(geometry);
 
-    std::vector<Ray> rays = makeParallelRays(Vector(1,0,0), Vector(0,0,-2), Vector(0,0,2), 20,
+    std::vector<Ray> rays = makeParallelRays(Vector(1,0,0), Vector(0,0,-2), Vector(0,0,2), 50,
         1, 1, 550e-9);
 
     std::vector<std::unique_ptr<OpticalDevice>> devices;
-    devices.push_back(std::make_unique<PlanoConvex>(Vector(5,0,0), 1, 1.5, Vector(-0.5,0,0)));
+    devices.push_back(std::make_unique<PlanoConvex>(Vector(5,0,0), 1, 1.5, Vector(-0.9,0,0)));
     rayTracing(rays, devices);
-    // std::cout << rays.size() << "\n";
+    std::cout << rays.size() << "\n";
     std::cout << printRays(rays);
 }

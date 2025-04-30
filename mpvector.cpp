@@ -168,6 +168,14 @@ double calculateCollisionTime(Vector rayOrigin, Vector rayDirection, Vector sphe
    return t;   
 }
 
+double calculateCollisionTime(Vector rayOrigin, Vector rayDirection, Vector planeOrigin, Vector planeNormal) {
+    if (planeNormal.dot(rayDirection) == 0) {
+        // parallel
+        return Inf;
+    }
+    return (planeOrigin - rayOrigin).dot(planeNormal) / rayDirection.dot(planeNormal);
+}
+
 double calculateCollisionTime(Vector rayOrigin, Vector rayDirection, Vector planeOrigin, Vector planeSideA, Vector planeSideB) {
     /** the ray meets the mirror at
     *  a * x(t) + b * y(t) + c * z(t) = d

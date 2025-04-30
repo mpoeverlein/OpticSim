@@ -32,6 +32,7 @@ Vector operator*(const double scalar, const Vector& v);
 std::ostream& operator<<(std::ostream& os, const Vector& v);
 
 double calculateCollisionTime(Vector rayOrigin, Vector rayDirection, Vector sphereOrigin, double sphereRadius);
+double calculateCollisionTime(Vector rayOrigin, Vector rayDirection, Vector planeOrigin, Vector planeNormal);
 double calculateCollisionTime(Vector rayOrigin, Vector rayDirection, Vector planeOrigin, Vector planeSideA, Vector planeSideB);
 Vector calculateReflectionDirection(Vector rayDirection, Vector surfaceNormal);
 
