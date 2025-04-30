@@ -78,8 +78,8 @@ PlanoConvex::PlanoConvex(Vector planeOrigin_, double radius_, double n_, Vector 
     sideB = height.cross(sideA).normalized();
 }
 
-double PlanoConvex::detectCollisionTime (const Ray& ray) const {
-    double t_plane = calculateCollisionTime(ray.origin, ray.direction, planeOrigin, height.normalized());
+void PlanoConvex::getBothCollisionTimes(const Ray& ray, double& t_plane, double& t_sphere) const {
+    t_plane = calculateCollisionTime(ray.origin, ray.direction, planeOrigin, height.normalized());
     if (t_plane > 0) { 
         Vector p_plane = ray.getPositionAtTime(t_plane);
         // valid position only if close enough to plane origin
@@ -89,7 +89,7 @@ double PlanoConvex::detectCollisionTime (const Ray& ray) const {
     } else {
         t_plane = Inf; 
     }
-    double t_sphere = calculateCollisionTime(ray.origin, ray.direction, origin, radius);
+    t_sphere = calculateCollisionTime(ray.origin, ray.direction, origin, radius);
     if (t_sphere > 0) {
         Vector p_sphere = ray.getPositionAtTime(t_sphere);
         // valid position only if close enough to sphere apex
@@ -99,32 +99,18 @@ double PlanoConvex::detectCollisionTime (const Ray& ray) const {
     } else {
         t_sphere = Inf;
     }
+}
 
+double PlanoConvex::detectCollisionTime (const Ray& ray) const {
+    double t_plane, t_sphere;
+    getBothCollisionTimes(ray, t_plane, t_sphere);
     return std::min(t_plane, t_sphere);
 }
 
 std::vector<Ray> PlanoConvex::createNewRays (const Ray& ray) const {
     std::vector<Ray> newRays, myNewRays;
-    double t_plane = calculateCollisionTime(ray.origin, ray.direction, planeOrigin, height.normalized());
-    if (t_plane > 0) { 
-        Vector p_plane = ray.getPositionAtTime(t_plane);
-        // valid position only if close enough to plane origin
-        if ((p_plane - planeOrigin).magnitude() > planeRadius) {
-            t_plane = Inf;
-        }
-    } else {
-        t_plane = Inf; 
-    }
-    double t_sphere = calculateCollisionTime(ray.origin, ray.direction, origin, radius);
-    if (t_sphere > 0) {
-        Vector p_sphere = ray.getPositionAtTime(t_sphere);
-        // valid position only if close enough to sphere apex
-        if (angle(p_sphere-origin, apex-origin) > openingAngle) {
-            t_sphere = Inf;
-        }
-    } else {
-        t_sphere = Inf;
-    }
+    double t_plane, t_sphere;
+    getBothCollisionTimes(ray, t_plane, t_sphere);
 
     if (t_sphere < t_plane) {
         return SphericalLens(origin, radius, refractiveIndex).createNewRays(ray);
