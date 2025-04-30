@@ -159,8 +159,10 @@ std::vector<Ray> createNewRays (const Ray& ray, Vector surfaceNormal, double n2,
 
     double theta1 = angle(surfaceNormal, ray.direction);
     if (theta1 > M_PI_2) {
+        // this happens if the ray is inside the lens!
         rotationAxis = ray.direction.cross(-1*surfaceNormal).normalized();
         theta1 = angle(-1*surfaceNormal, ray.direction);
+        n2 = Config::VACUUM_REFRACTIVE_INDEX;
     }
     double theta2 = n1 / n2 * sin(theta1);
     // we create a new direction for the ray by rotating
