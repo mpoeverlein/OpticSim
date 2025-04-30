@@ -41,7 +41,7 @@ class PlanoConvex : public OpticalDevice {
         double planeRadius;
         Vector apex;
         double openingAngle;
-        PlanoConvex(Vector origin_, double radius_, double n_, Vector height_);
+        PlanoConvex(Vector planeOrigin_, double radius_, double n_, Vector height_);
         double detectCollisionTime(const Ray& ray) const;
         std::vector<Ray> createNewRays (const Ray& ray) const;
         std::string forPythonPlot() const;
