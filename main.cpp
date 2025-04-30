@@ -19,6 +19,11 @@ void rayTracing(std::vector<Ray>& rays, const std::vector<std::unique_ptr<Optica
     while (current < rays.size()) {
         std::cout << "CURRENT " << current << "\n";
         std::vector<double> t_times = rays[current].detectAllCollisionTimes(devices);
+        std::cout << "TIMES\n";
+        for (double& t: t_times) {
+            std::cout << t << " ";
+        }
+        std::cout << "\n";
 
         auto it = std::min_element(std::begin(t_times), std::end(t_times));
         int min_index = std::distance(t_times.begin(), it);
@@ -35,6 +40,9 @@ void rayTracing(std::vector<Ray>& rays, const std::vector<std::unique_ptr<Optica
         rays[current].end = rays[current].getEndPoint();
 
         std::vector<Ray> raysToAdd = collisionDevice->createNewRays(rays[current]);
+        // std::cout << "RAY S TO ADD " << raysToAdd.size() << "\n"; 
+        // std::cout << "RA Y 1 " << raysToAdd[0] << "\n";
+        // std::cout << "RA Y 2 " << raysToAdd[1] << "\n";
         rays.insert(rays.end(),
             raysToAdd.begin(),
             raysToAdd.begin() + std::min(raysToAdd.size(), Config::MAX_RAYS - rays.size())

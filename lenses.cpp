@@ -82,45 +82,66 @@ PlanoConvex::PlanoConvex(Vector planeOrigin_, double radius_, double n_, Vector 
 
 double PlanoConvex::detectCollisionTime (const Ray& ray) const {
     double t_plane = calculateCollisionTime(ray.origin, ray.direction, planeOrigin, height.normalized());
-    Vector p_plane = ray.getPositionAtTime(t_plane);
-    std::cout << "P PLANE " << p_plane << " RADIUS " << planeRadius << " ORIG PL" << planeOrigin << "\n";
-    // valid position only if close enough to plane origin
-    if ((p_plane - planeOrigin).magnitude() > planeRadius) {
-        t_plane = Inf;
+    if (t_plane > 0) { 
+        Vector p_plane = ray.getPositionAtTime(t_plane);
+        std::cout << "P PLANE " << p_plane << " RADIUS " << planeRadius << " ORIG PL" << planeOrigin << "\n";
+        // valid position only if close enough to plane origin
+        if ((p_plane - planeOrigin).magnitude() > planeRadius) {
+            std::cout << "TO FAR\n";
+            t_plane = Inf;
+        }
+    } else {
+        t_plane = Inf; 
     }
     double t_sphere = calculateCollisionTime(ray.origin, ray.direction, origin, radius);
-    Vector p_sphere = ray.getPositionAtTime(t_sphere);
-    // valid position only if close enough to sphere apex
-    if (angle(p_sphere-origin, apex-origin) > openingAngle) {
+    if (t_sphere > 0) {
+        Vector p_sphere = ray.getPositionAtTime(t_sphere);
+        // valid position only if close enough to sphere apex
+        if (angle(p_sphere-origin, apex-origin) > openingAngle) {
+            t_sphere = Inf;
+        }
+    } else {
         t_sphere = Inf;
     }
+
     return std::min(t_plane, t_sphere);
 }
 
 std::vector<Ray> PlanoConvex::createNewRays (const Ray& ray) const {
-    std::cout << "CALLED create newrays\n";
     std::vector<Ray> newRays, myNewRays;
     double t_plane = calculateCollisionTime(ray.origin, ray.direction, planeOrigin, height.normalized());
-    Vector p_plane = ray.getPositionAtTime(t_plane);
-    // valid position only if close enough to plane origin
-    if ((p_plane - planeOrigin).magnitude() > planeRadius) {
-        t_plane = Inf;
+    if (t_plane > 0) { 
+        Vector p_plane = ray.getPositionAtTime(t_plane);
+        std::cout << "P PLANE " << p_plane << " RADIUS " << planeRadius << " ORIG PL" << planeOrigin << "\n";
+        // valid position only if close enough to plane origin
+        if ((p_plane - planeOrigin).magnitude() > planeRadius) {
+            std::cout << "TO FAR\n";
+            t_plane = Inf;
+        }
+    } else {
+        t_plane = Inf; 
     }
-    if (t_plane <= 0) { t_plane = Inf; }
     double t_sphere = calculateCollisionTime(ray.origin, ray.direction, origin, radius);
-    Vector p_sphere = ray.getPositionAtTime(t_sphere);
-    // valid position only if close enough to sphere apex
-    if (angle(p_sphere-origin, apex-origin) > openingAngle) {
+    if (t_sphere > 0) {
+        Vector p_sphere = ray.getPositionAtTime(t_sphere);
+        // valid position only if close enough to sphere apex
+        if (angle(p_sphere-origin, apex-origin) > openingAngle) {
+            t_sphere = Inf;
+        }
+    } else {
         t_sphere = Inf;
     }
-    if (t_sphere <= 0) { t_sphere = Inf; }
-    std::cout << " TSPHERE " << t_sphere << " TPLANE " << t_plane << "\n"; 
 
     if (t_sphere < t_plane) {
         return SphericalLens(origin, radius, refractiveIndex).createNewRays(ray);
     }
     if (t_plane < t_sphere) {
-        return ::createNewRays(ray, height.normalized(), refractiveIndex, reflectance);
+        std::cout << " CREATE NEW RATYS\n";
+        std::vector<Ray> nRay = ::createNewRays(ray, height.normalized(), refractiveIndex, reflectance);
+        for (Ray& ray: nRay) {
+            std::cout << ray << "\n";
+        }
+        return nRay;
     }
 
     return newRays;
@@ -157,6 +178,8 @@ std::vector<Ray> createNewRays (const Ray& ray, Vector surfaceNormal, double n2,
         newRays.push_back(Ray(ray.end, -1*ray.direction, ray.energyDensity*reflectance, n1));
         return newRays;
     }
+
+    std::cout << "THETA " << theta1 << " " << theta2 << " " << dtheta << "\n";
 
     Vector refractionDirection = rotateVectorAboutAxis(ray.direction, rotationAxis, -dtheta);
     newRays.push_back(Ray(ray.end, refractionDirection, ray.energyDensity*(1-reflectance), n2));
