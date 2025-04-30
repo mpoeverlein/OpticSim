@@ -84,10 +84,8 @@ double PlanoConvex::detectCollisionTime (const Ray& ray) const {
     double t_plane = calculateCollisionTime(ray.origin, ray.direction, planeOrigin, height.normalized());
     if (t_plane > 0) { 
         Vector p_plane = ray.getPositionAtTime(t_plane);
-        std::cout << "P PLANE " << p_plane << " RADIUS " << planeRadius << " ORIG PL" << planeOrigin << "\n";
         // valid position only if close enough to plane origin
         if ((p_plane - planeOrigin).magnitude() > planeRadius) {
-            std::cout << "TO FAR\n";
             t_plane = Inf;
         }
     } else {
@@ -112,10 +110,8 @@ std::vector<Ray> PlanoConvex::createNewRays (const Ray& ray) const {
     double t_plane = calculateCollisionTime(ray.origin, ray.direction, planeOrigin, height.normalized());
     if (t_plane > 0) { 
         Vector p_plane = ray.getPositionAtTime(t_plane);
-        std::cout << "P PLANE " << p_plane << " RADIUS " << planeRadius << " ORIG PL" << planeOrigin << "\n";
         // valid position only if close enough to plane origin
         if ((p_plane - planeOrigin).magnitude() > planeRadius) {
-            std::cout << "TO FAR\n";
             t_plane = Inf;
         }
     } else {
@@ -169,6 +165,10 @@ std::vector<Ray> createNewRays (const Ray& ray, Vector surfaceNormal, double n2,
     Vector rotationAxis = ray.direction.cross(surfaceNormal).normalized();
 
     double theta1 = angle(surfaceNormal, ray.direction);
+    if (theta1 > M_PI_2) {
+        rotationAxis = ray.direction.cross(-1*surfaceNormal).normalized();
+        theta1 = angle(-1*surfaceNormal, ray.direction);
+    }
     double theta2 = n1 / n2 * sin(theta1);
     // we create a new direction for the ray by rotating
     // the old direction by theta2-theta1
@@ -187,6 +187,8 @@ std::vector<Ray> createNewRays (const Ray& ray, Vector surfaceNormal, double n2,
     // create reflection
     Vector reflectionDirection = rotateVectorAboutAxis(ray.direction, rotationAxis, -(M_PI-2*theta1));
     newRays.push_back(Ray(ray.end, reflectionDirection, ray.energyDensity*reflectance, n1));
+
+    std::cout << " DIRECT " << refractionDirection << " " << reflectionDirection << "\n";
         
     return newRays;
 }

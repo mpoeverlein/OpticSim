@@ -31,6 +31,7 @@ class Ray {
         Vector getEndPoint() { return origin + endT * direction; }
         std::string forPythonPlot();
         std::vector<double> detectAllCollisionTimes (const std::vector<std::unique_ptr<OpticalDevice>>& device) const;
+        Vector getPositionAtTime(double t) const ;
 };
 
 std::vector<Ray> makeParallelRays(Vector direction, Vector first, Vector last, int steps,
