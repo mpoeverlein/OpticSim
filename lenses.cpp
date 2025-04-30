@@ -61,9 +61,7 @@ PlanoConvex::PlanoConvex(Vector planeOrigin_, double radius_, double n_, Vector 
     if (height.magnitude() > radius) {
         throw "Height vector must not be longer than sphere radius!";
     }
-    // planeOrigin = origin + (radius - height.magnitude()) * height.normalized();
     origin = planeOrigin + height - radius * height.normalized();
-    // std::cout << " PLANE ORIGIN " << planeOrigin << "\n";
     planeRadius = 2 * radius * height.magnitude() - height.magnitude()*height.magnitude();
     apex = origin + radius * height.normalized();
     openingAngle = asin(planeRadius / radius);
@@ -132,12 +130,7 @@ std::vector<Ray> PlanoConvex::createNewRays (const Ray& ray) const {
         return SphericalLens(origin, radius, refractiveIndex).createNewRays(ray);
     }
     if (t_plane < t_sphere) {
-        std::cout << " CREATE NEW RATYS\n";
-        std::vector<Ray> nRay = ::createNewRays(ray, height.normalized(), refractiveIndex, reflectance);
-        for (Ray& ray: nRay) {
-            std::cout << ray << "\n";
-        }
-        return nRay;
+        return ::createNewRays(ray, height.normalized(), refractiveIndex, reflectance);
     }
 
     return newRays;
@@ -179,17 +172,13 @@ std::vector<Ray> createNewRays (const Ray& ray, Vector surfaceNormal, double n2,
         return newRays;
     }
 
-    std::cout << "THETA " << theta1 << " " << theta2 << " " << dtheta << "\n";
-
     Vector refractionDirection = rotateVectorAboutAxis(ray.direction, rotationAxis, -dtheta);
     newRays.push_back(Ray(ray.end, refractionDirection, ray.energyDensity*(1-reflectance), n2));
 
     // create reflection
     Vector reflectionDirection = rotateVectorAboutAxis(ray.direction, rotationAxis, -(M_PI-2*theta1));
     newRays.push_back(Ray(ray.end, reflectionDirection, ray.energyDensity*reflectance, n1));
-
-    std::cout << " DIRECT " << refractionDirection << " " << reflectionDirection << "\n";
-        
+       
     return newRays;
 }
 
