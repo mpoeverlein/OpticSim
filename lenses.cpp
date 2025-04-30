@@ -53,7 +53,6 @@ std::string SphericalLens::forPythonPlot() const {
 
 
     
-// PlanoConvex::PlanoConvex(Vector origin_, double radius_, double n_, Vector height_) {
 PlanoConvex::PlanoConvex(Vector planeOrigin_, double radius_, double n_, Vector height_) {
     planeOrigin = planeOrigin_;
     radius = radius_;
@@ -64,10 +63,10 @@ PlanoConvex::PlanoConvex(Vector planeOrigin_, double radius_, double n_, Vector 
     }
     // planeOrigin = origin + (radius - height.magnitude()) * height.normalized();
     origin = planeOrigin + height - radius * height.normalized();
-    std::cout << " PLANE ORIGIN " << planeOrigin << "\n";
+    // std::cout << " PLANE ORIGIN " << planeOrigin << "\n";
     planeRadius = 2 * radius * height.magnitude() - height.magnitude()*height.magnitude();
     apex = origin + radius * height.normalized();
-    openingAngle = acos(planeRadius / radius);
+    openingAngle = asin(planeRadius / radius);
 
     // find sideA and sideB
     // 1. choose arbitrary vector that is not parallel to surfaceNormal
