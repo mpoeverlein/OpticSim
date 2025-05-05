@@ -49,7 +49,7 @@ class PlanoConvex : public OpticalDevice {
 };
 
 /** The convex lens is defined by the intersection of two spheres of the same size */
-class Convex : public OpticalDevice {
+class ConvexLens : public OpticalDevice {
     public:
         Vector origin = Vector();
         Vector sphere1Origin, sphere2Origin;
@@ -59,7 +59,7 @@ class Convex : public OpticalDevice {
         double refractiveIndex = 1;
         double reflectance = 0.1;
         double openingAngle;
-        Convex(Vector origin_, double radius_, double n_, Vector height_);
+        ConvexLens(Vector origin_, double radius_, double n_, Vector height_);
         void getBothCollisionTimes(const Ray& ray, double& t1, double& t2) const;
         double detectCollisionTime(const Ray& ray) const;
         std::vector<Ray> createNewRays (const Ray& ray) const;

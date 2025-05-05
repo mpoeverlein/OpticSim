@@ -174,7 +174,7 @@ std::vector<Ray> createNewRays (const Ray& ray, Vector surfaceNormal, double n2,
 //////////////////////////////
 
 
-Convex::Convex(Vector origin_, double radius_, double n_, Vector height_) {
+ConvexLens::ConvexLens(Vector origin_, double radius_, double n_, Vector height_) {
     origin = origin_;
     radius = radius_;
     refractiveIndex = n_;
@@ -190,7 +190,7 @@ Convex::Convex(Vector origin_, double radius_, double n_, Vector height_) {
     openingAngle = asin(planeRadius / radius);
 }
 
-void Convex::getBothCollisionTimes(const Ray& ray, double& t1, double& t2) const {
+void ConvexLens::getBothCollisionTimes(const Ray& ray, double& t1, double& t2) const {
     std::vector<double> times1, times2;
     t1 = Inf; t2 = Inf; // set defaults;
     Vector p;
@@ -230,13 +230,13 @@ void Convex::getBothCollisionTimes(const Ray& ray, double& t1, double& t2) const
     if (t2 < Config::MIN_EPS) { t2 = Inf; }
 }
 
-double Convex::detectCollisionTime (const Ray& ray) const {
+double ConvexLens::detectCollisionTime (const Ray& ray) const {
     double t1, t2;
     getBothCollisionTimes(ray, t1, t2);
     return std::min(t1, t2);
 }
 
-std::vector<Ray> Convex::createNewRays (const Ray& ray) const {
+std::vector<Ray> ConvexLens::createNewRays (const Ray& ray) const {
     std::vector<Ray> newRays, myNewRays;
     double t1, t2;
     getBothCollisionTimes(ray, t1, t2);
@@ -251,7 +251,7 @@ std::vector<Ray> Convex::createNewRays (const Ray& ray) const {
     return newRays;
 }
 
-std::string Convex::forPythonPlot() const {
+std::string ConvexLens::forPythonPlot() const {
     // TODO: rewrite
     std::ostringstream oss;
     oss << "circ = Circle((" << origin.x << ", " << origin.z << "), " << radius << ", alpha=0.05, ec='blue')\n"
