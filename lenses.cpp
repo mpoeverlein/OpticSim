@@ -66,16 +66,16 @@ PlanoConvex::PlanoConvex(Vector planeOrigin_, double radius_, double n_, Vector 
     apex = origin + radius * height.normalized();
     openingAngle = asin(planeRadius / radius);
 
-    // find sideA and sideB
-    // 1. choose arbitrary vector that is not parallel to surfaceNormal
-    Vector x = Vector(1,0,0);
-    if (x.normalized().cross(height.normalized()).magnitude() < 0.01) {
-        x = Vector(0,1,0);
-    }
-    // 2. find sideA
-    sideA = height.cross(x).normalized();
-    // 3. find sideB
-    sideB = height.cross(sideA).normalized();
+    // // find sideA and sideB
+    // // 1. choose arbitrary vector that is not parallel to surfaceNormal
+    // Vector x = Vector(1,0,0);
+    // if (x.normalized().cross(height.normalized()).magnitude() < 0.01) {
+    //     x = Vector(0,1,0);
+    // }
+    // // 2. find sideA
+    // sideA = height.cross(x).normalized();
+    // // 3. find sideB
+    // sideB = height.cross(sideA).normalized();
 }
 
 void PlanoConvex::getBothCollisionTimes(const Ray& ray, double& t_plane, double& t_sphere) const {
@@ -171,10 +171,93 @@ std::vector<Ray> createNewRays (const Ray& ray, Vector surfaceNormal, double n2,
 }
 
 
+//////////////////////////////
 
 
+Convex::Convex(Vector origin_, double radius_, double n_, Vector height_) {
+    origin = origin_;
+    radius = radius_;
+    refractiveIndex = n_;
+    height = height_;
+    if (height.magnitude() > radius) {
+        throw "Height vector must not be longer than sphere radius!";
+    }
+    sphere1Origin = origin + height - radius * height.normalized();
+    sphere2Origin = origin - height + radius * height.normalized();
+    apex1 = origin + height;
+    apex2 = origin - height;
+    double planeRadius = 2 * radius * height.magnitude() - height.magnitude()*height.magnitude();
+    openingAngle = asin(planeRadius / radius);
+}
+
+void Convex::getBothCollisionTimes(const Ray& ray, double& t1, double& t2) const {
+    std::vector<double> times1, times2;
+    t1 = Inf; t2 = Inf; // set defaults;
+    Vector p;
+    times1 = calculateCollisionTimes(ray.origin, ray.direction, sphere1Origin, radius);
+    times2 = calculateCollisionTimes(ray.origin, ray.direction, sphere2Origin, radius);
 
 
+    // test both candidates
+    if (times1[0] > Config::MIN_EPS) {
+        p = ray.getPositionAtTime(times1[0]);
+        if (angle(p-sphere1Origin, apex1-sphere1Origin) < openingAngle) {
+            t1 = times1[0];
+        }
+    } 
+    // first candidate did not work out
+    if (t1 == Inf) {
+        p = ray.getPositionAtTime(times1[1]);
+        if (angle(p-sphere1Origin, apex1-sphere1Origin) < openingAngle) {
+            t1 = times1[1];
+        }        
+    }
+    // test both candidates
+    if (times2[0] > Config::MIN_EPS) {
+        p = ray.getPositionAtTime(times2[0]);
+        if (angle(p-sphere2Origin, apex2-sphere2Origin) < openingAngle) {
+            t2 = times2[0];
+        }
+    } 
+    // first candidate did not work out
+    if (t2 == Inf) {
+        p = ray.getPositionAtTime(times2[1]);
+        if (angle(p-sphere2Origin, apex2-sphere2Origin) < openingAngle) {
+            t2 = times2[1];
+        }        
+    }
+    if (t1 < Config::MIN_EPS) { t1 = Inf; }
+    if (t2 < Config::MIN_EPS) { t2 = Inf; }
+}
+
+double Convex::detectCollisionTime (const Ray& ray) const {
+    double t1, t2;
+    getBothCollisionTimes(ray, t1, t2);
+    return std::min(t1, t2);
+}
+
+std::vector<Ray> Convex::createNewRays (const Ray& ray) const {
+    std::vector<Ray> newRays, myNewRays;
+    double t1, t2;
+    getBothCollisionTimes(ray, t1, t2);
+
+    if (t1 < t2) {
+        return SphericalLens(sphere1Origin, radius, refractiveIndex).createNewRays(ray);
+    }
+    if (t2 < t1) {
+        return SphericalLens(sphere2Origin, radius, refractiveIndex).createNewRays(ray);
+    }
+
+    return newRays;
+}
+
+std::string Convex::forPythonPlot() const {
+    // TODO: rewrite
+    std::ostringstream oss;
+    oss << "circ = Circle((" << origin.x << ", " << origin.z << "), " << radius << ", alpha=0.05, ec='blue')\n"
+    << "ax.add_patch(circ)\n";
+    return oss.str();
+}
 
 std::ostream& operator<<(std::ostream& os, const SphericalLens& l) {
     os << "Lens: Origin: " << l.origin << " Radius: " << l.radius << " n: " << l.refractiveIndex << "\n";
