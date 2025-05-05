@@ -6,6 +6,7 @@ class OpticalDevice;
 class Vector;
 class SphericalLens;
 class Mirror;
+class ConvexLens;
 
 #include <string>
 #include <unordered_map>
@@ -19,6 +20,7 @@ public:
     static Ray parseRayLine (const std::string& line);
     static std::vector<Ray> parseParallelRays (const std::string& line);
     static SphericalLens parseSphericalLensLine (const std::string& line);
+    static ConvexLens parseConvexLensLine (const std::string& line);
     static Mirror parseMirror (const std::string& line); 
 };
 

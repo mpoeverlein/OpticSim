@@ -28,6 +28,15 @@ void GeometryLoader::loadFromFile(const std::string& filename) {
                 continue;
             }
         }
+        if (line.find("$convexLens") == 0) {
+            try {
+                ConvexLens lens = parseConvexLensLine(line);
+                devices.push_back(std::make_unique<ConvexLens>(lens.origin, lens.radius, lens.refractiveIndex, lens.height));
+            } catch (const std::exception& e) {
+                std::cerr << "Error parsing Convex: " << e.what() << "\n";
+                continue;
+            }
+        }
 
         if (line.find("$sphericalLens") == 0) {
             try {
@@ -41,7 +50,7 @@ void GeometryLoader::loadFromFile(const std::string& filename) {
         if (line.find("$parallelRays") == 0) {
             try {
                 std::vector<Ray> raysToAdd = parseParallelRays(line);
-                std::cout << " AAAA " << raysToAdd.size() << "\n";
+                // std::cout << " AAAA " << raysToAdd.size() << "\n";
                 rays.insert(rays.end(),
                 raysToAdd.begin(),
                 raysToAdd.begin() + std::min(raysToAdd.size(), Config::MAX_RAYS - rays.size()));
@@ -50,6 +59,7 @@ void GeometryLoader::loadFromFile(const std::string& filename) {
                 continue;
             }
         }
+        
         if (line.find("$mirror") == 0) {
             try {
                 Mirror mirror = parseMirror(line);
@@ -164,6 +174,33 @@ SphericalLens GeometryLoader::parseSphericalLensLine (const std::string& line) {
 
     return lens;
 }
+
+ConvexLens GeometryLoader::parseConvexLensLine (const std::string& line) {
+    std::istringstream iss(line.substr(11));  // Skip "$convexLens"
+    std::string token;
+    Vector origin_, height_;
+    double radius_, n_;
+
+    while (iss >> token) {
+        size_t eq_pos = token.find('=');
+        if (eq_pos == std::string::npos) continue;
+
+        std::string key = token.substr(0, eq_pos);
+        std::string value_str = token.substr(eq_pos + 1);
+
+        if (key == "o") {
+            origin_ = parseVector(value_str);
+        } else if (key == "r") {
+            radius_ = std::stod(value_str);
+        } else if (key == "n") {
+            n_ = std::stod(value_str);
+        } else if (key == "h") {
+            height_ = parseVector(value_str);
+        }
+    }
+
+    return ConvexLens(origin_, radius_, n_, height_);
+}    
 
 Mirror GeometryLoader::parseMirror (const std::string& line) {
     Mirror mirror{};
