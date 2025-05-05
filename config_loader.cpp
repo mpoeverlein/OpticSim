@@ -16,6 +16,7 @@ void ConfigLoader::loadFromFile(const std::string& filename) {
                 if (key == "$max_t") Config::MAX_T = value;
                 else if (key == "$max_rays") Config::MAX_RAYS = value;
                 else if (key == "$min_energy_density") Config::MIN_ENERGY_DENSITY = value;
+                else if (key == "$min_eps") Config::MIN_EPS = value;
             }
         }
     }
