@@ -83,6 +83,22 @@ double mitternacht(double a, double b, double c) {
    return x0;
 }
 
+double mitternacht(double a, double b, double c, bool returnLarger) {
+    /* Given a 2nd degree polynomial
+    * f(x) = a x^2 + b x + c 
+    * find lowest positive number (larger than epsilon to exclude ZERO) for which
+    * f(x) = 0
+    * boolean returnLarger to control which of the two values to return
+    */
+    double Delta = sqrt(b*b - 4*a*c); // always > 0 when we call this
+    double x0 = (-b + Delta) / (2*a);
+    double x1 = (-b - Delta) / (2*a);
+    if (returnLarger) {
+        return x0;
+    }
+    return x1;
+}
+
 // double angle(Vector& a, Vector& b) {
 //     return acos(a.dot(b) / (a.magnitude() * b.magnitude()));
 // }
@@ -106,6 +122,31 @@ Vector rotateVectorAboutAxis(const Vector& v, const Vector& u, double angle) {
 std::ostream& operator<<(std::ostream& os, const Vector& v) {
     os << "(" << v.x << ", " << v.y << ", " << v.z << ")";
     return os;
+}
+
+std::vector<double> calculateCollisionTimes(Vector rayOrigin, Vector rayDirection, Vector sphereOrigin, double sphereRadius) {
+    /** same as in calculateCollisionTime but return both times */
+    Vector o = rayOrigin;
+    Vector d = rayDirection;
+    Vector c = sphereOrigin;
+    double R = sphereRadius;
+    Vector v = (c - o);
+    double t_p = v.dot(d);
+    // if (t_p <= Config::MIN_EPS ) {
+    //     return {Inf, Inf}; 
+    // } 
+
+    Vector p = o + t_p * d;
+    double dSquared = (p - c).magnitude() * (p - c).magnitude();
+
+    if (dSquared > R * R) {
+        return {Inf, Inf};
+    } else if (dSquared == R * R) {
+        return {Inf, Inf};
+    }
+
+    return {mitternacht(d.dot(d), -2*d.dot(v), v.dot(v)-R*R, false), 
+        mitternacht(d.dot(d), -2*d.dot(v), v.dot(v)-R*R, true)};
 }
 
 double calculateCollisionTime(Vector rayOrigin, Vector rayDirection, Vector sphereOrigin, double sphereRadius) {
@@ -136,36 +177,36 @@ double calculateCollisionTime(Vector rayOrigin, Vector rayDirection, Vector sphe
     * if no collision occurs, the return value is -1!
     * 
     * */
-   Vector o = rayOrigin;
-   Vector d = rayDirection;
-   Vector c = sphereOrigin;
-   double R = sphereRadius;
-   Vector v = (c - o);
-   double t_p = v.dot(d);
-   if (t_p <= Config::MIN_EPS ) {
-       return Inf; 
-   } 
+    Vector o = rayOrigin;
+    Vector d = rayDirection;
+    Vector c = sphereOrigin;
+    double R = sphereRadius;
+    Vector v = (c - o);
+    double t_p = v.dot(d);
+    if (t_p <= Config::MIN_EPS ) {
+        return Inf; 
+    } 
 
-   Vector p = o + t_p * d;
-   double dSquared = (p - c).magnitude() * (p - c).magnitude();
+    Vector p = o + t_p * d;
+    double dSquared = (p - c).magnitude() * (p - c).magnitude();
 
-   if (dSquared > R * R) {
-       return Inf;
-   } else if (dSquared == R * R) {
-       return Inf;
-   }
-   /* from here: dSquared < R * R, so a hit!
-   * hit! create new ray based on first collision
-   * we need to find t for
-   * R^2 = | o + t*d - c |^2
-   *    = | t*d - v |^2
-   * the resulting quadratic is
-   * (d(dot)d) t^2 - 2t d(dot)v + v(dot)v - R^2 = 0
-   * we solve for t
-   * */
-   double t = mitternacht(d.dot(d), -2*d.dot(v), v.dot(v)-R*R);
-   if (t < 0) { return Inf; }
-   return t;   
+    if (dSquared > R * R) {
+        return Inf;
+    } else if (dSquared == R * R) {
+        return Inf;
+    }
+    /* from here: dSquared < R * R, so a hit!
+    * hit! create new ray based on first collision
+    * we need to find t for
+    * R^2 = | o + t*d - c |^2
+    *    = | t*d - v |^2
+    * the resulting quadratic is
+    * (d(dot)d) t^2 - 2t d(dot)v + v(dot)v - R^2 = 0
+    * we solve for t
+    * */
+    double t = mitternacht(d.dot(d), -2*d.dot(v), v.dot(v)-R*R);
+    if (t < 0) { return Inf; }
+    return t;   
 }
 
 double calculateCollisionTime(Vector rayOrigin, Vector rayDirection, Vector planeOrigin, Vector planeNormal) {
