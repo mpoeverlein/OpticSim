@@ -173,6 +173,8 @@ std::vector<Ray> createNewRays (const Ray& ray, Vector surfaceNormal, double n2,
 
 //////////////////////////////
 
+ConvexLens::ConvexLens() { }
+
 
 ConvexLens::ConvexLens(Vector origin_, double radius_, double n_, Vector height_) {
     origin = origin_;

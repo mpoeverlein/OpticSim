@@ -59,6 +59,7 @@ class ConvexLens : public OpticalDevice {
         double refractiveIndex = 1;
         double reflectance = 0.1;
         double openingAngle;
+        ConvexLens();
         ConvexLens(Vector origin_, double radius_, double n_, Vector height_);
         void getBothCollisionTimes(const Ray& ray, double& t1, double& t2) const;
         double detectCollisionTime(const Ray& ray) const;
