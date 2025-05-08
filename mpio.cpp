@@ -8,7 +8,7 @@ std::string printImports() {
     std::ostringstream oss;
     oss << "import numpy as np\n"
     << "import matplotlib.pyplot as plt\n"
-    << "from matplotlib.patches import Circle\n"
+    << "import matplotlib.patches as patches\n"
     << "import matplotlib as mpl\n";
     return oss.str();
 }
