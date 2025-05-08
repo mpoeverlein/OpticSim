@@ -40,6 +40,23 @@ std::vector<Ray> SphericalLens::createNewRays (const Ray& ray) const {
     return ::createNewRays(ray, surfaceNormal, n2, 0); // reflectance set to 0
 }
 
+std::vector<Ray> SphericalLens::createNewRaysInsideOut (const Ray& ray) const {
+    std::vector<Ray> newRays;
+    Vector surfaceNormal;
+    double n2;
+    if (ray.refractiveIndex != refractiveIndex) {
+        // outside
+        surfaceNormal = (ray.end - origin).normalized();
+        n2 = refractiveIndex;
+    } else {
+        // inside
+        surfaceNormal = (origin - ray.end).normalized();
+        n2 = Config::VACUUM_REFRACTIVE_INDEX;
+    }
+
+    return ::createNewRays(ray, surfaceNormal, n2, 0); // reflectance set to 0
+}
+
 
 std::string SphericalLens::forPythonPlot() const {
     std::ostringstream oss;
@@ -356,10 +373,16 @@ std::vector<Ray> ConcaveLens::createNewRays (const Ray& ray) const {
     getBothCollisionTimes(ray, t1, t2);
 
     if (t1 < t2) {
-        return SphericalLens(sphere1Origin, radius, refractiveIndex).createNewRays(ray);
+        // if (ray.refractiveIndex != Config::VACUUM_REFRACTIVE_INDEX) {
+        //     return SphericalLens(sphere1Origin, radius, 1/refractiveIndex).createNewRays(ray);
+        // }
+        return SphericalLens(sphere1Origin, radius, refractiveIndex).createNewRaysInsideOut(ray);
     }
     if (t2 < t1) {
-        return SphericalLens(sphere2Origin, radius, refractiveIndex).createNewRays(ray);
+        // if (ray.refractiveIndex != Config::VACUUM_REFRACTIVE_INDEX) {
+        //     return SphericalLens(sphere2Origin, radius, 1/refractiveIndex).createNewRays(ray);
+        // }
+        return SphericalLens(sphere2Origin, radius, refractiveIndex).createNewRaysInsideOut(ray);
     }
 
     return newRays;
