@@ -85,6 +85,16 @@ class ConcaveLens : public OpticalDevice {
         std::string forPythonPlot() const;   
 };
 
+class Aperture : public OpticalDevice {
+    public:
+        Vector origin = Vector();
+        Vector surfaceNormal = Vector(1,0,0);
+        double radius;
+        Aperture(Vector origin_, Vector surfaceNormal_, double radius_);
+        double detectCollisionTime(const Ray& ray) const;
+        std::vector<Ray> createNewRays (const Ray& ray) const;
+        std::string forPythonPlot() const;   
+};
 
 std::vector<Ray> createNewRays (const Ray& ray, Vector surfaceNormal, double refractiveIndex, double reflectance);
 

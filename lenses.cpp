@@ -400,6 +400,35 @@ std::string ConcaveLens::forPythonPlot() const {
     return oss.str();
 }
 
+////////////////////////
+
+Aperture::Aperture(Vector origin_, Vector surfaceNormal_, double radius_) {
+    origin = origin_;
+    surfaceNormal = surfaceNormal_.normalized();
+    radius = radius_;
+}
+
+double Aperture::detectCollisionTime(const Ray& ray) const {
+    double t = calculateCollisionTime(ray.origin, ray.direction, origin, surfaceNormal.normalized());
+    Vector p = ray.getPositionAtTime(t);
+    if ((p-origin).magnitude() < radius) {
+        return Inf;
+    }
+    return t;
+}
+
+std::vector<Ray> Aperture::createNewRays (const Ray& ray) const {
+    std::vector<Ray> newRays;
+    return newRays;
+}
+
+std::string Aperture::forPythonPlot() const {
+    std::ostringstream oss;
+    oss << " ";
+    return oss.str();
+}
+
+
 std::ostream& operator<<(std::ostream& os, const SphericalLens& l) {
     os << "Lens: Origin: " << l.origin << " Radius: " << l.radius << " n: " << l.refractiveIndex << "\n";
     return os;
