@@ -175,7 +175,6 @@ std::vector<Ray> createNewRays (const Ray& ray, Vector surfaceNormal, double n2,
 
 ConvexLens::ConvexLens() { }
 
-
 ConvexLens::ConvexLens(Vector origin_, double radius_, double n_, Vector height_) {
     origin = origin_;
     radius = radius_;
@@ -189,7 +188,8 @@ ConvexLens::ConvexLens(Vector origin_, double radius_, double n_, Vector height_
     apex1 = origin + height;
     apex2 = origin - height;
     double planeRadius = 2 * radius * height.magnitude() - height.magnitude()*height.magnitude();
-    openingAngle = asin(planeRadius / radius);
+    // openingAngle = asin(planeRadius / radius);
+    openingAngle = acos((radius - height.magnitude())/ radius);
 }
 
 void ConvexLens::getBothCollisionTimes(const Ray& ray, double& t1, double& t2) const {
