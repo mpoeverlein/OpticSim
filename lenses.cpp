@@ -230,6 +230,12 @@ void ConvexLens::getBothCollisionTimes(const Ray& ray, double& t1, double& t2) c
     }
     if (t1 < Config::MIN_EPS) { t1 = Inf; }
     if (t2 < Config::MIN_EPS) { t2 = Inf; }
+
+    // edge case: ray hits the intersection of the two spheres: we ignore the collision
+    if (abs(t1-t2) < Config::MIN_EPS) {
+        t1 = Inf;
+        t2 = Inf;
+    }
 }
 
 double ConvexLens::detectCollisionTime (const Ray& ray) const {
