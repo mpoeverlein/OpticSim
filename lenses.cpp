@@ -262,8 +262,14 @@ std::vector<Ray> ConvexLens::createNewRays (const Ray& ray) const {
 std::string ConvexLens::forPythonPlot() const {
     // TODO: rewrite
     std::ostringstream oss;
-    oss << "circ = Circle((" << origin.x << ", " << origin.z << "), " << radius << ", alpha=0.05, ec='blue')\n"
-    << "ax.add_patch(circ)\n";
+    oss << "arc1 = Arc((" << sphere1Origin.x << ", " << sphere1Origin.z << "), " << 2*radius << ", " << 2*radius 
+    << ", angle=" << angle(Vector(height.x, 0, height.z), Vector(1,0,0))*180/M_PI << ", theta1=" << 360-1*openingAngle*180/M_PI << ", theta2=" << openingAngle*180/M_PI
+    << ", alpha=0.5, ec='blue')\n"
+    << "ax.add_patch(arc1)\n";
+    oss << "arc2 = Arc((" << sphere2Origin.x << ", " << sphere2Origin.z << "), " << 2*radius << ", " << 2*radius 
+    << ", angle=" << angle(Vector(-height.x, 0, -height.z), Vector(1,0,0))*180/M_PI << ", theta1=" << 360-1*openingAngle*180/M_PI << ", theta2=" << openingAngle*180/M_PI
+    << ", alpha=0.5, ec='blue')\n"
+    << "ax.add_patch(arc2)\n";
     return oss.str();
 }
 
