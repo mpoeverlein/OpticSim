@@ -67,6 +67,24 @@ class ConvexLens : public OpticalDevice {
         std::string forPythonPlot() const;        
 };
 
+class ConcaveLens : public OpticalDevice {
+    public:
+        Vector origin = Vector();
+        Vector sphere1Origin, sphere2Origin;
+        Vector apex1, apex2;
+        Vector height = Vector(1,0,0);
+        double openingAngle;
+        double radius = 0;
+        double refractiveIndex = 1;
+        double reflectance = 0.1;
+        ConcaveLens(Vector origin_, double radius_, double n_, Vector height_);
+        void getBothCollisionTimes(const Ray& ray, double& t1, double& t2) const;
+        double detectCollisionTime(const Ray& ray) const;
+        std::vector<Ray> createNewRays (const Ray& ray) const;
+        std::string forPythonPlot() const;   
+};
+
+
 std::vector<Ray> createNewRays (const Ray& ray, Vector surfaceNormal, double refractiveIndex, double reflectance);
 
 

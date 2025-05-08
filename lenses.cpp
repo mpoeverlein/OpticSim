@@ -277,6 +277,112 @@ std::string ConvexLens::forPythonPlot() const {
     return oss.str();
 }
 
+//////////////////////
+
+ConcaveLens::ConcaveLens(Vector origin_, double radius_, double n_, Vector height_) {
+    origin = origin_;
+    radius = radius_;
+    height = height_;
+    refractiveIndex = n_;
+    sphere1Origin = origin + height + radius * height.normalized();
+    sphere2Origin = origin - height - radius * height.normalized();
+    apex1 = origin + height;
+    apex2 = origin - height;
+    openingAngle = M_PI_2;
+}
+
+void ConcaveLens::getBothCollisionTimes(const Ray& ray, double& t1, double& t2) const {
+    std::vector<double> times1, times2;
+    t1 = Inf; t2 = Inf; // set defaults;
+    Vector p;
+    std::cout << "SPEHRE 1 " << sphere1Origin << " " << radius;
+    std::cout << "SPEHRE 2 " << sphere2Origin << " " << radius;
+
+    times1 = calculateCollisionTimes(ray.origin, ray.direction, sphere1Origin, radius);
+    times2 = calculateCollisionTimes(ray.origin, ray.direction, sphere2Origin, radius);
+    std::cout << times1[0] << times1[1] << "\n";
+    std::cout << times2[0] << times2[1] << "\n";
+
+
+    // test both candidates
+    if (times1[0] > Config::MIN_EPS) {
+        p = ray.getPositionAtTime(times1[0]);
+        if (angle(p-sphere1Origin, apex1-sphere1Origin) < openingAngle) {
+            t1 = times1[0];
+        }
+    } 
+    // first candidate did not work out
+    if (t1 == Inf) {
+        p = ray.getPositionAtTime(times1[1]);
+        if (angle(p-sphere1Origin, apex1-sphere1Origin) < openingAngle) {
+            t1 = times1[1];
+        }        
+    }
+    // test both candidates
+    if (times2[0] > Config::MIN_EPS) {
+        p = ray.getPositionAtTime(times2[0]);
+        if (angle(p-sphere2Origin, apex2-sphere2Origin) < openingAngle) {
+            t2 = times2[0];
+        }
+    } 
+    // first candidate did not work out
+    if (t2 == Inf) {
+        p = ray.getPositionAtTime(times2[1]);
+        if (angle(p-sphere2Origin, apex2-sphere2Origin) < openingAngle) {
+            t2 = times2[1];
+        }        
+    }
+    if (t1 < Config::MIN_EPS) { t1 = Inf; }
+    if (t2 < Config::MIN_EPS) { t2 = Inf; }
+
+    std::cout << t1 << " " << t2 << "\n";
+
+    // edge case: ray hits the intersection of the two spheres: we ignore the collision
+    if (abs(t1-t2) < Config::MIN_EPS) {
+        t1 = Inf;
+        t2 = Inf;
+    }
+}
+
+double ConcaveLens::detectCollisionTime (const Ray& ray) const {
+    double t1, t2;
+    getBothCollisionTimes(ray, t1, t2);
+    return std::min(t1, t2);
+}
+
+std::vector<Ray> ConcaveLens::createNewRays (const Ray& ray) const {
+    std::vector<Ray> newRays, myNewRays;
+    double t1, t2;
+    getBothCollisionTimes(ray, t1, t2);
+
+    if (t1 < t2) {
+        return SphericalLens(sphere1Origin, radius, refractiveIndex).createNewRays(ray);
+    }
+    if (t2 < t1) {
+        return SphericalLens(sphere2Origin, radius, refractiveIndex).createNewRays(ray);
+    }
+
+    return newRays;
+}
+
+std::string ConcaveLens::forPythonPlot() const {
+    std::ostringstream oss;
+    // oss << "arc1 = Arc((" << sphere1Origin.x << ", " << sphere1Origin.z << "), " << 2*radius << ", " << 2*radius 
+    // << ", angle=" << angle(Vector(height.x, 0, height.z), Vector(1,0,0))*180/M_PI << ", theta1=" << 360-1*openingAngle*180/M_PI << ", theta2=" << openingAngle*180/M_PI
+    // << ", alpha=0.5, ec='blue')\n"
+    // << "ax.add_patch(arc1)\n";
+    oss << "circ1 = Circle((" << sphere1Origin.x << ", " << sphere1Origin.z << "), " << radius << ", alpha=0.05, lw=0)\n"
+    << "ax.add_patch(circ1)\n";
+    oss << "clip1 = Circle((" << sphere2Origin.x << ", " << sphere2Origin.z << "), " << radius << ", alpha=0.05, ec='blue', fill=False, visible=False)\n"
+    << "ax.add_patch(clip1)\n";
+    oss << "circ1.set_clip_path(clip1)\n";
+    // oss << "arc2 = Arc((" << sphere2Origin.x << ", " << sphere2Origin.z << "), " << 2*radius << ", " << 2*radius 
+    // << ", angle=" << angle(Vector(-height.x, 0, -height.z), Vector(1,0,0))*180/M_PI << ", theta1=" << 360-1*openingAngle*180/M_PI << ", theta2=" << openingAngle*180/M_PI
+    // << ", alpha=0.5, ec='blue')\n"
+    // << "ax.add_patch(arc2)\n";
+    return oss.str();
+}
+
 std::ostream& operator<<(std::ostream& os, const SphericalLens& l) {
     os << "Lens: Origin: " << l.origin << " Radius: " << l.radius << " n: " << l.refractiveIndex << "\n";
     return os;
