@@ -60,7 +60,7 @@ std::vector<Ray> SphericalLens::createNewRaysInsideOut (const Ray& ray) const {
 
 std::string SphericalLens::forPythonPlot() const {
     std::ostringstream oss;
-    oss << "circ = Circle((" << origin.x << ", " << origin.z << "), " << radius << ", alpha=0.05, ec='blue')\n"
+    oss << "circ = patches.Circle((" << origin.x << ", " << origin.z << "), " << radius << ", alpha=0.05, ec='blue')\n"
     << "ax.add_patch(circ)\n";
     return oss.str();
 }
@@ -142,7 +142,7 @@ std::vector<Ray> PlanoConvex::createNewRays (const Ray& ray) const {
 std::string PlanoConvex::forPythonPlot() const {
     // TODO: rewrite
     std::ostringstream oss;
-    oss << "circ = Circle((" << origin.x << ", " << origin.z << "), " << radius << ", alpha=0.05, ec='blue')\n"
+    oss << "circ = patches.Circle((" << origin.x << ", " << origin.z << "), " << radius << ", alpha=0.05, ec='blue')\n"
     << "ax.add_patch(circ)\n";
     return oss.str();
 }
@@ -282,9 +282,9 @@ std::string ConvexLens::forPythonPlot() const {
     // << ", angle=" << angle(Vector(height.x, 0, height.z), Vector(1,0,0))*180/M_PI << ", theta1=" << 360-1*openingAngle*180/M_PI << ", theta2=" << openingAngle*180/M_PI
     // << ", alpha=0.5, ec='blue')\n"
     // << "ax.add_patch(arc1)\n";
-    oss << "circ1 = Circle((" << sphere1Origin.x << ", " << sphere1Origin.z << "), " << radius << ", alpha=0.05, lw=0)\n"
+    oss << "circ1 = patchesCircle((" << sphere1Origin.x << ", " << sphere1Origin.z << "), " << radius << ", alpha=0.05, lw=0)\n"
     << "ax.add_patch(circ1)\n";
-    oss << "clip1 = Circle((" << sphere2Origin.x << ", " << sphere2Origin.z << "), " << radius << ", alpha=0.05, ec='blue', fill=False, visible=False)\n"
+    oss << "clip1 = patchesCircle((" << sphere2Origin.x << ", " << sphere2Origin.z << "), " << radius << ", alpha=0.05, ec='blue', fill=False, visible=False)\n"
     << "ax.add_patch(clip1)\n";
     oss << "circ1.set_clip_path(clip1)\n";
     // oss << "arc2 = Arc((" << sphere2Origin.x << ", " << sphere2Origin.z << "), " << 2*radius << ", " << 2*radius 
@@ -312,14 +312,9 @@ void ConcaveLens::getBothCollisionTimes(const Ray& ray, double& t1, double& t2) 
     std::vector<double> times1, times2;
     t1 = Inf; t2 = Inf; // set defaults;
     Vector p;
-    std::cout << "SPEHRE 1 " << sphere1Origin << " " << radius;
-    std::cout << "SPEHRE 2 " << sphere2Origin << " " << radius;
 
     times1 = calculateCollisionTimes(ray.origin, ray.direction, sphere1Origin, radius);
     times2 = calculateCollisionTimes(ray.origin, ray.direction, sphere2Origin, radius);
-    std::cout << times1[0] << times1[1] << "\n";
-    std::cout << times2[0] << times2[1] << "\n";
-
 
     // test both candidates
     if (times1[0] > Config::MIN_EPS) {
@@ -351,8 +346,6 @@ void ConcaveLens::getBothCollisionTimes(const Ray& ray, double& t1, double& t2) 
     }
     if (t1 < Config::MIN_EPS) { t1 = Inf; }
     if (t2 < Config::MIN_EPS) { t2 = Inf; }
-
-    std::cout << t1 << " " << t2 << "\n";
 
     // edge case: ray hits the intersection of the two spheres: we ignore the collision
     if (abs(t1-t2) < Config::MIN_EPS) {
@@ -390,19 +383,20 @@ std::vector<Ray> ConcaveLens::createNewRays (const Ray& ray) const {
 
 std::string ConcaveLens::forPythonPlot() const {
     std::ostringstream oss;
-    // oss << "arc1 = Arc((" << sphere1Origin.x << ", " << sphere1Origin.z << "), " << 2*radius << ", " << 2*radius 
-    // << ", angle=" << angle(Vector(height.x, 0, height.z), Vector(1,0,0))*180/M_PI << ", theta1=" << 360-1*openingAngle*180/M_PI << ", theta2=" << openingAngle*180/M_PI
-    // << ", alpha=0.5, ec='blue')\n"
-    // << "ax.add_patch(arc1)\n";
-    oss << "circ1 = Circle((" << sphere1Origin.x << ", " << sphere1Origin.z << "), " << radius << ", alpha=0.05, lw=0)\n"
-    << "ax.add_patch(circ1)\n";
-    oss << "clip1 = Circle((" << sphere2Origin.x << ", " << sphere2Origin.z << "), " << radius << ", alpha=0.05, ec='blue', fill=False, visible=False)\n"
-    << "ax.add_patch(clip1)\n";
-    oss << "circ1.set_clip_path(clip1)\n";
-    // oss << "arc2 = Arc((" << sphere2Origin.x << ", " << sphere2Origin.z << "), " << 2*radius << ", " << 2*radius 
-    // << ", angle=" << angle(Vector(-height.x, 0, -height.z), Vector(1,0,0))*180/M_PI << ", theta1=" << 360-1*openingAngle*180/M_PI << ", theta2=" << openingAngle*180/M_PI
-    // << ", alpha=0.5, ec='blue')\n"
-    // << "ax.add_patch(arc2)\n";
+
+    // assume axis of lens coincides with x axis
+    double x0 = std::min(sphere1Origin.x, sphere2Origin.x);
+    double z0 = sphere1Origin.z - radius;
+    double width = std::abs(sphere1Origin.x - sphere2Origin.x);
+    double height = 2 * radius;
+
+    oss << "rect = patches.Rectangle((" << x0 << ", " << z0 << "), width=" << width << ", height=" << height << ", fc='blue', alpha=0.7, zorder=-2)\n"
+    << "ax.add_patch(rect)\n"
+    << "circle1 = patches.Circle((" << sphere1Origin.x << ", " << sphere1Origin.z << "), radius=" << radius << ", fc='white', ec='none', zorder=-1)\n"
+    << "circle2 = patches.Circle((" << sphere2Origin.x << ", " << sphere2Origin.z << "), radius=" << radius << ", fc='white', ec='none', zorder=-1)\n"
+    << "ax.add_patch(circle1)\n"
+    << "ax.add_patch(circle2)\n";
+
     return oss.str();
 }
 
