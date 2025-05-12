@@ -473,7 +473,7 @@ double Aperture::detectCollisionTime(const Ray& ray) const {
  * @param ray incoming ray
  * @return vector of new rays, but it is an empty vector
  */
-std::vector<Ray> Aperture::createNewRays (const Ray& ray) const {
+std::vector<Ray> Aperture::createNewRays ([[maybe_unused]] const Ray& ray) const {
     std::vector<Ray> newRays;
     return newRays;
 }
