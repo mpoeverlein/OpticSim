@@ -4,6 +4,9 @@
 #include "ray.hpp"
 #include "geometry_loader.hpp"
 
+/**
+ * @return Python import statements as a string
+ */
 std::string printImports() {
     std::ostringstream oss;
     oss << "import numpy as np\n"
@@ -13,6 +16,9 @@ std::string printImports() {
     return oss.str();
 }
 
+/**
+ * @return string for Python script to plot rays and optical devices.
+ */
 std::string printGeometry2D(GeometryLoader& geometry) {
     std::ostringstream oss;
     oss << printImports();
@@ -29,7 +35,9 @@ std::string printGeometry2D(GeometryLoader& geometry) {
     return oss.str();
 }
 
-
+/**
+ * @return string for Python script of plotting rays.
+ */
 std::string printRays(std::vector<Ray> rays) {
     std::ostringstream oss;
     oss << printImports();
@@ -39,8 +47,8 @@ std::string printRays(std::vector<Ray> rays) {
     for (Ray& r: rays) {
         oss << r.forPythonPlot();
     }
-    oss << "ax.set_xlim((8.9,11.1))\n"
-        << "ax.set_ylim((-1.1,1.1))\n"
+    oss << "# ax.set_xlim((8.9,11.1))\n"
+        << "# ax.set_ylim((-1.1,1.1))\n"
         << "ax.set_aspect('equal', adjustable='box')\n";
     oss << "plt.show()\n";
         
