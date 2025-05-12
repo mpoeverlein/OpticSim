@@ -42,7 +42,7 @@ double angle(Vector a, Vector b);
 
 Vector rotateVectorAboutAxis(const Vector& v, const Vector& u, double angle);
 
-double mitternacht(double a, double b, double c);
+double solveSecondDegreePolynomial(double a, double b, double c);
 
 
 #endif /* MPVECTOR_HPP */
