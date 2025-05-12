@@ -1,0 +1,21 @@
+
+{
+    "configurations": [
+    {
+      "name": "Mac",
+      "includePath": [
+        "/Users/max/Programs/glfw-3.4/include",  // GLFW
+        "/Users/max/Programs/OpticSim/glad/include",  // Glad
+        "/usr/local/Cellar/glm/1.0.1/include/", // glm
+        "${workspaceFolder}/**"
+      ],
+    //   "macFrameworkPath": [
+    //     "/Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/System/Library/Frameworks"
+    //   ],
+      "compilerPath": "/usr/bin/g++",
+      "cStandard": "c17",
+      "cppStandard": "c++20"
+    }
+  ],
+  "version": 4
+}
