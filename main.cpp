@@ -15,7 +15,7 @@
 
 void rayTracing(std::vector<Ray>& rays, const std::vector<std::unique_ptr<OpticalDevice>>& devices) {
     std::vector<Ray> raysToAdd;
-    int current = 0;
+    size_t current = 0;
     while (current < rays.size()) {
         std::vector<double> t_times = rays[current].detectAllCollisionTimes(devices);
 
