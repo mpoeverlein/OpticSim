@@ -10,6 +10,7 @@
 #include "mpio.hpp"
 #include "config_loader.hpp"
 #include "geometry_loader.hpp"
+#include "visualizeglfw.hpp"
 #include <typeinfo>
 #include <memory>  // For std::shared_ptr or std::unique_ptr
 
@@ -56,7 +57,9 @@ int main()
         geometry.loadFromFile("geometry.geo");
 
         rayTracing(geometry.rays, geometry.devices);
-        std::cout << printGeometry2D(geometry);
+        // std::cout << printGeometry2D(geometry);
+        visualizeWithGLFW(geometry);
+        // visualizeTest();
     } else {
         std::vector<Ray> rays = makeParallelRays(Vector(1,0,0), Vector(0,0,-2), Vector(0,0,2), 100,
             1, 1., 550e-9);
