@@ -252,41 +252,66 @@ double calculateCollisionTime(Vector rayOrigin, Vector rayDirection, Vector plan
  * @return collision time. If ray intersects with mirror plane but outside of the region defined by sideA and sideB, Infinity is returned.
  */
 double calculateCollisionTime(Vector rayOrigin, Vector rayDirection, Vector planeOrigin, Vector planeSideA, Vector planeSideB) {
-    /** 
-     * the ray meets the mirror at
-     *  a * x(t) + b * y(t) + c * z(t) = d
-     * See definitions of a,b,c,d in code (define over three points of mirror)
-     * Since x,y,z are linear in t, we can solve for t
+    // /** 
+    //  * the ray meets the mirror at
+    //  *  a * x(t) + b * y(t) + c * z(t) = d
+    //  * See definitions of a,b,c,d in code (define over three points of mirror)
+    //  * Since x,y,z are linear in t, we can solve for t
+    //  */
+    // Vector p1, p2, p3;
+    // p1 = planeOrigin;
+    // p2 = p1 + planeSideA;
+    // p3 = p1 + planeSideB;
+
+    // double a, b, c, d;
+    // a = p1.y*p2.z - p2.y*p1.z + p2.y*p3.z - p3.y*p2.z + p3.y*p1.z - p1.y*p3.z;
+    // b = p1.z*p2.x - p2.z*p1.x + p2.z*p3.x - p3.z*p2.x + p3.z*p1.x - p1.z*p3.x;
+    // c = p1.x*p2.y - p2.x*p1.y + p2.x*p3.y - p3.x*p2.y + p3.x*p1.y - p1.x*p3.y;
+    // d = p1.x*p2.y*p3.z - p1.x*p3.y*p2.z + p2.x*p3.y*p1.z - p2.x*p1.y*p3.z + p3.x*p1.y*p2.z - p3.x*p2.y*p1.z;
+
+    // Vector mirrorVector(a,b,c);
+
+    // // check if ray is parrallel to mirror
+    // if (mirrorVector.dot(rayDirection) == 0) {
+    //     return Inf; 
+    // }
+
+    // /**
+    //  * solve for t and find hitting point
+    //  * a*x(t) + b*y(t) + c*z(t) = d
+    //  * a*(ox+x*t) + b*(oy+y*t) + c*(oz+z*t) = d
+    //  * e = d - a*ox - b*oy - c*oz
+    //  * x*t + y*t + z*t = e
+    //  */
+    // double e = d - a*rayOrigin.x - b*rayOrigin.y - c*rayOrigin.z;
+
+    // double t_hit = d / (mirrorVector.dot(rayDirection));
+    // return t_hit;    
+    /**
+     * solve system of equations for t:
+     *   o_ray + t*d_ray = o_plane + alpha*sideA + beta*sideB
      */
-    Vector p1, p2, p3;
-    p1 = planeOrigin;
-    p2 = p1 + planeSideA;
-    p3 = p1 + planeSideB;
+    std::vector<std::vector<double>> coeff = {
+        {rayDirection.x, -planeSideA.x, -planeSideB.x},
+        {rayDirection.y, -planeSideA.y, -planeSideB.y},
+        {rayDirection.z, -planeSideA.z, -planeSideB.z}
+    };
+    // coeff[0] = {rayDirection.x, -planeSideA.x, -planeSideB.x};
+    // coeff[1] = {rayDirection.y, -planeSideA.y, -planeSideB.y};
+    // coeff[2] = {rayDirection.z, -planeSideA.z, -planeSideB.z};
+    std::vector<double> constants = {planeOrigin.x-rayOrigin.x, planeOrigin.y-rayOrigin.y, planeOrigin.z-rayOrigin.z};
 
-    double a, b, c, d;
-    a = p1.y*p2.z - p2.y*p1.z + p2.y*p3.z - p3.y*p2.z + p3.y*p1.z - p1.y*p3.z;
-    b = p1.z*p2.x - p2.z*p1.x + p2.z*p3.x - p3.z*p2.x + p3.z*p1.x - p1.z*p3.x;
-    c = p1.x*p2.y - p2.x*p1.y + p2.x*p3.y - p3.x*p2.y + p3.x*p1.y - p1.x*p3.y;
-    d = p1.x*p2.y*p3.z - p1.x*p3.y*p2.z + p2.x*p3.y*p1.z - p2.x*p1.y*p3.z + p3.x*p1.y*p2.z - p3.x*p2.y*p1.z;
+    double D = determinant(coeff);
+    if (abs(D) < 1e-9) { return Inf; } // no collision
 
-    Vector mirrorVector(a,b,c);
-
-    // check if ray is parrallel to mirror
-    if (mirrorVector.dot(rayDirection) == 0) {
-        return Inf; 
+    // use Cramer's rule
+    std::vector<std::vector<double>> matX = coeff;
+    for (int i = 0; i < 3; ++i) {
+        matX[i][0] = constants[i];  // Replace 1st column
     }
 
-    /**
-     * solve for t and find hitting point
-     * a*x(t) + b*y(t) + c*z(t) = d
-     * a*(ox+x*t) + b*(oy+y*t) + c*(oz+z*t) = d
-     * e = d - a*ox - b*oy - c*oz
-     * x*t + y*t + z*t = e
-     */
-    double e = d - a*rayOrigin.x - b*rayOrigin.y - c*rayOrigin.z;
-
-    double t_hit = e / (mirrorVector.dot(rayDirection));
-    return t_hit;    
+    double Dx = determinant(matX);
+    return Dx / D;
 }
 
 /**
@@ -320,4 +345,13 @@ bool pointIsOnDome(Vector p, Vector sphereOrigin, Vector apex, double openingAng
     Vector ca = apex - sphereOrigin;
     // if (cp.magnitude() != ca.magnitude()) { return false; }
     return angle(cp, ca) < openingAngle;
+}
+
+/**
+ * Calculate determinant of a 3x3 matrix
+ */
+double determinant(std::vector<std::vector<double>> mat) {
+    return mat[0][0] * (mat[1][1] * mat[2][2] - mat[1][2] * mat[2][1]) -
+           mat[0][1] * (mat[1][0] * mat[2][2] - mat[1][2] * mat[2][0]) +
+           mat[0][2] * (mat[1][0] * mat[2][1] - mat[1][1] * mat[2][0]);
 }
