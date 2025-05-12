@@ -297,3 +297,19 @@ Vector calculateReflectionDirection(Vector rayDirection, Vector surfaceNormal) {
     double theta1 = angle(surfaceNormal, rayDirection);
     return rotateVectorAboutAxis(rayDirection, rotationAxis, -(M_PI-2*theta1));
 }
+
+/**
+ * Check if point p is on the spherical dome defined by origin of the sphere, apex of the dome, and opening angle.
+ * @param p vector to check
+ * @param sphereOrigin origin of the sphere
+ * @param apex
+ * @param openingAngle
+ * @return boolean if point is on dome
+ */
+bool pointIsOnDome(Vector p, Vector sphereOrigin, Vector apex, double openingAngle) {
+    // check if p is on the surface of the sphere
+    Vector cp = p - sphereOrigin;
+    Vector ca = apex - sphereOrigin;
+    // if (cp.magnitude() != ca.magnitude()) { return false; }
+    return angle(cp, ca) < openingAngle;
+}

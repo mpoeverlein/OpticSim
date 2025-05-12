@@ -36,6 +36,7 @@ double calculateCollisionTime(Vector rayOrigin, Vector rayDirection, Vector sphe
 double calculateCollisionTime(Vector rayOrigin, Vector rayDirection, Vector planeOrigin, Vector planeNormal);
 double calculateCollisionTime(Vector rayOrigin, Vector rayDirection, Vector planeOrigin, Vector planeSideA, Vector planeSideB);
 Vector calculateReflectionDirection(Vector rayDirection, Vector surfaceNormal);
+bool pointIsOnDome(Vector p, Vector sphereOrigin, Vector apex, double openingAngle);
 
 // double angle(Vector& a, Vector& b);
 double angle(Vector a, Vector b);
