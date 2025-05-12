@@ -18,10 +18,20 @@ Vector SphericalLens::getOrigin() { return origin; }
 double SphericalLens::getRadius() { return radius; }
 double SphericalLens::getRefractiveIndex() { return refractiveIndex; }
 
+/**
+ * Calculate collision time between spherical lens and ray as collision time between ray and sphere.
+ * @param ray incoming ray
+ * @return collision time
+ */
 double SphericalLens::detectCollisionTime(const Ray& ray) const {
    return calculateCollisionTime(ray.origin, ray.direction, origin, radius);
 }
 
+/**
+ * Create new rays based on interaction with spherical lens.
+ * @param ray incoming ray
+ * @return new rays (reflected and refracted rays)
+ */
 std::vector<Ray> SphericalLens::createNewRays (const Ray& ray) const {
     std::vector<Ray> newRays;
     Vector surfaceNormal;
@@ -39,6 +49,11 @@ std::vector<Ray> SphericalLens::createNewRays (const Ray& ray) const {
     return ::createNewRays(ray, surfaceNormal, n2, 0); // reflectance set to 0
 }
 
+/**
+ * Create rays based on interaction with sphere but for concave lens
+ * @param ray incoming ray
+ * @return new rays (reflected and refracted rays)
+ */
 std::vector<Ray> SphericalLens::createNewRaysInsideOut (const Ray& ray) const {
     std::vector<Ray> newRays;
     Vector surfaceNormal;
@@ -56,7 +71,9 @@ std::vector<Ray> SphericalLens::createNewRaysInsideOut (const Ray& ray) const {
     return ::createNewRays(ray, surfaceNormal, n2, 0); // reflectance set to 0
 }
 
-
+/**
+ * @return string for Python script plotting
+ */
 std::string SphericalLens::forPythonPlot() const {
     std::ostringstream oss;
     oss << "circ = patches.Circle((" << origin.x << ", " << origin.z << "), " << radius << ", alpha=0.05, ec='blue')\n"
@@ -65,8 +82,13 @@ std::string SphericalLens::forPythonPlot() const {
 }
 
 
-////////////////////////////////
+std::ostream& operator<<(std::ostream& os, const SphericalLens& l) {
+    os << "Lens: Origin: " << l.origin << " Radius: " << l.radius << " n: " << l.refractiveIndex << "\n";
+    return os;
+}
 
+
+////////////////////////////////
 
     
 PlanoConvex::PlanoConvex(Vector planeOrigin_, double radius_, double n_, Vector height_) {
@@ -81,19 +103,14 @@ PlanoConvex::PlanoConvex(Vector planeOrigin_, double radius_, double n_, Vector 
     planeRadius = 2 * radius * height.magnitude() - height.magnitude()*height.magnitude();
     apex = origin + radius * height.normalized();
     openingAngle = asin(planeRadius / radius);
-
-    // // find sideA and sideB
-    // // 1. choose arbitrary vector that is not parallel to surfaceNormal
-    // Vector x = Vector(1,0,0);
-    // if (x.normalized().cross(height.normalized()).magnitude() < 0.01) {
-    //     x = Vector(0,1,0);
-    // }
-    // // 2. find sideA
-    // sideA = height.cross(x).normalized();
-    // // 3. find sideB
-    // sideB = height.cross(sideA).normalized();
 }
 
+/**
+ * Calculate collision times of ray for plane and for convex side of the lens.
+ * @param ray incoming ray
+ * @param[out] t_plane collision time between ray and plane, Infinity if no collision
+ * @param[out] t_sphere collision time between ray and sphere, Infinity if no collision
+ */
 void PlanoConvex::getBothCollisionTimes(const Ray& ray, double& t_plane, double& t_sphere) const {
     t_plane = calculateCollisionTime(ray.origin, ray.direction, planeOrigin, height.normalized());
     if (t_plane > 0) { 
@@ -117,12 +134,22 @@ void PlanoConvex::getBothCollisionTimes(const Ray& ray, double& t_plane, double&
     }
 }
 
+/**
+ * Calculate *first* collision time between ray and plano-convex lens.
+ * @param ray incoming ray
+ * @return collision time, Infinity if no collision
+ */
 double PlanoConvex::detectCollisionTime (const Ray& ray) const {
     double t_plane, t_sphere;
     getBothCollisionTimes(ray, t_plane, t_sphere);
     return std::min(t_plane, t_sphere);
 }
 
+/**
+ * Create new rays based on interaction with plano-convex lens.
+ * @param ray incoming ray
+ * @return vector of new rays
+ */
 std::vector<Ray> PlanoConvex::createNewRays (const Ray& ray) const {
     std::vector<Ray> newRays, myNewRays;
     double t_plane, t_sphere;
@@ -146,8 +173,14 @@ std::string PlanoConvex::forPythonPlot() const {
     return oss.str();
 }
 
+/** Create reflection and refraction rays according to Snell's law.
+ * @param ray incoming ray
+ * @param surfaceNormal normal vector of the surface between current and other medium
+ * @param n2 refractive index of the other medium
+ * @param reflectance reflectance of the surface
+ * @return vector of new rays
+ */
 std::vector<Ray> createNewRays (const Ray& ray, Vector surfaceNormal, double n2, double reflectance) {
-    // std::vector<Ray> Ray::createReflectionAndRefraction (Vector surfaceNormal, Vector rotationAxis, double n2) {
     /* Create reflection and refraction rays according to Snell's law
     * n1 * sin(theta1) = n2 * sin(theta2)
     * surfaceNormal: direction of surface normal
@@ -204,10 +237,15 @@ ConvexLens::ConvexLens(Vector origin_, double radius_, double n_, Vector height_
     apex1 = origin + height;
     apex2 = origin - height;
     double planeRadius = 2 * radius * height.magnitude() - height.magnitude()*height.magnitude();
-    // openingAngle = asin(planeRadius / radius);
     openingAngle = acos((radius - height.magnitude())/ radius);
 }
 
+/**
+ * Calculate collision times between ray and both sides of the lens.
+ * @param ray incoming ray
+ * @param[out] t1 collision time with side 1
+ * @param[out] t2 collision time with side 2
+ */
 void ConvexLens::getBothCollisionTimes(const Ray& ray, double& t1, double& t2) const {
     std::vector<double> times1, times2;
     t1 = Inf; t2 = Inf; // set defaults;
@@ -215,32 +253,31 @@ void ConvexLens::getBothCollisionTimes(const Ray& ray, double& t1, double& t2) c
     times1 = calculateCollisionTimes(ray.origin, ray.direction, sphere1Origin, radius);
     times2 = calculateCollisionTimes(ray.origin, ray.direction, sphere2Origin, radius);
 
-
     // test both candidates
     if (times1[0] > Config::MIN_EPS) {
         p = ray.getPositionAtTime(times1[0]);
-        if (angle(p-sphere1Origin, apex1-sphere1Origin) < openingAngle) {
+        if (pointIsOnDome(p, sphere1Origin, apex1, openingAngle)) {
             t1 = times1[0];
         }
     } 
     // first candidate did not work out
     if (t1 == Inf) {
         p = ray.getPositionAtTime(times1[1]);
-        if (angle(p-sphere1Origin, apex1-sphere1Origin) < openingAngle) {
+        if (pointIsOnDome(p, sphere1Origin, apex1, openingAngle)) {
             t1 = times1[1];
         }        
     }
     // test both candidates
     if (times2[0] > Config::MIN_EPS) {
         p = ray.getPositionAtTime(times2[0]);
-        if (angle(p-sphere2Origin, apex2-sphere2Origin) < openingAngle) {
+        if (pointIsOnDome(p, sphere2Origin, apex2, openingAngle)) {
             t2 = times2[0];
         }
     } 
     // first candidate did not work out
     if (t2 == Inf) {
         p = ray.getPositionAtTime(times2[1]);
-        if (angle(p-sphere2Origin, apex2-sphere2Origin) < openingAngle) {
+        if (pointIsOnDome(p, sphere2Origin, apex2, openingAngle)) {
             t2 = times2[1];
         }        
     }
@@ -254,12 +291,22 @@ void ConvexLens::getBothCollisionTimes(const Ray& ray, double& t1, double& t2) c
     }
 }
 
+/**
+ * Calculate first collision time between convex lens and ray.
+ * @param ray incoming ray
+ * @return first collision time
+ */
 double ConvexLens::detectCollisionTime (const Ray& ray) const {
     double t1, t2;
     getBothCollisionTimes(ray, t1, t2);
     return std::min(t1, t2);
 }
 
+/**
+ * Create new rays based on interaction between ray and convex lens.
+ * @param ray incoming ray
+ * @return vector of new rays based on refraction or reflection with either side of the lens
+ */
 std::vector<Ray> ConvexLens::createNewRays (const Ray& ray) const {
     std::vector<Ray> newRays, myNewRays;
     double t1, t2;
@@ -277,19 +324,11 @@ std::vector<Ray> ConvexLens::createNewRays (const Ray& ray) const {
 
 std::string ConvexLens::forPythonPlot() const {
     std::ostringstream oss;
-    // oss << "arc1 = Arc((" << sphere1Origin.x << ", " << sphere1Origin.z << "), " << 2*radius << ", " << 2*radius 
-    // << ", angle=" << angle(Vector(height.x, 0, height.z), Vector(1,0,0))*180/M_PI << ", theta1=" << 360-1*openingAngle*180/M_PI << ", theta2=" << openingAngle*180/M_PI
-    // << ", alpha=0.5, ec='blue')\n"
-    // << "ax.add_patch(arc1)\n";
-    oss << "circ1 = patchesCircle((" << sphere1Origin.x << ", " << sphere1Origin.z << "), " << radius << ", alpha=0.05, lw=0)\n"
+    oss << "circ1 = patches.Circle((" << sphere1Origin.x << ", " << sphere1Origin.z << "), " << radius << ", alpha=0.05, lw=0)\n"
     << "ax.add_patch(circ1)\n";
-    oss << "clip1 = patchesCircle((" << sphere2Origin.x << ", " << sphere2Origin.z << "), " << radius << ", alpha=0.05, ec='blue', fill=False, visible=False)\n"
+    oss << "clip1 = patches.Circle((" << sphere2Origin.x << ", " << sphere2Origin.z << "), " << radius << ", alpha=0.05, ec='blue', fill=False, visible=False)\n"
     << "ax.add_patch(clip1)\n";
     oss << "circ1.set_clip_path(clip1)\n";
-    // oss << "arc2 = Arc((" << sphere2Origin.x << ", " << sphere2Origin.z << "), " << 2*radius << ", " << 2*radius 
-    // << ", angle=" << angle(Vector(-height.x, 0, -height.z), Vector(1,0,0))*180/M_PI << ", theta1=" << 360-1*openingAngle*180/M_PI << ", theta2=" << openingAngle*180/M_PI
-    // << ", alpha=0.5, ec='blue')\n"
-    // << "ax.add_patch(arc2)\n";
     return oss.str();
 }
 
@@ -307,6 +346,12 @@ ConcaveLens::ConcaveLens(Vector origin_, double radius_, double n_, Vector heigh
     openingAngle = M_PI_2;
 }
 
+/**
+ * Calculate collision times between ray and both sides of the lens.
+ * @param ray incoming ray
+ * @param[out] t1 collision time with side 1
+ * @param[out] t2 collision time with side 2
+ */
 void ConcaveLens::getBothCollisionTimes(const Ray& ray, double& t1, double& t2) const {
     std::vector<double> times1, times2;
     t1 = Inf; t2 = Inf; // set defaults;
@@ -318,62 +363,65 @@ void ConcaveLens::getBothCollisionTimes(const Ray& ray, double& t1, double& t2) 
     // test both candidates
     if (times1[0] > Config::MIN_EPS) {
         p = ray.getPositionAtTime(times1[0]);
-        if (angle(p-sphere1Origin, apex1-sphere1Origin) < openingAngle) {
+        if (pointIsOnDome(p, sphere1Origin, apex1, openingAngle)) {
             t1 = times1[0];
         }
     } 
     // first candidate did not work out
     if (t1 == Inf) {
         p = ray.getPositionAtTime(times1[1]);
-        if (angle(p-sphere1Origin, apex1-sphere1Origin) < openingAngle) {
+        if (pointIsOnDome(p, sphere1Origin, apex1, openingAngle)) {
             t1 = times1[1];
         }        
     }
     // test both candidates
     if (times2[0] > Config::MIN_EPS) {
         p = ray.getPositionAtTime(times2[0]);
-        if (angle(p-sphere2Origin, apex2-sphere2Origin) < openingAngle) {
+        if (pointIsOnDome(p, sphere2Origin, apex2, openingAngle)) {
             t2 = times2[0];
         }
     } 
     // first candidate did not work out
     if (t2 == Inf) {
         p = ray.getPositionAtTime(times2[1]);
-        if (angle(p-sphere2Origin, apex2-sphere2Origin) < openingAngle) {
+        if (pointIsOnDome(p, sphere2Origin, apex2, openingAngle)) {
             t2 = times2[1];
         }        
     }
     if (t1 < Config::MIN_EPS) { t1 = Inf; }
     if (t2 < Config::MIN_EPS) { t2 = Inf; }
 
-    // edge case: ray hits the intersection of the two spheres: we ignore the collision
+    // edge case: ray hits the intersection of the two spheres: we ignore the collision for now
     if (abs(t1-t2) < Config::MIN_EPS) {
         t1 = Inf;
         t2 = Inf;
     }
 }
 
+/** Calculate first collision time
+ * @param ray incoming ray
+ * @return collision time
+ */
 double ConcaveLens::detectCollisionTime (const Ray& ray) const {
     double t1, t2;
     getBothCollisionTimes(ray, t1, t2);
     return std::min(t1, t2);
 }
 
+/**
+ * Create new rays based on interaction between ray and concave lens.
+ * @param ray incoming ray
+ * @return vector of new rays based on refraction or reflection with either side of the lens
+ */
 std::vector<Ray> ConcaveLens::createNewRays (const Ray& ray) const {
     std::vector<Ray> newRays, myNewRays;
     double t1, t2;
     getBothCollisionTimes(ray, t1, t2);
 
     if (t1 < t2) {
-        // if (ray.refractiveIndex != Config::VACUUM_REFRACTIVE_INDEX) {
-        //     return SphericalLens(sphere1Origin, radius, 1/refractiveIndex).createNewRays(ray);
-        // }
         return SphericalLens(sphere1Origin, radius, refractiveIndex).createNewRaysInsideOut(ray);
     }
     if (t2 < t1) {
-        // if (ray.refractiveIndex != Config::VACUUM_REFRACTIVE_INDEX) {
-        //     return SphericalLens(sphere2Origin, radius, 1/refractiveIndex).createNewRays(ray);
-        // }
         return SphericalLens(sphere2Origin, radius, refractiveIndex).createNewRaysInsideOut(ray);
     }
 
@@ -407,6 +455,11 @@ Aperture::Aperture(Vector origin_, Vector surfaceNormal_, double radius_) {
     radius = radius_;
 }
 
+/**
+ * Calculate if ray collides with aperture.
+ * @param ray incoming ray
+ * @return collision time, Infinity if no collision
+ */
 double Aperture::detectCollisionTime(const Ray& ray) const {
     double t = calculateCollisionTime(ray.origin, ray.direction, origin, surfaceNormal.normalized());
     Vector p = ray.getPositionAtTime(t);
@@ -416,6 +469,11 @@ double Aperture::detectCollisionTime(const Ray& ray) const {
     return t;
 }
 
+/**
+ * If ray collides with aperture, the ray is absorbed
+ * @param ray incoming ray
+ * @return vector of new rays, but it is an empty vector
+ */
 std::vector<Ray> Aperture::createNewRays (const Ray& ray) const {
     std::vector<Ray> newRays;
     return newRays;
@@ -427,8 +485,3 @@ std::string Aperture::forPythonPlot() const {
     return oss.str();
 }
 
-
-std::ostream& operator<<(std::ostream& os, const SphericalLens& l) {
-    os << "Lens: Origin: " << l.origin << " Radius: " << l.radius << " n: " << l.refractiveIndex << "\n";
-    return os;
-}
