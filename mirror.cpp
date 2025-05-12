@@ -42,7 +42,6 @@ double Mirror::detectCollisionTime(const Ray& ray) const {
 
 std::vector<Ray> Mirror::createNewRays (const Ray& ray) const {
     std::vector<Ray> newRays;
-    Vector p_hit = ray.end;
     Vector reflectionDirection = calculateReflectionDirection(ray.direction, surfaceNormal);
     // reflected ray
     newRays.push_back(Ray(ray.end, reflectionDirection, ray.energyDensity*reflectance, ray.refractiveIndex));
