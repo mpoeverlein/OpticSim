@@ -236,7 +236,6 @@ ConvexLens::ConvexLens(Vector origin_, double radius_, double n_, Vector height_
     sphere2Origin = origin - height + radius * height.normalized();
     apex1 = origin + height;
     apex2 = origin - height;
-    double planeRadius = 2 * radius * height.magnitude() - height.magnitude()*height.magnitude();
     openingAngle = acos((radius - height.magnitude())/ radius);
 }
 
