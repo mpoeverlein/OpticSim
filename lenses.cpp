@@ -19,7 +19,6 @@ double SphericalLens::getRadius() { return radius; }
 double SphericalLens::getRefractiveIndex() { return refractiveIndex; }
 
 double SphericalLens::detectCollisionTime(const Ray& ray) const {
-   if (ray.energyDensity < Config::MIN_ENERGY_DENSITY) { return Inf; }
    return calculateCollisionTime(ray.origin, ray.direction, origin, radius);
 }
 
