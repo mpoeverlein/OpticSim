@@ -29,7 +29,7 @@ double Mirror::detectCollisionTime(const Ray& ray) const {
     double alpha = Inf;
     double beta = Inf;
     calculateCollisionTime(ray.origin, ray.direction, origin, sideA, sideB, t_hit, alpha, beta);
-    if (t_hit < 0) { return Inf; }
+    if (t_hit < Config::MIN_EPS) { return Inf; }
     if (t_hit == Inf) { return Inf; }
 
     if ( (alpha > 0) && (alpha < 1) && (beta > 0) && (beta < 1) ) {
