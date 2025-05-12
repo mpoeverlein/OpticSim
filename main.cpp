@@ -35,6 +35,7 @@ void rayTracing(std::vector<Ray>& rays, const std::vector<std::unique_ptr<Optica
 
         std::vector<Ray> raysToAdd = collisionDevice->createNewRays(rays[current]);
 
+        // only simulate rays that have sufficient energy density
         for (Ray& ray: raysToAdd) {
             if (ray.energyDensity < Config::MIN_ENERGY_DENSITY) { continue; }
             rays.push_back(ray);
@@ -47,21 +48,27 @@ void rayTracing(std::vector<Ray>& rays, const std::vector<std::unique_ptr<Optica
 int main()
 {
     ConfigLoader::loadFromFile("config.conf");
-    // GeometryLoader geometry;
-    // geometry.loadFromFile("geometry.geo");
 
-    // rayTracing(geometry.rays, geometry.devices);
-    // std::cout << printGeometry2D(geometry);
+    bool readFromGeo = true;
 
-    std::vector<Ray> rays = makeParallelRays(Vector(1,0,0), Vector(0,0,-2), Vector(0,0,2), 100,
-        1, 1., 550e-9);
-    // std::vector<Ray> rays = {Ray(Vector(3.2,0,0), Vector(1,0,0), 1, 1, 550e-9)};
-    std::vector<std::unique_ptr<OpticalDevice>> devices;
-    // // devices.push_back(std::make_unique<PlanoConvex>(Vector(5,0,0), 1, 1.5, Vector(-0.9,0,0)));
-    // devices.push_back(std::make_unique<ConvexLens>(Vector(5,0,0), 1, 1.5, Vector(-0.2,0,0)));
-    // devices.push_back(std::make_unique<ConcaveLens>(Vector(5,0,0), 1, 1.5, Vector(-0.2,0,0)));
-    devices.push_back(std::make_unique<Aperture>(Vector(2,0,0), Vector(1,0,0), 0.2));
-    rayTracing(rays, devices);
-    std::cout << printRays(rays);
-    // std::cout << devices[0]->forPythonPlot();
+    if (readFromGeo) {
+        GeometryLoader geometry;
+        geometry.loadFromFile("geometry.geo");
+
+        rayTracing(geometry.rays, geometry.devices);
+        std::cout << printGeometry2D(geometry);
+    } else {
+        std::vector<Ray> rays = makeParallelRays(Vector(1,0,0), Vector(0,0,-2), Vector(0,0,2), 100,
+            1, 1., 550e-9);
+        // std::vector<Ray> rays = {Ray(Vector(3.2,0,0), Vector(1,0,0), 1, 1, 550e-9)};
+        std::vector<std::unique_ptr<OpticalDevice>> devices;
+        // devices.push_back(std::make_unique<PlanoConvex>(Vector(5,0,0), 1, 1.5, Vector(-0.9,0,0)));
+        devices.push_back(std::make_unique<ConvexLens>(Vector(5,0,0), 1, 1.5, Vector(-0.2,0,0)));
+        devices.push_back(std::make_unique<ConcaveLens>(Vector(5,0,0), 1, 1.5, Vector(-0.2,0,0)));
+        devices.push_back(std::make_unique<Aperture>(Vector(2,0,0), Vector(1,0,0), 0.2));
+        rayTracing(rays, devices);
+        std::cout << printRays(rays);
+        std::cout << devices[0]->forPythonPlot();
+    }
+
 }
