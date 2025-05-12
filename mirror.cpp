@@ -25,15 +25,14 @@ Mirror::Mirror(Vector origin_, Vector sideA_, Vector sideB_, double reflectance_
 Type Mirror::type() { return Type::Mirror; }
 
 double Mirror::detectCollisionTime(const Ray& ray) const {
-    double t_hit = calculateCollisionTime(ray.origin, ray.direction, origin, sideA, sideB);
+    double t_hit = Inf;
+    double alpha = Inf;
+    double beta = Inf;
+    calculateCollisionTime(ray.origin, ray.direction, origin, sideA, sideB, t_hit, alpha, beta);
     if (t_hit < 0) { return Inf; }
-    Vector p_hit = ray.origin + t_hit * ray.direction;
+    if (t_hit == Inf) { return Inf; }
 
-    // check if ray hits within actual boundaries of mirror
-    double a_component, b_component;
-    a_component = sideA.normalized().dot(p_hit-origin) / sideA.magnitude();
-    b_component = sideB.normalized().dot(p_hit-origin) / sideB.magnitude();
-    if ( (a_component > 0) && (a_component < 1) && (b_component > 0) && (b_component < 1) ) {
+    if ( (alpha > 0) && (alpha < 1) && (beta > 0) && (beta < 1) ) {
         return t_hit;
     } else {
         return Inf;

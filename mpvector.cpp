@@ -249,9 +249,13 @@ double calculateCollisionTime(Vector rayOrigin, Vector rayDirection, Vector plan
  * @param rayOrigin, rayDirection starting vector and direction vector of ray
  * @param planeOrigin origin location of the plane
  * @param sideA, sideB non-parallel vectors that describe extent of mirror
+ * @param[out] t_hit, alpha, beta collision time and coefficients for sideA and sideB
  * @return collision time. If ray intersects with mirror plane but outside of the region defined by sideA and sideB, Infinity is returned.
  */
-double calculateCollisionTime(Vector rayOrigin, Vector rayDirection, Vector planeOrigin, Vector planeSideA, Vector planeSideB) {
+void calculateCollisionTime(
+    Vector rayOrigin, Vector rayDirection, 
+    Vector planeOrigin, Vector planeSideA, Vector planeSideB, 
+    double& t_hit, double& alpha, double& beta) {
     // /** 
     //  * the ray meets the mirror at
     //  *  a * x(t) + b * y(t) + c * z(t) = d
@@ -296,22 +300,30 @@ double calculateCollisionTime(Vector rayOrigin, Vector rayDirection, Vector plan
         {rayDirection.y, -planeSideA.y, -planeSideB.y},
         {rayDirection.z, -planeSideA.z, -planeSideB.z}
     };
-    // coeff[0] = {rayDirection.x, -planeSideA.x, -planeSideB.x};
-    // coeff[1] = {rayDirection.y, -planeSideA.y, -planeSideB.y};
-    // coeff[2] = {rayDirection.z, -planeSideA.z, -planeSideB.z};
     std::vector<double> constants = {planeOrigin.x-rayOrigin.x, planeOrigin.y-rayOrigin.y, planeOrigin.z-rayOrigin.z};
 
     double D = determinant(coeff);
-    if (abs(D) < 1e-9) { return Inf; } // no collision
+    // no collision
+    if (abs(D) < 1e-9) { 
+        t_hit = Inf; 
+        return;
+    } 
 
     // use Cramer's rule
-    std::vector<std::vector<double>> matX = coeff;
+    std::vector<std::vector<double>> matT = coeff, matAlpha = coeff, matBeta = coeff;
     for (int i = 0; i < 3; ++i) {
-        matX[i][0] = constants[i];  // Replace 1st column
+        matT[i][0] = constants[i];  // Replace 1st column
+        matAlpha[i][1] = constants[i];
+        matBeta[i][2] = constants[i];
     }
 
-    double Dx = determinant(matX);
-    return Dx / D;
+    double DT = determinant(matT);
+    double DAlpha = determinant(matAlpha);
+    double DBeta = determinant(matBeta);
+
+    t_hit = DT / D;
+    alpha = DAlpha / D;
+    beta = DBeta / D;
 }
 
 /**
