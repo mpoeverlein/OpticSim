@@ -14,7 +14,7 @@
 
 
 struct RayVertex {
-    double x, y, z;  // Position
+    float x, y, z;  // Position
     float r, g, b;  // Color (optional)
 };
  
@@ -30,6 +30,8 @@ struct RayVertex {
 void visualizeWithGLFW(GeometryLoader& geometry) {
     int width = 1000;
     int height = 1000;
+    Vector p(0,-1,3);
+    double zoomFactor = 1.;
      
     // glfwSetErrorCallback(error_callback);
  
@@ -58,12 +60,13 @@ void visualizeWithGLFW(GeometryLoader& geometry) {
     std::vector<RayVertex> vertices;
     for (const Ray& ray : geometry.rays) {
         // Origin (white)
-        vertices.push_back(RayVertex{ray.origin.x, ray.origin.y, ray.origin.z, 1.0f, 1.0f, 1.0f});
+        vertices.push_back(RayVertex{(float) ray.origin.x, (float) ray.origin.y, (float) ray.origin.z, 1.0f, 1.0f, 1.0f});
         // Endpoint (red, scaled by length)
-        float length = 5.0f;  // Adjust as needed
-        vertices.push_back(RayVertex{ray.end.x, ray.end.y, ray.end.z,
+        vertices.push_back(RayVertex{(float) ray.end.x, (float) ray.end.y, (float) ray.end.z,
             1.0f, 0.0f, 0.0f  // RGB color
         });
+        std::cout << ray << "\n";
+        std::cout << vertices[vertices.size()-2].z << "\n";
     }
 
     unsigned int VAO, VBO;
@@ -110,20 +113,39 @@ void visualizeWithGLFW(GeometryLoader& geometry) {
         glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
+        if (glfwGetKey(window, GLFW_KEY_RIGHT) == GLFW_PRESS) {
+            p.x += 0.1f / zoomFactor;
+        } else if (glfwGetKey(window, GLFW_KEY_LEFT) == GLFW_PRESS) {
+            p.x -= 0.1f / zoomFactor;
+        } else if (glfwGetKey(window, GLFW_KEY_UP) == GLFW_PRESS) {
+            p.z += 0.1f / zoomFactor;
+        } else if (glfwGetKey(window, GLFW_KEY_DOWN) == GLFW_PRESS) {
+            p.z -= 0.1f / zoomFactor;
+        } else if (glfwGetKey(window, GLFW_KEY_PERIOD) == GLFW_PRESS) {
+            p.y += 0.1f / zoomFactor;
+        } else if (glfwGetKey(window, GLFW_KEY_COMMA) == GLFW_PRESS) {
+            p.y -= 0.1f / zoomFactor;
+        }    
+
         glm::mat4 model = glm::mat4(1.0f);
-        // model = glm::rotate(model, glm::radians(45.0f), glm::vec3(0.0f, 0.0f, 1.0f));
 
         glm::mat4 view = glm::lookAt(
-            glm::vec3(0.0f, -1.0f, 3.0f),  // Camera position
-            glm::vec3(0.0f, 0.0f, 0.0f),  // Target
+            glm::vec3(p.x, p.y, p.z),  // Camera position
+            // glm::vec3(0.0f, -1.0f, 3.0f),  // Adjusted camera position (z > 0)
+            glm::vec3(p.x, p.y+1, p.z-3),  // Target
+            // glm::vec3(0.0f, 0.0f, 0.0f),
             glm::vec3(0.0f, 1.0f, 0.0f)   // Up vector
         );
 
-        glm::mat4 projection = glm::perspective(
-            glm::radians(45.0f), 
-            static_cast<float>(width) / height,  // Use dynamic aspect ratio
-            0.1f, 
-            100.0f
+        // glm::mat4 projection = glm::perspective(
+        //     glm::radians(45.0f), 
+        //     static_cast<float>(width) / height,  // Use dynamic aspect ratio
+        //     0.1f, 
+        //     100.0f
+        // );
+
+        glm::mat4 projection = glm::ortho(
+            0.0f, 800.0f, 0.0f, 600.0f, 0.1f, 100.0f
         );
 
         glm::mat4 mvp = projection * view * model;  // Combine matrices
