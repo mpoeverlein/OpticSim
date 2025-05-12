@@ -6,7 +6,7 @@ SRCS = main.cpp optdev.cpp mirror.cpp ray.cpp lenses.cpp mpvector.cpp mpio.cpp c
 OBJS = $(SRCS:.cpp=.o)
 EXEC = main
 
-all: $(EXEC)
+all: run clean
 
 # Link object files into executable
 $(EXEC): $(OBJS)
@@ -18,7 +18,7 @@ $(EXEC): $(OBJS)
 
 # Clean build files
 clean:
-	rm -f $(OBJS) $(EXEC)
+	rm -f $(OBJS)
 
 # Run the program
 run: $(EXEC)
