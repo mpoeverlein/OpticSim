@@ -276,8 +276,16 @@ double calculateCollisionTime(Vector rayOrigin, Vector rayDirection, Vector plan
         return Inf; 
     }
 
-    // solve for t and find hitting point
-    double t_hit = d / (mirrorVector.dot(rayDirection));
+    /**
+     * solve for t and find hitting point
+     * a*x(t) + b*y(t) + c*z(t) = d
+     * a*(ox+x*t) + b*(oy+y*t) + c*(oz+z*t) = d
+     * e = d - a*ox - b*oy - c*oz
+     * x*t + y*t + z*t = e
+     */
+    double e = d - a*rayOrigin.x - b*rayOrigin.y - c*rayOrigin.z;
+
+    double t_hit = e / (mirrorVector.dot(rayDirection));
     return t_hit;    
 }
 
