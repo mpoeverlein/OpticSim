@@ -85,17 +85,15 @@ std::string SphericalLens::forPythonPlot() const {
 void SphericalLens::createGraphicVertices(std::vector<Vertex>& vertices, std::vector<unsigned int>& indices) const {
     int segments = 16;
     std::vector<Vertex> sphereVerts = createSphereVertices(origin, Vector(0,0,1), radius, M_PI, segments);
-    for (const Vertex& sv: sphereVerts) {
-        vertices.push_back(sv);
-    }
+    vertices.insert(vertices.end(), sphereVerts.begin(), sphereVerts.end());
+
     unsigned int current = 0; 
     if (indices.size() > 0) {
         current = *std::max_element(indices.begin(),indices.end())+1; 
     }
     std::vector<unsigned int> sphereIndices = createSphereIndices(segments, current);
-    for (const unsigned int& ind: sphereIndices) {
-        indices.push_back(ind);
-    }
+    indices.insert(indices.end(), sphereIndices.begin(), sphereIndices.end());
+
 }
 
 std::ostream& operator<<(std::ostream& os, const SphericalLens& l) {
@@ -352,29 +350,22 @@ std::string ConvexLens::forPythonPlot() const {
 
 void ConvexLens::createGraphicVertices(std::vector<Vertex>& vertices, std::vector<unsigned int>& indices) const {
     int segments = 16;
-    std::vector<Vertex> sphereVerts = createSphereVertices(sphere1Origin, height.normalized(), radius, openingAngle, segments);
-    for (const Vertex& sv: sphereVerts) {
-        vertices.push_back(sv);
-    }
     unsigned int current = 0; 
     if (indices.size() > 0) {
         current = *std::max_element(indices.begin(),indices.end())+1; 
     }
+
+    std::vector<Vertex> sphereVerts = createSphereVertices(sphere1Origin, height.normalized(), radius, openingAngle, segments);
+    vertices.insert(vertices.end(), sphereVerts.begin(), sphereVerts.end());
+
     std::vector<unsigned int> sphereIndices = createSphereIndices(segments, current);
-    for (const unsigned int& ind: sphereIndices) {
-        indices.push_back(ind);
-    }
+    indices.insert(indices.end(), sphereIndices.begin(), sphereIndices.end());
     sphereVerts = createSphereVertices(sphere2Origin, -1*height.normalized(), radius, openingAngle, segments);
-    for (const Vertex& sv: sphereVerts) {
-        vertices.push_back(sv);
-    }
-    if (indices.size() > 0) {
-        current = *std::max_element(indices.begin(),indices.end())+1; 
-    }
+    vertices.insert(vertices.end(), sphereVerts.begin(), sphereVerts.end());
+
+    current = *std::max_element(indices.begin(),indices.end())+1; 
     sphereIndices = createSphereIndices(segments, current);
-    for (const unsigned int& ind: sphereIndices) {
-        indices.push_back(ind);
-    }
+    indices.insert(indices.end(), sphereIndices.begin(), sphereIndices.end());
 }
 
 //////////////////////
