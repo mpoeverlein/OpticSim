@@ -54,8 +54,28 @@ std::vector<Vertex> createCylinder(
     return vertices;  // Combine with indices for rendering
 }
 
-std::vector<Vertex> createSphere(
+glm::mat4 orientSphere(const glm::vec3& targetDirection) {
+    const glm::vec3 originalUp(0.0f, 0.0f, 1.0f); // Assuming Z-up
+    const glm::vec3 targetDir = glm::normalize(targetDirection);
+    
+    // Handle case where target is parallel/anti-parallel to original up
+    if (glm::length(targetDir - originalUp) < 1e-6f) {
+        return glm::mat4(1.0f); // Identity (no rotation needed)
+    }
+    if (glm::length(targetDir + originalUp) < 1e-6f) {
+        return glm::rotate(glm::mat4(1.0f), glm::radians(180.0f), glm::vec3(1.0f, 0.0f, 0.0f));
+    }
+
+    // Compute rotation axis and angle
+    const glm::vec3 axis = glm::normalize(glm::cross(originalUp, targetDir));
+    const float angle = glm::acos(glm::dot(originalUp, targetDir));
+    
+    return glm::rotate(glm::mat4(1.0f), angle, axis);
+}
+
+std::vector<Vertex> createSphereVertices(
     const Vector& origin_,
+    const Vector& upDirection,
     float radius,
     float openingAngle,
     int segments,
@@ -63,6 +83,7 @@ std::vector<Vertex> createSphere(
 ) {
     std::vector<Vertex> vertices;
     glm::vec3 origin{origin_.x, origin_.y, origin_.z};
+    const glm::mat4 rotation = orientSphere(upDirection);
 
     int sectorCount = segments;
     int stackCount = segments;
@@ -78,14 +99,16 @@ std::vector<Vertex> createSphere(
             float x = xy * cos(sectorAngle);
             float y = xy * sin(sectorAngle);
 
-            glm::vec3 pos = origin + glm::vec3(x, y, z);
-            glm::vec3 normal = glm::normalize(glm::vec3(x, y, z));
+            glm::vec3 pos = glm::vec3(x, y, z);
+            pos = glm::vec3(rotation * glm::vec4(pos, 1.0f));
+            glm::vec3 normal = glm::vec3(rotation * glm::vec4(glm::normalize(pos), 0.0f));
 
-            vertices.push_back({pos, normal, color, 0.7f});
+            vertices.push_back({glm::vec3(pos+origin), normal, color, 0.7f});
         }
     }
     return vertices;
 }
+
 
 class Camera {
 public:

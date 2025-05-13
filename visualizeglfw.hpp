@@ -19,6 +19,7 @@ class Vector;
 
 std::vector<Vertex> createSphere(
     const Vector& origin_,
+    const Vector& upDirection,
     float radius,
     float openingAngle = M_PI,
     int segments = 16,
