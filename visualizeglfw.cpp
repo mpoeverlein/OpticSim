@@ -88,7 +88,7 @@ std::vector<Vertex> createSphereVertices(
     int sectorCount = segments;
     int stackCount = segments;
 
-    for (int i = 0; i < stackCount; ++i) {
+    for (int i = 0; i < stackCount+1; ++i) {
         float stackAngle = M_PI_2 - i * openingAngle / stackCount; // from pi/2 to pi/2 - openingAngle
         float xy = radius * cos(stackAngle);            // r * cos(u)
         float z = radius * sin(stackAngle);             // r * sin(u)
@@ -114,7 +114,7 @@ std::vector<unsigned int> createSphereIndices(int segments, unsigned int base) {
     std::vector<unsigned int> indices;
     int stackCount = segments;
     int sectorCount = segments;
-    for (unsigned int i = 0; i < stackCount-1; i++) {
+    for (unsigned int i = 0; i < stackCount; i++) {
         unsigned int k1 = i * sectorCount + base;     // beginning of current stack
         unsigned int k2 = k1 + sectorCount;      // beginning of next stack
 
@@ -278,7 +278,7 @@ void visualizeWithGLFW(GeometryLoader& geometry) {
     std::vector<Vertex> vertices;
     int segments = 16;
     std::vector<unsigned int> indices;
-    // addRays(geometry.rays, vertices, indices, segments);
+    addRays(geometry.rays, vertices, indices, segments);
 
     OpticalDevice* d = geometry.devices[0].get();
     for (const auto& device : geometry.devices) {
