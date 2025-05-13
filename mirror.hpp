@@ -26,4 +26,22 @@ class Mirror : public OpticalDevice {
         void createGraphicVertices(std::vector<Vertex>& vertices, std::vector<unsigned int>& indices) const;
 };
 
+class ParabolicMirror : public OpticalDevice {
+    public:
+        Vector origin;
+        Vector height;
+        Vector focalPoint;
+        double curvature;
+        double reflectance = 1;
+        double transmittance = 0;
+        ParabolicMirror();
+        ParabolicMirror(Vector origin_, Vector height_, double curvature_);
+        ParabolicMirror(Vector origin_, Vector height_, Vector focalPoint_);
+        Type type();        
+        double detectCollisionTime(const Ray& ray) const ;
+        std::vector<Ray> createNewRays(const Ray& ray) const;
+        std::string forPythonPlot() const;
+        void createGraphicVertices(std::vector<Vertex>& vertices, std::vector<unsigned int>& indices) const;
+};
+
 #endif /* MIRROR_HPP */

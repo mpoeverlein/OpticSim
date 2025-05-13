@@ -3,6 +3,7 @@
 #include "optdev.hpp"
 #include "visualizeglfw.hpp"
 #include <glm/glm.hpp>
+#include <glm/gtc/matrix_transform.hpp>
 
 #include <sstream>
 
@@ -76,4 +77,68 @@ void Mirror::createGraphicVertices(std::vector<Vertex>& vertices, std::vector<un
     indices.insert(indices.end(), {firstIndex, firstIndex+1, firstIndex+2});
     indices.insert(indices.end(), {firstIndex+1, firstIndex+3, firstIndex+2});
 
+}
+
+//////////
+
+ParabolicMirror::ParabolicMirror() {
+    ;
+}
+
+ParabolicMirror::ParabolicMirror(Vector origin_, Vector height_, double curvature_) {
+    origin = origin_;
+    height = height_;
+    curvature = curvature_;
+    // focalPoint = 
+}
+ParabolicMirror::ParabolicMirror(Vector origin_, Vector height_, Vector focalPoint_) {
+
+}
+Type ParabolicMirror::type() { return Type::Base; }
+
+double ParabolicMirror::detectCollisionTime(const Ray& ray) const {
+    // 1. Compute rotation matrix
+    const glm::vec3 Z(0.0f, 0.0f, 1.0f);
+    glm::vec3 axis = glm::cross(Z, glm::vec3(height.normalized()));
+    if (glm::length(axis) < 1e-6f) {
+        axis = glm::vec3(1.0f, 0.0f, 0.0f); // Handle parallel case
+    }
+    axis = glm::normalize(axis);
+    float angle = acos(glm::dot(Z, glm::vec3(height.normalized())));
+    glm::mat3 R = glm::mat3(glm::rotate(glm::mat4(1.0f), angle, axis));
+
+    // 2. Transform ray to parabola's local space
+    glm::vec3 o_local = glm::transpose(R) * ray.origin;
+    glm::vec3 v_local = glm::transpose(R) * ray.direction;
+
+    // 3. Compute quadratic coefficients
+    float A = curvature * (v_local.x * v_local.x + v_local.y * v_local.y);
+    float B = 2.0f * curvature * (o_local.x * v_local.x + o_local.y * v_local.y) - v_local.z;
+    float C = curvature * (o_local.x * o_local.x + o_local.y * o_local.y) - o_local.z;
+
+    // 4. Solve quadratic
+    float discriminant = B * B - 4 * A * C;
+    std::cout << "DIS " << discriminant << "\n";
+    if (discriminant < 0) return Inf; // No intersection
+
+    float t = (-B - sqrt(discriminant)) / (2 * A);
+    std::cout << "t " << t << "\n";
+
+    if (t < Config::MIN_EPS) {
+        t = (-B + sqrt(discriminant)) / (2 * A); // Try other solution
+        std::cout << "t " << t << "\n";
+        if (t < Config::MIN_EPS) return Inf; // Both solutions behind ray
+        if (t > Config::MAX_T) return Inf;
+    }
+    return t;
+}
+std::vector<Ray> ParabolicMirror::createNewRays(const Ray& ray) const {
+    std::vector<Ray> newRays;
+    return newRays;
+}
+std::string ParabolicMirror::forPythonPlot() const {
+    return "";
+}
+void ParabolicMirror::createGraphicVertices(std::vector<Vertex>& vertices, std::vector<unsigned int>& indices) const {
+    ;
 }
