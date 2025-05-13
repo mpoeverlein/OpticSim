@@ -27,7 +27,7 @@
                 "geometry_loader.cpp",
                 "visualizeglfw.cpp",
                 "-o",
-                "${fileDirname}/${fileBasenameNoExtension}",
+                "${fileDirname}/main",
                 "-std=c++20"
             ],
             "options": {
