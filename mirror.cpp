@@ -1,6 +1,9 @@
 #include "mirror.hpp"
 #include "mpvector.hpp"
 #include "optdev.hpp"
+#include "visualizeglfw.hpp"
+#include <glm/glm.hpp>
+
 #include <sstream>
 
 
@@ -59,5 +62,18 @@ std::string Mirror::forPythonPlot() const {
 }
 
 void Mirror::createGraphicVertices(std::vector<Vertex>& vertices, std::vector<unsigned int>& indices) const {
-    ;
+    // vertices.push_back(Vertex{glm::vec3(origin.x,origin.y,origin.z), glm::vec3(surfaceNormal.x,surfaceNormal.y,surfaceNormal.z), glm::vec3(1.0,0,0), 0.4f});
+    glm::vec3 color{1,0,0};
+    float opacity = 0.4;
+    vertices.push_back(Vertex{glm::vec3(origin), glm::vec3(surfaceNormal), color, opacity});
+    vertices.push_back(Vertex{glm::vec3(origin+sideA), glm::vec3(surfaceNormal), color, opacity});
+    vertices.push_back(Vertex{glm::vec3(origin+sideB), glm::vec3(surfaceNormal), color, opacity});
+    vertices.push_back(Vertex{glm::vec3(origin+sideA+sideB), glm::vec3(surfaceNormal), color, opacity});
+    unsigned int firstIndex = 0;
+    if (indices.size() > 0) {
+        firstIndex = *std::max_element(indices.begin(), indices.end()) + 1;
+    }
+    indices.insert(indices.end(), {firstIndex, firstIndex+1, firstIndex+2});
+    indices.insert(indices.end(), {firstIndex+1, firstIndex+3, firstIndex+2});
+
 }
