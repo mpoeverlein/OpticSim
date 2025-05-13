@@ -84,28 +84,17 @@ std::string SphericalLens::forPythonPlot() const {
 
 void SphericalLens::createGraphicVertices(std::vector<Vertex>& vertices, std::vector<unsigned int>& indices) const {
     int segments = 16;
-    auto sphereVerts = createSphere(origin, radius, M_PI, segments);
+    std::vector<Vertex> sphereVerts = createSphereVertices(origin, Vector(0,0,1), radius, M_PI/2, segments);
     for (const Vertex& sv: sphereVerts) {
         vertices.push_back(sv);
     }
-    int stackCount = segments;
-    int sectorCount = segments;
     unsigned int current = 0; 
     if (indices.size() > 0) {
         current = *std::max_element(indices.begin(),indices.end())+1; 
     }
-    for (unsigned int i = 0; i < stackCount-1; i++) {
-        unsigned int k1 = i * sectorCount + current;     // beginning of current stack
-        unsigned int k2 = k1 + sectorCount;      // beginning of next stack
-
-        for (unsigned int j = 0; j < sectorCount; j++, k1++, k2++) {
-            indices.insert(indices.end(), {k1, k2, k1+1});
-            if (j != (sectorCount-1)) {
-                indices.insert(indices.end(), {k1+1, k2, k2+1});
-            } else {
-                indices.insert(indices.end(), {k1-sectorCount+1, k1, k1+1});
-            }
-        }
+    std::vector<unsigned int> sphereIndices = createSphereIndices(segments, current);
+    for (const unsigned int& ind: sphereIndices) {
+        indices.push_back(ind);
     }
 }
 

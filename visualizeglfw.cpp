@@ -110,6 +110,26 @@ std::vector<Vertex> createSphereVertices(
 }
 
 
+std::vector<unsigned int> createSphereIndices(int segments, unsigned int base) {
+    std::vector<unsigned int> indices;
+    int stackCount = segments;
+    int sectorCount = segments;
+    for (unsigned int i = 0; i < stackCount-1; i++) {
+        unsigned int k1 = i * sectorCount + base;     // beginning of current stack
+        unsigned int k2 = k1 + sectorCount;      // beginning of next stack
+
+        for (unsigned int j = 0; j < sectorCount; j++, k1++, k2++) {
+            indices.insert(indices.end(), {k1, k2, k1+1});
+            if (j != (sectorCount-1)) {
+                indices.insert(indices.end(), {k1+1, k2, k2+1});
+            } else {
+                indices.insert(indices.end(), {k1-sectorCount+1, k1, k1+1});
+            }
+        }
+    }
+    return indices;
+}
+
 class Camera {
 public:
     glm::vec3 position;
