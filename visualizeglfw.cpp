@@ -18,18 +18,13 @@ struct RayVertex {
     float r, g, b;  // Color (optional)
 };
 
-struct Vertex {
-    glm::vec3 position;
-    glm::vec3 normal;
-    glm::vec3 color;
-};
 
 std::vector<Vertex> createCylinder(
     const Vector& start_, 
     const Vector& end_, 
     float radius, 
     int segments = 16,
-    const glm::vec3& color = glm::vec3(1.0f, 0.0f, 0.0f)
+    const glm::vec3& color = glm::vec3(1.0f, 1.0f, 1.0f)
 )
 {
     glm::vec3 start{start_.x, start_.y, start_.z};
@@ -43,6 +38,7 @@ std::vector<Vertex> createCylinder(
         float angle = 2.0f * M_PI * i / segments;
         glm::vec3 circleDir(cos(angle), sin(angle), 0.0f);
         glm::vec3 normal = glm::normalize(circleDir);
+        // glm::vec3 normal{1,0,0};
 
         // Rotate circleDir to align with the cylinder axis
         glm::vec3 tangent = glm::cross(glm::vec3(0.0f, 0.0f, 1.0f), axis);
@@ -58,6 +54,38 @@ std::vector<Vertex> createCylinder(
     return vertices;  // Combine with indices for rendering
 }
 
+std::vector<Vertex> createSphere(
+    const Vector& origin_,
+    float radius,
+    int segments,
+    const glm::vec3& color
+) {
+    std::vector<Vertex> vertices;
+    glm::vec3 origin{origin_.x, origin_.y, origin_.z};
+
+    int sectorCount = segments;
+    int stackCount = segments;
+
+    for (int i = 0; i <= stackCount; ++i) {
+        float stackAngle = M_PI_2 - i * M_PI / stackCount; // from pi/2 to -pi/2
+        float xy = radius * cos(stackAngle);            // r * cos(u)
+        float z = radius * sin(stackAngle);             // r * sin(u)
+
+        for (int j = 0; j <= sectorCount; ++j) {
+            float sectorAngle = j * M_PI * 2 / sectorCount; // from 0 to 2pi
+
+            float x = xy * cos(sectorAngle);
+            float y = xy * sin(sectorAngle);
+
+            glm::vec3 pos = origin + glm::vec3(x, y, z);
+            glm::vec3 normal = glm::normalize(glm::vec3(x, y, z));
+
+            vertices.push_back({pos, normal, color});
+        }
+    }
+    return vertices;
+}
+
 class Camera {
 public:
     glm::vec3 position;
@@ -68,7 +96,7 @@ public:
     
     float yaw = 90.0f;   // Rotation around Z axis (starts looking along -Y)
     float pitch = 0.0f;   // Rotation around X axis
-    float speed = 0.05f;
+    float speed = 0.5f;
     float sensitivity = 0.1f;
 
     Camera(glm::vec3 pos = glm::vec3(0.0f, -3.0f, 0.0f), 
@@ -82,7 +110,6 @@ public:
     }
 
     void updateVectors() {
-        // Calculate new front vector
         glm::vec3 newFront;
         newFront.x = cos(glm::radians(yaw)) * cos(glm::radians(pitch));
         newFront.z = sin(glm::radians(pitch));
@@ -124,7 +151,6 @@ void mouseCallback(GLFWwindow* window, double xpos, double ypos) {
     }
 
     float xoffset = xpos - lastX;
-    // float yoffset = lastY - ypos; // Reversed since y-coordinates go from bottom to top
     float yoffset = ypos - lastY;
     lastX = xpos;
     lastY = ypos;
@@ -142,11 +168,68 @@ void mouseCallback(GLFWwindow* window, double xpos, double ypos) {
     camera.updateVectors();
 }
 
-void visualizeWithGLFW(GeometryLoader& geometry) {
+void addRays(const std::vector<Ray>& rays, 
+    std::vector<Vertex>& vertices,
+    std::vector<unsigned int>& indices,
+    int segments
+) {
+    unsigned int firstIndex = 0;
+    glm::vec3 color;
+    for (const Ray& ray: rays) {
+        if (ray.refractiveIndex == Config::VACUUM_REFRACTIVE_INDEX) {
+            color = glm::vec3(0,0,1);
+        } else {
+            color = glm::vec3(1,0.5,0); 
+        }
+        auto cylinderVerts = createCylinder(ray.origin, ray.end, 0.005f*ray.energyDensity, segments=segments, color=color);
+        for (const Vertex& cv: cylinderVerts) {
+            vertices.push_back(cv);
+        }
 
-    Vector p(0,-1,3);
-    double zoomFactor = 1.;
-     
+
+        if (indices.size() > 0) {
+            firstIndex = indices[indices.size()-6] + 3 + 1;
+        }
+        for (int i = 0; i < segments; ++i) {
+            unsigned int base = firstIndex + i * 2;
+            indices.insert(indices.end(), {base, base + 1, base + 2});
+            indices.insert(indices.end(), {base + 1, base + 3, base + 2});
+        }
+    }
+}
+
+void addSphericalLens(const SphericalLens sl,    
+    std::vector<Vertex>& vertices,
+    std::vector<unsigned int>& indices,
+    int segments
+) {
+    auto sphereVerts = createSphere(sl.origin, sl.radius);
+    for (const Vertex& sv: sphereVerts) {
+        vertices.push_back(sv);
+    }
+    int stackCount = segments;
+    int sectorCount = segments;
+    for (int i = 0; i < stackCount; ++i) {
+    int k1 = i * (sectorCount + 1);     // beginning of current stack
+    int k2 = k1 + sectorCount + 1;      // beginning of next stack
+
+    for (int j = 0; j < sectorCount; ++j, ++k1, ++k2) {
+        if (i != 0) {
+            indices.push_back(k1);
+            indices.push_back(k2);
+            indices.push_back(k1 + 1);
+        }
+        if (i != (stackCount - 1)) {
+            indices.push_back(k1 + 1);
+            indices.push_back(k2);
+            indices.push_back(k2 + 1);
+        }
+    }
+}
+    
+}
+
+void visualizeWithGLFW(GeometryLoader& geometry) {
     // glfwSetErrorCallback(error_callback);
  
     if (!glfwInit())
@@ -179,26 +262,13 @@ void visualizeWithGLFW(GeometryLoader& geometry) {
     std::vector<Vertex> vertices;
     int segments = 16;
     std::vector<unsigned int> indices;
-    unsigned int firstIndex = 0;
-    for (const Ray& ray: geometry.rays) {
-        auto cylinderVerts = createCylinder(ray.origin, ray.end, 0.05f, segments=16);
-        for (const Vertex& cv: cylinderVerts) {
-            vertices.push_back(cv);
-        }
-
-
-        if (indices.size() > 0) {
-            firstIndex = indices[indices.size()-1] + 1;
-        }
-        // unsigned int firstIndex = 0;
-        for (int i = 0; i < segments; ++i) {
-            unsigned int base = firstIndex + i * 2;
-            indices.insert(indices.end(), {base, base + 1, base + 2});
-            indices.insert(indices.end(), {base + 1, base + 3, base + 2});
-        }
+    addRays(geometry.rays, vertices, indices, segments);
+    OpticalDevice* d = geometry.devices[0].get();
+    // addSphericalLens(SphericalLens(d->, geometry.devices[0]), vertices, indices, segments);
+    // d->createGraphicVertices(vertices, indices);
+    for (const auto& device : geometry.devices) {
+        device->createGraphicVertices(vertices, indices);
     }
-    std::cout << " " << vertices.size() << " " << geometry.rays.size();
-
     unsigned int VAO, VBO, EBO;
     glGenVertexArrays(1, &VAO);
     glGenBuffers(1, &VBO);
@@ -213,11 +283,11 @@ void visualizeWithGLFW(GeometryLoader& geometry) {
     glBufferData(GL_ELEMENT_ARRAY_BUFFER, indices.size() * sizeof(unsigned int), indices.data(), GL_STATIC_DRAW);
 
     const GLuint vertex_shader = glCreateShader(GL_VERTEX_SHADER);
-    glShaderSource(vertex_shader, 1, &vertex_shader_text, NULL);
+    glShaderSource(vertex_shader, 1, &vertex_shader_cylinder, NULL);
     glCompileShader(vertex_shader);
  
     const GLuint fragment_shader = glCreateShader(GL_FRAGMENT_SHADER);
-    glShaderSource(fragment_shader, 1, &fragment_shader_text, NULL);
+    glShaderSource(fragment_shader, 1, &fragment_shader_cylinder, NULL);
     glCompileShader(fragment_shader);
  
     const GLuint program = glCreateProgram();
@@ -242,6 +312,14 @@ void visualizeWithGLFW(GeometryLoader& geometry) {
     glBindVertexArray(0);
 
     glUseProgram(program);  // Compile/link shaders first
+    GLint success;
+    GLchar infoLog[512];
+
+    glGetProgramiv(program, GL_LINK_STATUS, &success);
+    if (!success) {
+        glGetProgramInfoLog(program, 512, NULL, infoLog);
+        std::cerr << "Shader Program linking failed:\n" << infoLog << std::endl;
+    }
     glBindVertexArray(VAO);
     // glDrawArrays(GL_LINES, 0, vertices.size());  // 2 vertices per ray
     glDrawElements(GL_TRIANGLES, indices.size(), GL_UNSIGNED_INT, 0);
@@ -251,7 +329,7 @@ void visualizeWithGLFW(GeometryLoader& geometry) {
     {
         glfwGetWindowSize(window, &width, &height);
  
-        glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
+        glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT); 
 
         glm::mat4 model = glm::mat4(1.0f);
@@ -264,7 +342,11 @@ void visualizeWithGLFW(GeometryLoader& geometry) {
         );
         glm::mat4 mvp = projection * view * glm::mat4(1.0f);
         glUseProgram(program);
-        glUniformMatrix4fv(glGetUniformLocation(program, "MVP"), 1, GL_FALSE, glm::value_ptr(mvp));
+        // glUniformMatrix4fv(glGetUniformLocation(program, "MVP"), 1, GL_FALSE, glm::value_ptr(mvp));
+        glUniformMatrix4fv(glGetUniformLocation(program, "model"), 1, GL_FALSE, glm::value_ptr(model));
+        glUniformMatrix4fv(glGetUniformLocation(program, "view"), 1, GL_FALSE, glm::value_ptr(view));
+        glUniformMatrix4fv(glGetUniformLocation(program, "projection"), 1, GL_FALSE, glm::value_ptr(projection));
+
 
         glBindVertexArray(VAO);
         // glDrawArrays(GL_LINES, 0, vertices.size());

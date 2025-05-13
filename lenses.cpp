@@ -2,6 +2,7 @@
 #include "lenses.hpp"
 #include "mpvector.hpp"
 #include "ray.hpp"
+#include "visualizeglfw.hpp"
 #include <sstream>
 #include <iomanip> 
 
@@ -81,6 +82,42 @@ std::string SphericalLens::forPythonPlot() const {
     return oss.str();
 }
 
+void SphericalLens::createGraphicVertices(std::vector<Vertex>& vertices, std::vector<unsigned int>& indices) const {
+    int segments = 16;
+    auto sphereVerts = createSphere(origin, radius);
+    for (const Vertex& sv: sphereVerts) {
+        vertices.push_back(sv);
+        std::cout << sv.position.x << " " << sv.position.y << " " << sv.position.z << "\n";
+    }
+    int stackCount = segments;
+    int sectorCount = segments;
+    unsigned int current;
+    if (indices.size() == 0) { 
+        current = 0; 
+    } else { 
+        current = *std::max_element(indices.begin(),indices.end())+1; 
+    }
+    for (int i = 0; i < stackCount; ++i) {
+        unsigned int k1 = i * (sectorCount + 1) + current;     // beginning of current stack
+        unsigned int k2 = k1 + sectorCount + 1;      // beginning of next stack
+
+        for (int j = 0; j < sectorCount; ++j, ++k1, ++k2) {
+            if (i != 0) {
+                indices.push_back(k1);
+                indices.push_back(k2);
+                indices.push_back(k1 + 1);
+            }
+            if (i != (stackCount - 1)) {
+                indices.push_back(k1 + 1);
+                indices.push_back(k2);
+                indices.push_back(k2 + 1);
+            }
+        }
+    }
+    // for (unsigned int& i: indices) {
+    //     std::cout << i << "\n";
+    // }
+}
 
 std::ostream& operator<<(std::ostream& os, const SphericalLens& l) {
     os << "Lens: Origin: " << l.origin << " Radius: " << l.radius << " n: " << l.refractiveIndex << "\n";
@@ -171,6 +208,9 @@ std::string PlanoConvex::forPythonPlot() const {
     oss << "circ = patches.Circle((" << origin.x << ", " << origin.z << "), " << radius << ", alpha=0.05, ec='blue')\n"
     << "ax.add_patch(circ)\n";
     return oss.str();
+}
+void PlanoConvex::createGraphicVertices(std::vector<Vertex>& vertices, std::vector<unsigned int>& indices) const {
+
 }
 
 /** Create reflection and refraction rays according to Snell's law.
@@ -331,6 +371,10 @@ std::string ConvexLens::forPythonPlot() const {
     return oss.str();
 }
 
+void ConvexLens::createGraphicVertices(std::vector<Vertex>& vertices, std::vector<unsigned int>& indices) const {
+
+}
+
 //////////////////////
 
 ConcaveLens::ConcaveLens(Vector origin_, double radius_, double n_, Vector height_) {
@@ -446,6 +490,10 @@ std::string ConcaveLens::forPythonPlot() const {
     return oss.str();
 }
 
+void ConcaveLens::createGraphicVertices(std::vector<Vertex>& vertices, std::vector<unsigned int>& indices) const {
+
+}
+
 ////////////////////////
 
 Aperture::Aperture(Vector origin_, Vector surfaceNormal_, double radius_) {
@@ -481,5 +529,9 @@ std::string Aperture::forPythonPlot() const {
     std::ostringstream oss;
     oss << " ";
     return oss.str();
+}
+
+void Aperture::createGraphicVertices(std::vector<Vertex>& vertices, std::vector<unsigned int>& indices) const {
+
 }
 

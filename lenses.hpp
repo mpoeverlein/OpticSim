@@ -27,6 +27,7 @@ class SphericalLens : public OpticalDevice {
         std::vector<Ray> createNewRays (const Ray& ray) const;
         std::vector<Ray> createNewRaysInsideOut (const Ray& ray) const;
         std::string forPythonPlot() const;
+        void createGraphicVertices(std::vector<Vertex>& vertices, std::vector<unsigned int>& indices) const;
 };
 
 class PlanoConvex : public OpticalDevice {
@@ -47,6 +48,7 @@ class PlanoConvex : public OpticalDevice {
         double detectCollisionTime(const Ray& ray) const;
         std::vector<Ray> createNewRays (const Ray& ray) const;
         std::string forPythonPlot() const;
+        void createGraphicVertices(std::vector<Vertex>& vertices, std::vector<unsigned int>& indices) const;
 };
 
 /** The convex lens is defined by the intersection of two spheres of the same size */
@@ -65,7 +67,8 @@ class ConvexLens : public OpticalDevice {
         void getBothCollisionTimes(const Ray& ray, double& t1, double& t2) const;
         double detectCollisionTime(const Ray& ray) const;
         std::vector<Ray> createNewRays (const Ray& ray) const;
-        std::string forPythonPlot() const;        
+        std::string forPythonPlot() const;       
+        void createGraphicVertices(std::vector<Vertex>& vertices, std::vector<unsigned int>& indices) const; 
 };
 
 class ConcaveLens : public OpticalDevice {
@@ -82,7 +85,8 @@ class ConcaveLens : public OpticalDevice {
         void getBothCollisionTimes(const Ray& ray, double& t1, double& t2) const;
         double detectCollisionTime(const Ray& ray) const;
         std::vector<Ray> createNewRays (const Ray& ray) const;
-        std::string forPythonPlot() const;   
+        std::string forPythonPlot() const;
+        void createGraphicVertices(std::vector<Vertex>& vertices, std::vector<unsigned int>& indices) const;
 };
 
 class Aperture : public OpticalDevice {
@@ -93,7 +97,8 @@ class Aperture : public OpticalDevice {
         Aperture(Vector origin_, Vector surfaceNormal_, double radius_);
         double detectCollisionTime(const Ray& ray) const;
         std::vector<Ray> createNewRays (const Ray& ray) const;
-        std::string forPythonPlot() const;   
+        std::string forPythonPlot() const;
+        void createGraphicVertices(std::vector<Vertex>& vertices, std::vector<unsigned int>& indices) const;
 };
 
 std::vector<Ray> createNewRays (const Ray& ray, Vector surfaceNormal, double refractiveIndex, double reflectance);

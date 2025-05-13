@@ -57,3 +57,7 @@ std::string Mirror::forPythonPlot() const {
     << origin.z << "," << origin.z+sideB.z <<  "), linewidth=1, color='k')\n";
     return oss.str();
 }
+
+void Mirror::createGraphicVertices(std::vector<Vertex>& vertices, std::vector<unsigned int>& indices) const {
+    ;
+}

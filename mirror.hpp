@@ -7,6 +7,7 @@
 #include <vector>
 
 class OpticalDevice;
+struct Vertex;
 
 class Mirror : public OpticalDevice {
     public:
@@ -22,6 +23,7 @@ class Mirror : public OpticalDevice {
         double detectCollisionTime(const Ray& ray) const ;
         std::vector<Ray> createNewRays(const Ray& ray) const;
         std::string forPythonPlot() const;
+        void createGraphicVertices(std::vector<Vertex>& vertices, std::vector<unsigned int>& indices) const;
 };
 
 #endif /* MIRROR_HPP */
