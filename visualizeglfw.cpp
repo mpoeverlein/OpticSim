@@ -18,6 +18,46 @@ struct RayVertex {
     float r, g, b;  // Color (optional)
 };
 
+struct Vertex {
+    glm::vec3 position;
+    glm::vec3 normal;
+    glm::vec3 color;
+};
+
+std::vector<Vertex> createCylinder(
+    const Vector& start_, 
+    const Vector& end_, 
+    float radius, 
+    int segments = 16,
+    const glm::vec3& color = glm::vec3(1.0f, 0.0f, 0.0f)
+)
+{
+    glm::vec3 start{start_.x, start_.y, start_.z};
+    glm::vec3 end{end_.x, end_.y, end_.z};
+    std::vector<Vertex> vertices;
+    glm::vec3 axis = glm::normalize(end - start);
+    float height = glm::length(end - start);
+
+    // Generate two rings of vertices
+    for (int i = 0; i <= segments; ++i) {
+        float angle = 2.0f * M_PI * i / segments;
+        glm::vec3 circleDir(cos(angle), sin(angle), 0.0f);
+        glm::vec3 normal = glm::normalize(circleDir);
+
+        // Rotate circleDir to align with the cylinder axis
+        glm::vec3 tangent = glm::cross(glm::vec3(0.0f, 0.0f, 1.0f), axis);
+        float rotationAngle = acos(glm::dot(glm::vec3(0.0f, 0.0f, 1.0f), axis));
+        glm::mat4 rotation = glm::rotate(glm::mat4(1.0f), rotationAngle, tangent);
+        circleDir = glm::vec3(rotation * glm::vec4(circleDir, 0.0f));
+
+        // Bottom and top vertices
+        vertices.push_back({start + circleDir * radius, circleDir, color});
+        vertices.push_back({end + circleDir * radius, circleDir, color});
+    }
+
+    return vertices;  // Combine with indices for rendering
+}
+
 class Camera {
 public:
     glm::vec3 position;
@@ -137,35 +177,52 @@ void visualizeWithGLFW(GeometryLoader& geometry) {
 
 
     // Convert rays to vertices (2 vertices per ray: start + end)
-    std::vector<RayVertex> vertices;
-    for (const Ray& ray : geometry.rays) {
-        // Origin (white)
-        vertices.push_back(RayVertex{(float) ray.origin.x, (float) ray.origin.y, (float) ray.origin.z, 1.0f, 1.0f, 1.0f});
-        // Endpoint (red, scaled by length)
-        // vertices.push_back(RayVertex{(float) ray.end.x, (float) ray.end.y, (float) ray.end.z,
-        //     1.0f, 0.0f, 0.0f  // RGB color
-        // });
-        float scale = 5;
-        vertices.push_back(RayVertex{float(ray.origin.x + scale * ray.direction.x), float(ray.origin.y + scale * ray.direction.y), float(ray.origin.z + scale * ray.direction.z),
-            1.0f, 0.0f, 0.0f  // RGB color
-        });
-        std::cout << ray << "\n";
-        std::cout << vertices[vertices.size()-2].z << "\n";
+    std::vector<Vertex> vertices;
+    // for (const Ray& ray : geometry.rays) {
+    //     float r;
+    //     if (ray.refractiveIndex == Config::VACUUM_REFRACTIVE_INDEX) {
+    //         r = 1.0;
+    //     } else {
+    //         r = 0.0;
+    //     }
+    //     // Origin (white)
+    //     vertices.push_back(RayVertex{(float) ray.origin.x, (float) ray.origin.y, (float) ray.origin.z, r, 1.0f, 1.0f});
+    //     // Endpoint (red, scaled by length)
+    //     vertices.push_back(RayVertex{(float) ray.end.x, (float) ray.end.y, (float) ray.end.z,
+    //         r, 1.0f, 1.0f  // RGB color
+    //     });
+    //     // float scale = 5;
+    //     // vertices.push_back(RayVertex{float(ray.origin.x + scale * ray.direction.x), float(ray.origin.y + scale * ray.direction.y), float(ray.origin.z + scale * ray.direction.z),
+    //     //     1.0f, 0.0f, 0.0f  // RGB color
+    //     // });
+    // }
+    int segments = 16;
+    std::vector<unsigned int> indices;
+    for (const Ray& ray: geometry.rays) {
+        auto cylinderVerts = createCylinder(ray.origin, ray.end, 0.05f, segments=16);
+        for (const Vertex& cv: cylinderVerts) {
+            vertices.push_back(cv);
+        }
+
+        for (int i = 0; i < segments; ++i) {
+            unsigned int base = i * 2;
+            indices.insert(indices.end(), {base, base + 1, base + 2});
+            indices.insert(indices.end(), {base + 1, base + 3, base + 2});
+        }
     }
 
-    vertices.push_back(RayVertex{0,0,0,1,1,1});
-    vertices.push_back(RayVertex{1,0,0,1,0,0});
-    vertices.push_back(RayVertex{0,0,0,1,1,1});
-    vertices.push_back(RayVertex{0,1,0,0,1,0});
-    vertices.push_back(RayVertex{0,0,0,1,1,1});
-    vertices.push_back(RayVertex{0,0,1,0,0,1});
-    unsigned int VAO, VBO;
+    unsigned int VAO, VBO, EBO;
     glGenVertexArrays(1, &VAO);
     glGenBuffers(1, &VBO);
+    glGenBuffers(1, &EBO);
 
     glBindVertexArray(VAO);
+
     glBindBuffer(GL_ARRAY_BUFFER, VBO);
-    glBufferData(GL_ARRAY_BUFFER, vertices.size() * sizeof(RayVertex), vertices.data(), GL_STATIC_DRAW);
+    glBufferData(GL_ARRAY_BUFFER, vertices.size() * sizeof(Vertex), vertices.data(), GL_STATIC_DRAW);
+
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
+    glBufferData(GL_ELEMENT_ARRAY_BUFFER, indices.size() * sizeof(unsigned int), indices.data(), GL_STATIC_DRAW);
 
     const GLuint vertex_shader = glCreateShader(GL_VERTEX_SHADER);
     glShaderSource(vertex_shader, 1, &vertex_shader_text, NULL);
@@ -181,22 +238,26 @@ void visualizeWithGLFW(GeometryLoader& geometry) {
     glLinkProgram(program);
 
 
-    // Position attribute (location = 0)
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void*)0);
+    // Position attribute
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)0);
     glEnableVertexAttribArray(0);
 
-    // Color attribute (location = 1)
-    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void*)(3 * sizeof(float)));
+    // Normal attribute (for lighting)
+    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)offsetof(Vertex, normal));
     glEnableVertexAttribArray(1);
+
+    // Color attribute
+    glVertexAttribPointer(2, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)offsetof(Vertex, color));
+    glEnableVertexAttribArray(2);
 
     glBindBuffer(GL_ARRAY_BUFFER, 0);
     glBindVertexArray(0);
 
     glUseProgram(program);  // Compile/link shaders first
     glBindVertexArray(VAO);
-    glDrawArrays(GL_LINES, 0, vertices.size());  // 2 vertices per ray
-    glPointSize(10.0f);
-    glDrawArrays(GL_POINTS, 0, vertices.size());
+    // glDrawArrays(GL_LINES, 0, vertices.size());  // 2 vertices per ray
+    glDrawElements(GL_TRIANGLES, indices.size(), GL_UNSIGNED_INT, 0);
+
  
     while (!glfwWindowShouldClose(window))
     {
@@ -206,28 +267,6 @@ void visualizeWithGLFW(GeometryLoader& geometry) {
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT); 
 
         glm::mat4 model = glm::mat4(1.0f);
-
-        // glm::mat4 view = glm::lookAt(
-        //     glm::vec3(p.x, p.y, p.z),  // Camera position
-        //     // glm::vec3(0.0f, -1.0f, 3.0f),  // Adjusted camera position (z > 0)
-        //     glm::vec3(p.x, p.y+1, p.z-3),  // Target
-        //     // glm::vec3(0.0f, 0.0f, 0.0f),
-        //     glm::vec3(0.0f, 1.0f, 0.0f)   // Up vector
-        // );
-
-        // glm::mat4 projection = glm::perspective(
-        //     glm::radians(45.0f), 
-        //     static_cast<float>(width) / height,  // Use dynamic aspect ratio
-        //     0.1f, 
-        //     100.0f
-        // );
-
-        // glm::mat4 projection = glm::ortho(
-        //     0.0f, 800.0f, 0.0f, 600.0f, 0.1f, 100.0f
-        // );
-
-        // glm::mat4 mvp = projection * view * model;  // Combine matrices
-
         glm::mat4 view = camera.getViewMatrix();
         glm::mat4 projection = glm::perspective(
             glm::radians(45.0f), 
@@ -240,9 +279,9 @@ void visualizeWithGLFW(GeometryLoader& geometry) {
         glUniformMatrix4fv(glGetUniformLocation(program, "MVP"), 1, GL_FALSE, glm::value_ptr(mvp));
 
         glBindVertexArray(VAO);
-        glDrawArrays(GL_LINES, 0, vertices.size());
-        glPointSize(10.0f);
-        glDrawArrays(GL_POINTS, 0, vertices.size());
+        // glDrawArrays(GL_LINES, 0, vertices.size());
+        glDrawElements(GL_TRIANGLES, indices.size(), GL_UNSIGNED_INT, 0);
+
 
         glfwSwapBuffers(window);
         glfwPollEvents();

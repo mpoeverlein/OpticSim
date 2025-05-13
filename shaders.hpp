@@ -18,3 +18,45 @@ static const char* fragment_shader_text =
 "{\n"
 "    fragment = vec4(color, 1.0);\n"
 "}\n";
+
+
+static const char* vertex_shader_cylinder =
+"#version 330 core\n"
+"layout (location = 0) in vec3 aPos;\n"
+"layout (location = 1) in vec3 aNormal;\n"
+"layout (location = 2) in vec3 aColor;\n"
+"\n"
+"out vec3 FragPos;\n"
+"out vec3 Normal;\n"
+"out vec3 Color;\n"
+"\n"
+"uniform mat4 model;\n"
+"uniform mat4 view;\n"
+"uniform mat4 projection;\n"
+"\n"
+"void main() {\n"
+"    FragPos = vec3(model * vec4(aPos, 1.0));\n"
+"    Normal = mat3(transpose(inverse(model))) * aNormal;\n"
+"    Color = aColor;\n"
+"    gl_Position = projection * view * vec4(FragPos, 1.0);\n"
+"}\n";
+
+static const char* fragment_shader_cylinder = 
+"#version 330 core\n"
+"in vec3 FragPos;\n"
+"in vec3 Normal;\n"
+"in vec3 Color;\n"
+"\n"
+"out vec4 FragColor;\n"
+"\n"
+"uniform vec3 lightPos = vec3(2.0, 2.0, 2.0);\n"
+"uniform vec3 viewPos;\n"
+"\n"
+"void main() {\n"
+"    // Simple lighting\n"
+"    vec3 lightDir = normalize(lightPos - FragPos);\n"
+"    float diff = max(dot(Normal, lightDir), 0.0);\n"
+"    vec3 diffuse = diff * Color;\n"
+"\n"
+"   FragColor = vec4(diffuse, 1.0);\n"
+"}\n";
