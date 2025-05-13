@@ -176,40 +176,28 @@ void visualizeWithGLFW(GeometryLoader& geometry) {
     glfwSwapInterval(1);
 
 
-    // Convert rays to vertices (2 vertices per ray: start + end)
     std::vector<Vertex> vertices;
-    // for (const Ray& ray : geometry.rays) {
-    //     float r;
-    //     if (ray.refractiveIndex == Config::VACUUM_REFRACTIVE_INDEX) {
-    //         r = 1.0;
-    //     } else {
-    //         r = 0.0;
-    //     }
-    //     // Origin (white)
-    //     vertices.push_back(RayVertex{(float) ray.origin.x, (float) ray.origin.y, (float) ray.origin.z, r, 1.0f, 1.0f});
-    //     // Endpoint (red, scaled by length)
-    //     vertices.push_back(RayVertex{(float) ray.end.x, (float) ray.end.y, (float) ray.end.z,
-    //         r, 1.0f, 1.0f  // RGB color
-    //     });
-    //     // float scale = 5;
-    //     // vertices.push_back(RayVertex{float(ray.origin.x + scale * ray.direction.x), float(ray.origin.y + scale * ray.direction.y), float(ray.origin.z + scale * ray.direction.z),
-    //     //     1.0f, 0.0f, 0.0f  // RGB color
-    //     // });
-    // }
     int segments = 16;
     std::vector<unsigned int> indices;
+    unsigned int firstIndex = 0;
     for (const Ray& ray: geometry.rays) {
         auto cylinderVerts = createCylinder(ray.origin, ray.end, 0.05f, segments=16);
         for (const Vertex& cv: cylinderVerts) {
             vertices.push_back(cv);
         }
 
+
+        if (indices.size() > 0) {
+            firstIndex = indices[indices.size()-1] + 1;
+        }
+        // unsigned int firstIndex = 0;
         for (int i = 0; i < segments; ++i) {
-            unsigned int base = i * 2;
+            unsigned int base = firstIndex + i * 2;
             indices.insert(indices.end(), {base, base + 1, base + 2});
             indices.insert(indices.end(), {base + 1, base + 3, base + 2});
         }
     }
+    std::cout << " " << vertices.size() << " " << geometry.rays.size();
 
     unsigned int VAO, VBO, EBO;
     glGenVertexArrays(1, &VAO);
