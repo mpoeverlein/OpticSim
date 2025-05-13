@@ -57,6 +57,7 @@ std::vector<Vertex> createCylinder(
 std::vector<Vertex> createSphere(
     const Vector& origin_,
     float radius,
+    float openingAngle,
     int segments,
     const glm::vec3& color
 ) {
@@ -66,12 +67,12 @@ std::vector<Vertex> createSphere(
     int sectorCount = segments;
     int stackCount = segments;
 
-    for (int i = 0; i <= stackCount; ++i) {
-        float stackAngle = M_PI_2 - i * M_PI / stackCount; // from pi/2 to -pi/2
+    for (int i = 0; i < stackCount; ++i) {
+        float stackAngle = M_PI_2 - i * openingAngle / stackCount; // from pi/2 to pi/2 - openingAngle
         float xy = radius * cos(stackAngle);            // r * cos(u)
         float z = radius * sin(stackAngle);             // r * sin(u)
 
-        for (int j = 0; j <= sectorCount; ++j) {
+        for (int j = 0; j < sectorCount; ++j) {
             float sectorAngle = j * M_PI * 2 / sectorCount; // from 0 to 2pi
 
             float x = xy * cos(sectorAngle);
@@ -186,7 +187,6 @@ void addRays(const std::vector<Ray>& rays,
             vertices.push_back(cv);
         }
 
-
         if (indices.size() > 0) {
             firstIndex = *std::max_element(indices.begin(), indices.end()) + 1;
         }
@@ -235,7 +235,7 @@ void visualizeWithGLFW(GeometryLoader& geometry) {
     std::vector<Vertex> vertices;
     int segments = 16;
     std::vector<unsigned int> indices;
-    addRays(geometry.rays, vertices, indices, segments);
+    // addRays(geometry.rays, vertices, indices, segments);
 
     OpticalDevice* d = geometry.devices[0].get();
     for (const auto& device : geometry.devices) {

@@ -20,7 +20,8 @@ class Vector;
 std::vector<Vertex> createSphere(
     const Vector& origin_,
     float radius,
-    int segments = 16 ,
+    float openingAngle = M_PI,
+    int segments = 16,
     const glm::vec3& color = glm::vec3(1.0f, 0.0f, 1.0f)
 );
 void visualizeWithGLFW(GeometryLoader& geometry);
