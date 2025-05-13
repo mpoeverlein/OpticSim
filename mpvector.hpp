@@ -5,6 +5,7 @@
 #include <stdlib.h>
 #include <math.h>
 #include "constants.hpp"
+#include <glm/glm.hpp>
 
 
 // Vector contains useful methods for vector mathematics
@@ -25,6 +26,9 @@ class Vector
     double dot(const Vector& other);
     double magnitude() const;
     Vector normalized() const;
+    operator glm::vec3() const {
+        return glm::vec3(x, y, z);
+    }
 };
 
 Vector operator*(const double scalar, const Vector& v);
