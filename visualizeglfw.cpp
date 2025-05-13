@@ -47,8 +47,8 @@ std::vector<Vertex> createCylinder(
         circleDir = glm::vec3(rotation * glm::vec4(circleDir, 0.0f));
 
         // Bottom and top vertices
-        vertices.push_back({start + circleDir * radius, circleDir, color});
-        vertices.push_back({end + circleDir * radius, circleDir, color});
+        vertices.push_back({start + circleDir * radius, circleDir, color, 1.0f});
+        vertices.push_back({end + circleDir * radius, circleDir, color, 1.0f});
     }
 
     return vertices;  // Combine with indices for rendering
@@ -80,7 +80,7 @@ std::vector<Vertex> createSphere(
             glm::vec3 pos = origin + glm::vec3(x, y, z);
             glm::vec3 normal = glm::normalize(glm::vec3(x, y, z));
 
-            vertices.push_back({pos, normal, color});
+            vertices.push_back({pos, normal, color, 0.7f});
         }
     }
     return vertices;
@@ -188,7 +188,7 @@ void addRays(const std::vector<Ray>& rays,
 
 
         if (indices.size() > 0) {
-            firstIndex = indices[indices.size()-6] + 3 + 1;
+            firstIndex = *std::max_element(indices.begin(), indices.end()) + 1;
         }
         for (int i = 0; i < segments; ++i) {
             unsigned int base = firstIndex + i * 2;
@@ -198,36 +198,6 @@ void addRays(const std::vector<Ray>& rays,
     }
 }
 
-void addSphericalLens(const SphericalLens sl,    
-    std::vector<Vertex>& vertices,
-    std::vector<unsigned int>& indices,
-    int segments
-) {
-    auto sphereVerts = createSphere(sl.origin, sl.radius);
-    for (const Vertex& sv: sphereVerts) {
-        vertices.push_back(sv);
-    }
-    int stackCount = segments;
-    int sectorCount = segments;
-    for (int i = 0; i < stackCount; ++i) {
-    int k1 = i * (sectorCount + 1);     // beginning of current stack
-    int k2 = k1 + sectorCount + 1;      // beginning of next stack
-
-    for (int j = 0; j < sectorCount; ++j, ++k1, ++k2) {
-        if (i != 0) {
-            indices.push_back(k1);
-            indices.push_back(k2);
-            indices.push_back(k1 + 1);
-        }
-        if (i != (stackCount - 1)) {
-            indices.push_back(k1 + 1);
-            indices.push_back(k2);
-            indices.push_back(k2 + 1);
-        }
-    }
-}
-    
-}
 
 void visualizeWithGLFW(GeometryLoader& geometry) {
     // glfwSetErrorCallback(error_callback);
@@ -255,6 +225,9 @@ void visualizeWithGLFW(GeometryLoader& geometry) {
     glfwMakeContextCurrent(window);
     gladLoadGL();
     glEnable(GL_DEPTH_TEST);  // Add this after gladLoadGL()
+    glDepthMask(GL_FALSE);
+    glEnable(GL_BLEND);
+    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA); 
 
     glfwSwapInterval(1);
 
@@ -263,12 +236,12 @@ void visualizeWithGLFW(GeometryLoader& geometry) {
     int segments = 16;
     std::vector<unsigned int> indices;
     addRays(geometry.rays, vertices, indices, segments);
+
     OpticalDevice* d = geometry.devices[0].get();
-    // addSphericalLens(SphericalLens(d->, geometry.devices[0]), vertices, indices, segments);
-    // d->createGraphicVertices(vertices, indices);
     for (const auto& device : geometry.devices) {
         device->createGraphicVertices(vertices, indices);
     }
+
     unsigned int VAO, VBO, EBO;
     glGenVertexArrays(1, &VAO);
     glGenBuffers(1, &VBO);
@@ -283,11 +256,11 @@ void visualizeWithGLFW(GeometryLoader& geometry) {
     glBufferData(GL_ELEMENT_ARRAY_BUFFER, indices.size() * sizeof(unsigned int), indices.data(), GL_STATIC_DRAW);
 
     const GLuint vertex_shader = glCreateShader(GL_VERTEX_SHADER);
-    glShaderSource(vertex_shader, 1, &vertex_shader_cylinder, NULL);
+    glShaderSource(vertex_shader, 1, &vertex_shader_text, NULL);
     glCompileShader(vertex_shader);
  
     const GLuint fragment_shader = glCreateShader(GL_FRAGMENT_SHADER);
-    glShaderSource(fragment_shader, 1, &fragment_shader_cylinder, NULL);
+    glShaderSource(fragment_shader, 1, &fragment_shader_text, NULL);
     glCompileShader(fragment_shader);
  
     const GLuint program = glCreateProgram();
@@ -307,6 +280,10 @@ void visualizeWithGLFW(GeometryLoader& geometry) {
     // Color attribute
     glVertexAttribPointer(2, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)offsetof(Vertex, color));
     glEnableVertexAttribArray(2);
+
+    // Opacity
+    glVertexAttribPointer(3, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)offsetof(Vertex, alpha));
+    glEnableVertexAttribArray(3);
 
     glBindBuffer(GL_ARRAY_BUFFER, 0);
     glBindVertexArray(0);
@@ -350,7 +327,14 @@ void visualizeWithGLFW(GeometryLoader& geometry) {
 
         glBindVertexArray(VAO);
         // glDrawArrays(GL_LINES, 0, vertices.size());
+        // Before rendering:
+        glDepthMask(GL_FALSE);  // Disable depth writing
+        glEnable(GL_BLEND);
+
         glDrawElements(GL_TRIANGLES, indices.size(), GL_UNSIGNED_INT, 0);
+
+        glDepthMask(GL_TRUE);  // Re-enable depth writing
+        glDisable(GL_BLEND);
 
 
         glfwSwapBuffers(window);

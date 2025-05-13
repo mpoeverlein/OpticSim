@@ -87,7 +87,6 @@ void SphericalLens::createGraphicVertices(std::vector<Vertex>& vertices, std::ve
     auto sphereVerts = createSphere(origin, radius);
     for (const Vertex& sv: sphereVerts) {
         vertices.push_back(sv);
-        std::cout << sv.position.x << " " << sv.position.y << " " << sv.position.z << "\n";
     }
     int stackCount = segments;
     int sectorCount = segments;
@@ -96,27 +95,21 @@ void SphericalLens::createGraphicVertices(std::vector<Vertex>& vertices, std::ve
         current = 0; 
     } else { 
         current = *std::max_element(indices.begin(),indices.end())+1; 
+        std::cout << " Current " << current << "\n";
     }
-    for (int i = 0; i < stackCount; ++i) {
+    for (unsigned int i = 0; i < stackCount; ++i) {
         unsigned int k1 = i * (sectorCount + 1) + current;     // beginning of current stack
         unsigned int k2 = k1 + sectorCount + 1;      // beginning of next stack
 
-        for (int j = 0; j < sectorCount; ++j, ++k1, ++k2) {
+        for (unsigned int j = 0; j < sectorCount+1; ++j, ++k1, ++k2) {
             if (i != 0) {
-                indices.push_back(k1);
-                indices.push_back(k2);
-                indices.push_back(k1 + 1);
+                indices.insert(indices.end(), {k1, k2, k1+1});
             }
             if (i != (stackCount - 1)) {
-                indices.push_back(k1 + 1);
-                indices.push_back(k2);
-                indices.push_back(k2 + 1);
+                indices.insert(indices.end(), {k1+1, k2, k2+1});
             }
         }
     }
-    // for (unsigned int& i: indices) {
-    //     std::cout << i << "\n";
-    // }
 }
 
 std::ostream& operator<<(std::ostream& os, const SphericalLens& l) {

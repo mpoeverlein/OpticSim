@@ -1,34 +1,36 @@
-static const char* vertex_shader_text =
-"#version 330 core\n"
-"layout (location = 0) in vec3 aPos;\n"
-"layout (location = 1) in vec3 aColor;\n"
-"uniform mat4 MVP;\n"
-"out vec3 color;\n"
-"void main()\n"
-"{\n"
-"    gl_Position = MVP * vec4(aPos, 1.0);\n"
-"    color = aColor;\n"
-"}\n";
+// static const char* vertex_shader_text =
+// "#version 330 core\n"
+// "layout (location = 0) in vec3 aPos;\n"
+// "layout (location = 1) in vec3 aColor;\n"
+// "uniform mat4 MVP;\n"
+// "out vec3 color;\n"
+// "void main()\n"
+// "{\n"
+// "    gl_Position = MVP * vec4(aPos, 1.0);\n"
+// "    color = aColor;\n"
+// "}\n";
  
-static const char* fragment_shader_text =
-"#version 330\n"
-"in vec3 color;\n"
-"out vec4 fragment;\n"
-"void main()\n"
-"{\n"
-"    fragment = vec4(color, 1.0);\n"
-"}\n";
+// static const char* fragment_shader_text =
+// "#version 330\n"
+// "in vec3 color;\n"
+// "out vec4 fragment;\n"
+// "void main()\n"
+// "{\n"
+// "    fragment = vec4(color, 1.0);\n"
+// "}\n";
 
 
-static const char* vertex_shader_cylinder =
+static const char* vertex_shader_text =
 "#version 330 core\n"
 "layout (location = 0) in vec3 aPos;\n"
 "layout (location = 1) in vec3 aNormal;\n"
 "layout (location = 2) in vec3 aColor;\n"
+"layout (location = 3) in float aAlpha;\n"
 "\n"
 "out vec3 FragPos;\n"
 "out vec3 Normal;\n"
 "out vec3 Color;\n"
+"out float Alpha;\n"
 "\n"
 "uniform mat4 model;\n"
 "uniform mat4 view;\n"
@@ -38,14 +40,16 @@ static const char* vertex_shader_cylinder =
 "    FragPos = vec3(model * vec4(aPos, 1.0));\n"
 "    Normal = mat3(transpose(inverse(model))) * aNormal;\n"
 "    Color = aColor;\n"
+"    Alpha = aAlpha;\n"
 "    gl_Position = projection * view * vec4(FragPos, 1.0);\n"
 "}\n";
 
-static const char* fragment_shader_cylinder = 
+static const char* fragment_shader_text = 
 "#version 330 core\n"
 "in vec3 FragPos;\n"
 "in vec3 Normal;\n"
 "in vec3 Color;\n"
+"in float Alpha;\n"
 "\n"
 "out vec4 FragColor;\n"
 "\n"
@@ -59,5 +63,5 @@ static const char* fragment_shader_cylinder =
 "    float diff = 1.0f;\n"
 "    vec3 diffuse = diff * Color;\n"
 "\n"
-"   FragColor = vec4(diffuse, 1.0);\n"
+"   FragColor = vec4(diffuse, Alpha);\n"
 "}\n";
