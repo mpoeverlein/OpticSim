@@ -94,27 +94,26 @@ GeometryObject GeometryLoader::parseLine (const std::string& line) {
 
         std::string key = token.substr(0, eq_pos);
         std::string value_str = token.substr(eq_pos + 1);
+        std::cout << " key " << key << " va " << value_str << "\n";
+        // std::cout << " va " << parseVector(value_str) << "\n";
 
-        static const auto actions = std::unordered_map<std::string, std::function<void()>>{
-            {"o",      [&] { go.origin = parseVector(value_str); }},
-            {"d",      [&] { go.direction = parseVector(value_str); }},
-            {"e",      [&] { go.energyDensity = std::stod(value_str); }},
-            {"n",      [&] { go.refractiveIndex = std::stod(value_str); }},
-            {"lambda", [&] { go.wavelength = std::stod(value_str); }},
-            {"first",  [&] { go.first = parseVector(value_str); }},
-            {"last",   [&] { go.last = parseVector(value_str); }},
-            {"steps",  [&] { go.steps = std::stod(value_str); }},
-            {"r",      [&] { go.r = std::stod(value_str); }},
-            {"a",      [&] { go.a = parseVector(value_str); }},
-            {"b",      [&] { go.b = parseVector(value_str); }},
-            {"reflectance", [&] { go.reflectance = std::stod(value_str); }}
-        };
-
-        if (auto it = actions.find(key); it != actions.end()) {
-            it->second();  // Execute action
-        } else {
+        if (key == "o") { go.origin = parseVector(value_str); }
+        else if (key == "d") { go.direction = parseVector(value_str); }
+        else if (key == "e") { go.energyDensity = std::stod(value_str); }
+        else if (key == "n") { go.refractiveIndex = std::stod(value_str); }
+        else if (key == "lambda") { go.wavelength = std::stod(value_str); }
+        else if (key == "first") { go.first = parseVector(value_str); }
+        else if (key == "last") { go.last = parseVector(value_str); }
+        else if (key == "h") { go.height = parseVector(value_str); }
+        else if (key == "steps") { go.steps = std::stod(value_str); }
+        else if (key == "r") { go.r = std::stod(value_str); }
+        else if (key == "a") { go.a = parseVector(value_str); }
+        else if (key == "b") { go.b = parseVector(value_str); }
+        else if (key == "c") { go.curvature = std::stod(value_str); }
+        else if (key == "reflectance") { go.reflectance = std::stod(value_str); }
+        else {
             std::cerr << "Unknown key: " << key << "\n";
-        }
+        }        
     }
     return go;
 }
@@ -127,163 +126,40 @@ Ray GeometryLoader::parseRayLine (const std::string& line) {
 }
 
 std::vector<Ray> GeometryLoader::parseParallelRays (const std::string& line) {
-    std::istringstream iss(line.substr(13));  // Skip "$parallelRays"
-    std::string token;
-    Vector direction;
-    Vector first;
-    Vector last;
-    int steps = 1;
-    double energyDensity = 0;
-    double refractiveIndex = 1;
-    double wavelength = 550e-9;
-
-    while (iss >> token) {
-        size_t eq_pos = token.find('=');
-        if (eq_pos == std::string::npos) continue;
-
-        std::string key = token.substr(0, eq_pos);
-        std::string value_str = token.substr(eq_pos + 1);
-
-        if (key == "direction") {
-            direction = parseVector(value_str);
-        } else if (key == "first") {
-            first = parseVector(value_str);
-        } else if (key == "last") {
-            last = parseVector(value_str);
-        } else if (key == "steps") {
-            steps = std::stod(value_str);  
-        } else if (key == "e") {
-            energyDensity = std::stod(value_str);        
-        } else if (key == "n") {
-            refractiveIndex = std::stod(value_str);
-        } else if (key == "lambda") {
-            wavelength = std::stod(value_str);
-        }
-    }
-
-    if (direction.magnitude() * first.magnitude() * last.magnitude() == 0) {
-        throw line;
-    }
-
-    return makeParallelRays(direction, first, last, steps,
-        energyDensity, refractiveIndex, wavelength);
+    GeometryObject go = parseLine(line);
+    if (go.direction.magnitude() * go.first.magnitude() * go.last.magnitude() == 0) { throw line; }
+    return makeParallelRays(go.direction, go.first, go.last, go.steps,
+        go.energyDensity, 
+        go.refractiveIndex, go.wavelength);
 }
 
 SphericalLens GeometryLoader::parseSphericalLensLine (const std::string& line) {
-    SphericalLens lens{};
-    std::istringstream iss(line.substr(14));  // Skip "$sphericalLens"
-    std::string token;
-
-    while (iss >> token) {
-        size_t eq_pos = token.find('=');
-        if (eq_pos == std::string::npos) continue;
-
-        std::string key = token.substr(0, eq_pos);
-        std::string value_str = token.substr(eq_pos + 1);
-
-        if (key == "o") {
-            lens.origin = parseVector(value_str);
-        } else if (key == "r") {
-            lens.radius = std::stod(value_str);
-        } else if (key == "n") {
-            lens.refractiveIndex = std::stod(value_str);
-        }
-    }
-
-    if ((lens.radius == 0) || lens.refractiveIndex == 1) {
-        throw line;
-    }
-
-    return lens;
+    GeometryObject go = parseLine(line);
+    SphericalLens sphericalLens{go.origin, go.r, go.refractiveIndex};
+    if ((sphericalLens.radius == 0) || sphericalLens.refractiveIndex == 1) { throw line;    }
+    return sphericalLens;
 }
 
 ConvexLens GeometryLoader::parseConvexLensLine (const std::string& line) {
-    std::istringstream iss(line.substr(11));  // Skip "$convexLens"
-    std::string token;
-    Vector origin_, height_;
-    double radius_, n_;
-
-    while (iss >> token) {
-        size_t eq_pos = token.find('=');
-        if (eq_pos == std::string::npos) continue;
-
-        std::string key = token.substr(0, eq_pos);
-        std::string value_str = token.substr(eq_pos + 1);
-
-        if (key == "o") {
-            origin_ = parseVector(value_str);
-        } else if (key == "r") {
-            radius_ = std::stod(value_str);
-        } else if (key == "n") {
-            n_ = std::stod(value_str);
-        } else if (key == "h") {
-            height_ = parseVector(value_str);
-        }
-    }
-
-    return ConvexLens(origin_, radius_, n_, height_);
+    GeometryObject go = parseLine(line);
+    return ConvexLens(go.origin, go.r, go.refractiveIndex, go.height);
 }    
 
 Mirror GeometryLoader::parseMirror (const std::string& line) {
-    Mirror mirror{};
-    std::istringstream iss(line.substr(7));  // Skip "$mirror"
-    std::string token;
-
-    while (iss >> token) {
-        size_t eq_pos = token.find('=');
-        if (eq_pos == std::string::npos) continue;
-
-        std::string key = token.substr(0, eq_pos);
-        std::string value_str = token.substr(eq_pos + 1);
-
-        if (key == "o") {
-            mirror.origin = parseVector(value_str);
-        } else if (key == "a") {
-            mirror.sideA = parseVector(value_str);
-        } else if (key == "b") {
-            mirror.sideB = parseVector(value_str);
-        } else if (key == "reflectance") {
-            mirror.reflectance = std::stod(value_str);
-            mirror.transmittance = 1 - mirror.reflectance;
-        }
-    }
-
-    if (mirror.sideA.cross(mirror.sideB).magnitude() == 0) { // also catches uninitialized
-        throw line;
-    }
-
+    GeometryObject go = parseLine(line);
+    Mirror mirror{go.origin, go.a, go.b, go.reflectance};
+    if (mirror.sideA.cross(mirror.sideB).magnitude() == 0) { throw line; }
     mirror.surfaceNormal = mirror.sideA.cross(mirror.sideB).normalized();
-
     return mirror;
 }
 
 ParabolicMirror GeometryLoader::parseParabolicMirror (const std::string& line) {
-    ParabolicMirror pm{};
-    std::istringstream iss(line.substr(16));  // Skip "$parabolicMirror"
-    std::string token;
-
-    while (iss >> token) {
-        size_t eq_pos = token.find('=');
-        if (eq_pos == std::string::npos) continue;
-
-        std::string key = token.substr(0, eq_pos);
-        std::string value_str = token.substr(eq_pos + 1);
-
-        if (key == "o") {
-            pm.origin = parseVector(value_str);
-        } else if (key == "h") {
-            pm.height = parseVector(value_str);
-        } else if (key == "c") {
-            pm.curvature = std::stod(value_str);
-        } else if (key == "reflectance") {
-            pm.reflectance = std::stod(value_str);
-        }
-    }
-
-    return pm;
+    GeometryObject go = parseLine(line);
+    return ParabolicMirror(go.origin, go.height, go.curvature, go.reflectance);
 }
 
 Vector GeometryLoader::parseVector(const std::string& str) {
+    std::cout << "Parsing " << str << "\n";
     std::istringstream iss(str);
     char comma;
     double x, y, z;

@@ -27,6 +27,7 @@ class GeometryObject {
         double r = 1;
         Vector a;
         Vector b;
+        double curvature = 1;
         double reflectance = 1;
 };
 
