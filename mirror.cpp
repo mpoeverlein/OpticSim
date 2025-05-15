@@ -97,20 +97,20 @@ ParabolicMirror::ParabolicMirror(Vector origin_, Vector height_, Vector focalPoi
 Type ParabolicMirror::type() { return Type::Base; }
 
 double ParabolicMirror::detectCollisionTime(const Ray& ray) const {
+    // transform mirror and ray such that mirror is defined by k*(x^2+y^2) = z.
     // 1. Compute rotation matrix
-    const glm::vec3 Z(0.0f, 0.0f, 1.0f);
-    glm::vec3 axis = glm::cross(Z, glm::vec3(height.normalized()));
-    if (glm::length(axis) < 1e-6f) {
-        axis = glm::vec3(1.0f, 0.0f, 0.0f); // Handle parallel case
+    const Vector Z(0.0f, 0.0f, 1.0f);
+    Vector axis = Z.cross(height.normalized());
+    if (axis.magnitude() < 1e-6f) {
+        axis = Vector(1.0f, 0.0f, 0.0f); // Handle parallel case
     }
-    axis = glm::normalize(axis);
-    float angle = acos(glm::dot(Z, glm::vec3(height.normalized())));
-    glm::mat3 R = glm::mat3(glm::rotate(glm::mat4(1.0f), angle, axis));
+    axis = axis.normalized();
+    float rotationAngle = angle(Z, height);
+    glm::mat3 R = glm::mat3(glm::rotate(glm::mat4(1.0f), rotationAngle, glm::vec3(axis)));
 
     // 2. Transform ray to parabola's local space
-    std::cout << ray.origin - origin << "\n";
-    glm::vec3 o_local = glm::transpose(R) * (glm::vec3(ray.origin) - glm::vec3(origin));
-    glm::vec3 v_local = glm::transpose(R) * glm::vec3(ray.direction);
+    Vector o_local = glm::transpose(R) * (ray.origin - origin);
+    Vector v_local = glm::transpose(R) * ray.direction;
 
     std::cout << "oloc " << o_local.x << " " << o_local.y << " " << o_local.z << "\n";
     std::cout << "vloc " << v_local.x << " " << v_local.y << " " << v_local.z << "\n";

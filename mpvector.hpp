@@ -21,6 +21,7 @@ class Vector
     Vector& operator-=(const Vector& other);
     Vector operator*(const double scalar);
     Vector& operator*=(const double scalar);
+    // Vector operator*(const glm::mat3 m);
     Vector operator/(const double scalar);
     Vector cross(const Vector& other) const;
     double dot(const Vector& other);
@@ -32,6 +33,7 @@ class Vector
 };
 
 Vector operator*(const double scalar, const Vector& v);
+Vector operator*(const glm::mat3 m, const Vector v);
 
 std::ostream& operator<<(std::ostream& os, const Vector& v);
 

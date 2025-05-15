@@ -34,6 +34,13 @@ Vector Vector::operator*(const double scalar) {
     return {scalar * x, scalar * y, scalar * z};
 }
 
+Vector operator*(const glm::mat3 m, const Vector v) {
+    double x = m[0][0] * v.x + m[0][1] * v.y + m[0][2] * v.z;
+    double y = m[1][0] * v.x + m[1][1] * v.y + m[1][2] * v.z;
+    double z = m[2][0] * v.x + m[2][1] * v.y + m[2][2] * v.z;
+    return Vector(x,y,z);
+}
+
 Vector& Vector::operator*=(const double scalar) {
     x *= scalar; y *= scalar; z *= scalar;
     return *this;
