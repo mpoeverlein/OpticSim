@@ -117,7 +117,7 @@ glm::mat3 ParabolicMirror::getRotationMatrixForLocalCoordinates() const {
     }
     axis = axis.normalized();
     float rotationAngle = angle(Z, height);
-    std::cout << "# AXIS " << axis << " angle " << rotationAngle*180/M_PI << "\n";
+    // std::cout << "# AXIS " << axis << " angle " << rotationAngle*180/M_PI << "\n";
     return glm::mat3(glm::rotate(glm::mat4(1.0f), rotationAngle, glm::vec3(axis)));
 }
 
