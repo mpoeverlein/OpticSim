@@ -187,5 +187,14 @@ std::string ParabolicMirror::forPythonPlot() const {
     return "";
 }
 void ParabolicMirror::createGraphicVertices(std::vector<Vertex>& vertices, std::vector<unsigned int>& indices) const {
-    ;
+    int segments = 16;
+    std::vector<Vertex> parabolaVerts = createParabolaVertices(origin, height, curvature, segments, glm::vec3(1,0.5,0.5));
+    vertices.insert(vertices.end(), parabolaVerts.begin(), parabolaVerts.end());
+
+    unsigned int current = 0; 
+    if (indices.size() > 0) {
+        current = *std::max_element(indices.begin(),indices.end())+1; 
+    }
+    std::vector<unsigned int> parabolaIndices = createSphereIndices(segments, current);
+    indices.insert(indices.end(), parabolaIndices.begin(), parabolaIndices.end());
 }
