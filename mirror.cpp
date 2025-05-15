@@ -108,8 +108,12 @@ double ParabolicMirror::detectCollisionTime(const Ray& ray) const {
     glm::mat3 R = glm::mat3(glm::rotate(glm::mat4(1.0f), angle, axis));
 
     // 2. Transform ray to parabola's local space
-    glm::vec3 o_local = glm::transpose(R) * ray.origin;
-    glm::vec3 v_local = glm::transpose(R) * ray.direction;
+    std::cout << ray.origin - origin << "\n";
+    glm::vec3 o_local = glm::transpose(R) * (glm::vec3(ray.origin) - glm::vec3(origin));
+    glm::vec3 v_local = glm::transpose(R) * glm::vec3(ray.direction);
+
+    std::cout << "oloc " << o_local.x << " " << o_local.y << " " << o_local.z << "\n";
+    std::cout << "vloc " << v_local.x << " " << v_local.y << " " << v_local.z << "\n";
 
     // 3. Compute quadratic coefficients
     float A = curvature * (v_local.x * v_local.x + v_local.y * v_local.y);
