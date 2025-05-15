@@ -1,9 +1,10 @@
 #ifndef GEOMETRY_LOADER_HPP
 #define GEOMETRY_LOADER_HPP
 
+#include "mpvector.hpp"
+
 class Ray;
 class OpticalDevice;
-class Vector;
 class SphericalLens;
 class Mirror;
 class ParabolicMirror;
@@ -17,16 +18,16 @@ class GeometryObject {
         Vector origin;
         Vector height;
         Vector direction;
-        double energyDensity;
-        double refractiveIndex;
-        double wavelength;
+        double energyDensity = 1;
+        double refractiveIndex = 1;
+        double wavelength = 550e-9;
         Vector first;
         Vector last;
-        double steps;
-        double r;
+        double steps = 1;
+        double r = 1;
         Vector a;
         Vector b;
-        double reflectance;
+        double reflectance = 1;
 };
 
 class GeometryLoader {

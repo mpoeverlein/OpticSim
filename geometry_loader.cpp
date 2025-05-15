@@ -120,34 +120,9 @@ GeometryObject GeometryLoader::parseLine (const std::string& line) {
 }
 
 Ray GeometryLoader::parseRayLine (const std::string& line) {
-    Ray ray{};
-    std::istringstream iss(line.substr(4));  // Skip "$ray"
-    std::string token;
-
-    while (iss >> token) {
-        size_t eq_pos = token.find('=');
-        if (eq_pos == std::string::npos) continue;
-
-        std::string key = token.substr(0, eq_pos);
-        std::string value_str = token.substr(eq_pos + 1);
-
-        if (key == "o") {
-            ray.origin = parseVector(value_str);
-        } else if (key == "d") {
-            ray.direction = parseVector(value_str);
-        } else if (key == "e") {
-            ray.energyDensity = std::stod(value_str);
-        } else if (key == "n") {
-            ray.refractiveIndex = std::stod(value_str);
-        } else if (key == "lambda") {
-            ray.wavelength = std::stod(value_str);
-        }
-    }
-
-    if ((ray.direction.magnitude() == 0) || ray.energyDensity == 0) {
-        throw line;
-    }
-
+    GeometryObject go = parseLine(line);
+    Ray ray{go.origin, go.direction, go.energyDensity, go.refractiveIndex, go.wavelength};
+    if ((ray.direction.magnitude() == 0) || ray.energyDensity == 0) { throw line; }
     return ray;
 }
 
