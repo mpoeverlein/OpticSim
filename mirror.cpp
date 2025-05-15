@@ -120,6 +120,7 @@ double ParabolicMirror::detectCollisionTime(const Ray& ray) const {
     // edge case: ray is perpendicular to mirror's height vector, z value in local coordinates is then given by x and y of o_local
     if (d_local.cross(Vector(0,0,1)).magnitude() < Config::MIN_EPS) {
         double z_hit = curvature*(o_local.x*o_local.x + o_local.y*o_local.y);
+        if (z_hit > height.magnitude()) { return Inf; }
         t = (z_hit-o_local.z) / d_local.z;
         if (t < Config::MIN_EPS) {
             return Inf;
@@ -137,9 +138,11 @@ double ParabolicMirror::detectCollisionTime(const Ray& ray) const {
     if (discriminant < 0) return Inf; // No intersection
 
     t = (-B - sqrt(discriminant)) / (2 * A);
+    if ((o_local + t * d_local).z > height.magnitude()) { return Inf; }
 
     if (t < Config::MIN_EPS) {
         t = (-B + sqrt(discriminant)) / (2 * A); // Try other solution
+        if ((o_local + t * d_local).z > height.magnitude()) { return Inf; }
         if (t < Config::MIN_EPS) return Inf; // Both solutions behind ray
         if (t > Config::MAX_T) return Inf;
     }
