@@ -208,6 +208,15 @@ bool firstMouse = true;
 float lastX = width / 2.0f;
 float lastY = height / 2.0f;
 
+glm::mat4 perspectiveProjection = glm::perspective(
+    glm::radians(45.0f), 
+    (float)width / (float)height, 
+    0.01f, 
+    1000.0f
+);
+glm::mat4 orthographicProjection = glm::ortho(-2.0f, +2.0f, -1.5f, +1.5f, 0.1f, 100.0f);
+glm::mat4 projection = perspectiveProjection;
+
 // Keyboard callback
 void keyCallback(GLFWwindow* window, int key, int scancode, int action, int mods) {
     if (action == GLFW_PRESS || action == GLFW_REPEAT) {
@@ -216,6 +225,8 @@ void keyCallback(GLFWwindow* window, int key, int scancode, int action, int mods
             case GLFW_KEY_S: camera.position -= camera.front * camera.speed; break;
             case GLFW_KEY_A: camera.position -= camera.right * camera.speed; break;
             case GLFW_KEY_D: camera.position += camera.right * camera.speed; break;
+            case GLFW_KEY_O: projection = orthographicProjection; break;
+            case GLFW_KEY_P: projection = perspectiveProjection; break;
         }
     }
 }
@@ -388,12 +399,7 @@ void visualizeWithGLFW(GeometryLoader& geometry) {
 
         glm::mat4 model = glm::mat4(1.0f);
         glm::mat4 view = camera.getViewMatrix();
-        glm::mat4 projection = glm::perspective(
-            glm::radians(45.0f), 
-            (float)width / (float)height, 
-            0.01f, 
-            1000.0f
-        );
+
         glm::mat4 mvp = projection * view * glm::mat4(1.0f);
         glUseProgram(program);
         // glUniformMatrix4fv(glGetUniformLocation(program, "MVP"), 1, GL_FALSE, glm::value_ptr(mvp));
