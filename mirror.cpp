@@ -117,7 +117,7 @@ glm::mat3 ParabolicMirror::getRotationMatrixForLocalCoordinates() const {
     }
     axis = axis.normalized();
     float rotationAngle = angle(Z, height);
-    // return glm::transpose(glm::mat3(glm::rotate(glm::mat4(1.0f), rotationAngle, glm::vec3(axis))));
+    std::cout << "# AXIS " << axis << " angle " << rotationAngle*180/M_PI << "\n";
     return glm::mat3(glm::rotate(glm::mat4(1.0f), rotationAngle, glm::vec3(axis)));
 }
 
@@ -130,9 +130,13 @@ double ParabolicMirror::detectCollisionTime(const Ray& ray) const {
     // 2. Transform ray to parabola's local space
     Vector o_local = glm::transpose(R) * (ray.origin - origin);
     Vector d_local = glm::transpose(R) * ray.direction;
+    // std::cout << "# MY DLOCA " << d_local << "\n";
+    // std::cout << "# DLCO x Z " <<  d_local.cross(Vector(0,0,1)).magnitude() << "\n";
+    // std::cout << "# DLCO dot Z " << d_local.normalized().dot(Vector(0,0,1)) << "\n";
 
-    // edge case: ray is perpendicular to mirror's height vector, z value in local coordinates is then given by x and y of o_local
-    if (d_local.cross(Vector(0,0,1)).magnitude() < Config::MIN_EPS) {
+    // edge case: ray is parallel to mirror's height vector, z value in local coordinates is then given by x and y of o_local
+    // if (d_local.cross(Vector(0,0,1)).magnitude() < 1e-8) {
+    if (1 - abs(d_local.normalized().dot(Vector(0,0,1))) < 1e-4) {
         double z_hit = curvature*(o_local.x*o_local.x + o_local.y*o_local.y);
         if (z_hit > height.magnitude()) { return Inf; }
         t = (z_hit-o_local.z) / d_local.z;
@@ -150,16 +154,19 @@ double ParabolicMirror::detectCollisionTime(const Ray& ray) const {
     // 4. Solve quadratic
     double discriminant = B * B - 4 * A * C;
     if (discriminant < 0) return Inf; // No intersection
+    // std::cout << "# DISC " << discriminant << "\n";
+    // std::cout << "# A " << A << "\n";
 
     t = (-B - sqrt(discriminant)) / (2 * A);
-    if ((o_local + t * d_local).z > height.magnitude()) { return Inf; }
+    if ((o_local + t * d_local).z > height.magnitude()) { t = 0; }
 
     if (t < Config::MIN_EPS) {
         t = (-B + sqrt(discriminant)) / (2 * A); // Try other solution
-        if ((o_local + t * d_local).z > height.magnitude()) { return Inf; }
-        if (t < Config::MIN_EPS) return Inf; // Both solutions behind ray
-        if (t > Config::MAX_T) return Inf;
+        if ((o_local + t * d_local).z > height.magnitude()) { t = Inf; }
+        if (t < Config::MIN_EPS) { t = Inf; } // Both solutions behind ray
+        if (t > Config::MAX_T) { t = Inf; }
     }
+    // std::cout << "# T " << t << "\n";
     return t;
 }
 std::vector<Ray> ParabolicMirror::createNewRays(const Ray& ray) const {
