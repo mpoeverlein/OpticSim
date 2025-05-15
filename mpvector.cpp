@@ -341,13 +341,14 @@ void calculateCollisionTime(
  * @return direction of the new ray
  */
 Vector calculateReflectionDirection(Vector rayDirection, Vector surfaceNormal) {
-    if (rayDirection.cross(surfaceNormal).magnitude() == 0) {
-        // 90 deg angle between ray and mirror surface
-        return -1 * rayDirection;
-    }
-    Vector rotationAxis = rayDirection.cross(surfaceNormal).normalized();
-    double theta1 = angle(surfaceNormal, rayDirection);
-    return rotateVectorAboutAxis(rayDirection, rotationAxis, -(M_PI-2*theta1));
+    // if (rayDirection.cross(surfaceNormal).magnitude() == 0) {
+    //     // 90 deg angle between ray and mirror surface
+    //     return -1 * rayDirection;
+    // }
+    // Vector rotationAxis = rayDirection.cross(surfaceNormal).normalized();
+    // double theta1 = angle(surfaceNormal, rayDirection);
+    // return rotateVectorAboutAxis(rayDirection, rotationAxis, -(M_PI-2*theta1));
+    return rayDirection - 2 * (rayDirection.dot(surfaceNormal)) * surfaceNormal;
 }
 
 /**
