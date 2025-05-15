@@ -89,11 +89,24 @@ ParabolicMirror::ParabolicMirror(Vector origin_, Vector height_, double curvatur
     origin = origin_;
     height = height_;
     curvature = curvature_;
-    // focalPoint = 
+    focalPoint = origin + 1 / (4*curvature) * height.normalized();
 }
-ParabolicMirror::ParabolicMirror(Vector origin_, Vector height_, Vector focalPoint_) {
 
+ParabolicMirror::ParabolicMirror(Vector origin_, Vector height_, Vector focalPoint_) {
+    // origin = origin_;
+    // height = height_;
+    // focalPoint = focalPoint_;
+    // curvature = 
 }
+
+ParabolicMirror::ParabolicMirror(Vector origin_, Vector height_, double curvature_, double reflectance_) {
+    origin = origin_;
+    height = height_;
+    curvature = curvature_;
+    reflectance = reflectance_;
+    focalPoint = origin + 1 / (4*curvature) * height.normalized();
+}
+
 Type ParabolicMirror::type() { return Type::Base; }
 
 glm::mat3 ParabolicMirror::getRotationMatrixForLocalCoordinates() const {

@@ -37,6 +37,7 @@ class ParabolicMirror : public OpticalDevice {
         ParabolicMirror();
         ParabolicMirror(Vector origin_, Vector height_, double curvature_);
         ParabolicMirror(Vector origin_, Vector height_, Vector focalPoint_);
+        ParabolicMirror(Vector origin_, Vector height_, double curvature_, double reflectance_);
         Type type();
         glm::mat3 getRotationMatrixForLocalCoordinates() const ;
         double detectCollisionTime(const Ray& ray) const ;
