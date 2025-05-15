@@ -50,6 +50,7 @@ double angle(Vector a, Vector b);
 Vector rotateVectorAboutAxis(const Vector& v, const Vector& u, double angle);
 
 double solveSecondDegreePolynomial(double a, double b, double c);
+double solveSecondDegreePolynomial(double a, double b, double c, bool returnLarger);
 double determinant(std::vector<std::vector<double>> mat);
 
 
