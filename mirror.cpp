@@ -111,7 +111,7 @@ Type ParabolicMirror::type() { return Type::Base; }
 
 glm::mat3 ParabolicMirror::getRotationMatrixForLocalCoordinates() const {
     const Vector Z(0.0f, 0.0f, 1.0f);
-    Vector axis = Z.cross(height.normalized());
+    Vector axis = height.normalized().cross(Z);
     if (axis.magnitude() < 1e-6f) {
         axis = Vector(1.0f, 0.0f, 0.0f); // Handle parallel case
     }
