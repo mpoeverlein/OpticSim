@@ -117,7 +117,8 @@ glm::mat3 ParabolicMirror::getRotationMatrixForLocalCoordinates() const {
     }
     axis = axis.normalized();
     float rotationAngle = angle(Z, height);
-    return glm::transpose(glm::mat3(glm::rotate(glm::mat4(1.0f), rotationAngle, glm::vec3(axis))));
+    // return glm::transpose(glm::mat3(glm::rotate(glm::mat4(1.0f), rotationAngle, glm::vec3(axis))));
+    return glm::mat3(glm::rotate(glm::mat4(1.0f), rotationAngle, glm::vec3(axis)));
 }
 
 double ParabolicMirror::detectCollisionTime(const Ray& ray) const {
