@@ -81,6 +81,44 @@ void GeometryLoader::loadFromFile(const std::string& filename) {
     }
 }
 
+GeometryObject GeometryLoader::parseLine (const std::string& line) {
+    GeometryObject go{};
+
+    size_t first_space = line.find(' ');
+    std::istringstream iss(line.substr(first_space + 1));
+    std::string token;
+
+     while (iss >> token) {
+        size_t eq_pos = token.find('=');
+        if (eq_pos == std::string::npos) continue;
+
+        std::string key = token.substr(0, eq_pos);
+        std::string value_str = token.substr(eq_pos + 1);
+
+        static const auto actions = std::unordered_map<std::string, std::function<void()>>{
+            {"o",      [&] { go.origin = parseVector(value_str); }},
+            {"d",      [&] { go.direction = parseVector(value_str); }},
+            {"e",      [&] { go.energyDensity = std::stod(value_str); }},
+            {"n",      [&] { go.refractiveIndex = std::stod(value_str); }},
+            {"lambda", [&] { go.wavelength = std::stod(value_str); }},
+            {"first",  [&] { go.first = parseVector(value_str); }},
+            {"last",   [&] { go.last = parseVector(value_str); }},
+            {"steps",  [&] { go.steps = std::stod(value_str); }},
+            {"r",      [&] { go.r = std::stod(value_str); }},
+            {"a",      [&] { go.a = parseVector(value_str); }},
+            {"b",      [&] { go.b = parseVector(value_str); }},
+            {"reflectance", [&] { go.reflectance = std::stod(value_str); }}
+        };
+
+        if (auto it = actions.find(key); it != actions.end()) {
+            it->second();  // Execute action
+        } else {
+            std::cerr << "Unknown key: " << key << "\n";
+        }
+    }
+    return go;
+}
+
 Ray GeometryLoader::parseRayLine (const std::string& line) {
     Ray ray{};
     std::istringstream iss(line.substr(4));  // Skip "$ray"
