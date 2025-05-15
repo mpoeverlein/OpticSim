@@ -4,7 +4,8 @@
 #include "ray.hpp"
 #include "visualizeglfw.hpp"
 #include <sstream>
-#include <iomanip> 
+#include <iomanip>
+#include <functional>
 
 SphericalLens::SphericalLens() {}
 
@@ -13,6 +14,15 @@ SphericalLens::SphericalLens(Vector origin_, double radius_, double n_) {
     radius = radius_;
     refractiveIndex = n_;
 }
+
+// SphericalLens::SphericalLens(Vector origin_, double radius_, DispersionFunction fn) : refractiveIndexFn_(std::move(fn)) {
+//     origin = origin_;
+//     radius = radius_;
+// }
+
+// double SphericalLens::getRefractiveIndex(double wavelength_nm) const {
+//     return refractiveIndexFn_(wavelength_nm);
+// }
 
 Type SphericalLens::type() { return Type::SphericalLens; }
 Vector SphericalLens::getOrigin() { return origin; }

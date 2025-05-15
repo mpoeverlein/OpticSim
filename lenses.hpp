@@ -6,6 +6,7 @@
 #include "ray.hpp"
 #include <iostream>
 #include <vector>
+#include <functional>
 
 class OpticalDevice;
 class Ray;
@@ -16,8 +17,14 @@ class SphericalLens : public OpticalDevice {
         Vector origin = Vector();
         double radius = 0;
         double refractiveIndex = 1;
+        // using DispersionFunction = std::function<double(double)>;
+        // explicit SphericalLens(DispersionFunction fn);
+        // double getRefractiveIndex(double wavelength_nm) const;
+        // DispersionFunction refractiveIndexFn_;
         SphericalLens();
         SphericalLens(Vector origin_, double radius_, double n_);
+        // explicit SphericalLens(Vector origin_, double radius_, DispersionFunction fn);
+        // double getRefractiveIndex(double wavelength_nm) const;
         Type type();
         friend std::ostream& operator<<(std::ostream& os, const SphericalLens& l);
         Vector getOrigin();
