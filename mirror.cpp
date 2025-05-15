@@ -120,44 +120,26 @@ double ParabolicMirror::detectCollisionTime(const Ray& ray) const {
     // edge case: ray is perpendicular to mirror's height vector, z value in local coordinates is then given by x and y of o_local
     if (d_local.cross(Vector(0,0,1)).magnitude() < Config::MIN_EPS) {
         double z_hit = curvature*(o_local.x*o_local.x + o_local.y*o_local.y);
-        return (z_hit-o_local.z) / d_local.z;
+        t = (z_hit-o_local.z) / d_local.z;
+        if (t < Config::MIN_EPS) {
+            return Inf;
+        }
+        return t;
     }
-
-    std::cout << "oloc " << o_local.x << " " << o_local.y << " " << o_local.z << "\n";
-    std::cout << "vloc " << d_local.x << " " << d_local.y << " " << d_local.z << "\n";
 
     // 3. Compute quadratic coefficients
     double A = curvature * (d_local.x * d_local.x + d_local.y * d_local.y);
     double B = 2.0f * curvature * (o_local.x * d_local.x + o_local.y * d_local.y) - d_local.z;
     double C = curvature * (o_local.x * o_local.x + o_local.y * o_local.y) - o_local.z;
 
-    // 
-    // if (abs(A) < Config::MIN_EPS) {
-    //     Vector p_hit{o_local.x,o_local.y,curvature*(o_local.x*o_local.x + o_local.y*o_local.y)};
-    //     double a = d_local.dot(d_local);
-    //     double b = 2 * d_local.dot(o_local);
-    //     double c = o_local.dot(o_local) - p_hit.dot(p_hit);
-    //     t = solveSecondDegreePolynomial(a,b,c);
-    //     if (t < Config::MIN_EPS) {
-    //         t = solveSecondDegreePolynomial(a,b,c,true);
-    //         if (t < Config::MIN_EPS) {
-    //             return Inf;
-    //         }
-    //     }
-    //     return t;
-    // }
-
     // 4. Solve quadratic
     double discriminant = B * B - 4 * A * C;
-    std::cout << "DIS " << discriminant << "\n";
     if (discriminant < 0) return Inf; // No intersection
 
     t = (-B - sqrt(discriminant)) / (2 * A);
-    std::cout << "t " << t << "\n";
 
     if (t < Config::MIN_EPS) {
         t = (-B + sqrt(discriminant)) / (2 * A); // Try other solution
-        std::cout << "t " << t << "\n";
         if (t < Config::MIN_EPS) return Inf; // Both solutions behind ray
         if (t > Config::MAX_T) return Inf;
     }
@@ -167,10 +149,13 @@ std::vector<Ray> ParabolicMirror::createNewRays(const Ray& ray) const {
     std::vector<Ray> newRays;
     // surface normal in local coordinates given by gradient
     glm::mat3 R = getRotationMatrixForLocalCoordinates();
-    Vector end_local = R * (ray.end - origin);
-    Vector surfaceNormal = Vector(2*curvature*end_local.x, 2*curvature*end_local.y, -1);
-    Vector reflectionDirection = calculateReflectionDirection(R*ray.direction, surfaceNormal);
-    reflectionDirection = glm::transpose(R) * reflectionDirection;
+    Vector end_local = glm::transpose(R) * (ray.end - origin);
+    Vector d_local = glm::transpose(R) * ray.direction;
+    Vector surfaceNormal;
+
+    surfaceNormal = -1 * Vector(2*curvature*end_local.x, 2*curvature*end_local.y, -1).normalized();
+    Vector reflectionDirection = calculateReflectionDirection(d_local, surfaceNormal);
+    reflectionDirection = R * reflectionDirection;
     newRays.push_back(Ray(ray.end, reflectionDirection, ray.energyDensity*reflectance, ray.refractiveIndex));
     return newRays;
 }
