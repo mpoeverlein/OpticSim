@@ -12,12 +12,30 @@ class ConvexLens;
 #include <string>
 #include <unordered_map>
 
+class GeometryObject {
+    public:
+        Vector origin;
+        Vector height;
+        Vector direction;
+        double energyDensity;
+        double refractiveIndex;
+        double wavelength;
+        Vector first;
+        Vector last;
+        double steps;
+        double r;
+        Vector a;
+        Vector b;
+        double reflectance;
+};
+
 class GeometryLoader {
 public:
     std::vector<Ray> rays;
     std::vector<std::unique_ptr<OpticalDevice>> devices;
-    void loadFromFile(const std::string& filename);
-    static Vector parseVector(const std::string& str);
+    void loadFromFile (const std::string& filename);
+    static Vector parseVector (const std::string& str);
+    static GeometryObject parseLine (const std::string& str);
     static Ray parseRayLine (const std::string& line);
     static std::vector<Ray> parseParallelRays (const std::string& line);
     static SphericalLens parseSphericalLensLine (const std::string& line);
