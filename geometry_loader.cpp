@@ -69,6 +69,15 @@ void GeometryLoader::loadFromFile(const std::string& filename) {
                 continue;
             }
         }
+        if (line.find("$parabolicMirror") == 0) {
+            try { 
+                ParabolicMirror pm = parseParabolicMirror(line);
+                devices.push_back(std::make_unique<ParabolicMirror>(pm.origin, pm.height, pm.curvature, pm.reflectance));
+            } catch (const std::exception& e) {
+                std::cerr << "Error parsing ParabolicMirror: " << e.what() << "\n";
+                continue;
+            }
+        }
     }
 }
 
@@ -235,7 +244,31 @@ Mirror GeometryLoader::parseMirror (const std::string& line) {
     return mirror;
 }
 
+ParabolicMirror GeometryLoader::parseParabolicMirror (const std::string& line) {
+    ParabolicMirror pm{};
+    std::istringstream iss(line.substr(16));  // Skip "$parabolicMirror"
+    std::string token;
 
+    while (iss >> token) {
+        size_t eq_pos = token.find('=');
+        if (eq_pos == std::string::npos) continue;
+
+        std::string key = token.substr(0, eq_pos);
+        std::string value_str = token.substr(eq_pos + 1);
+
+        if (key == "o") {
+            pm.origin = parseVector(value_str);
+        } else if (key == "h") {
+            pm.height = parseVector(value_str);
+        } else if (key == "c") {
+            pm.curvature = std::stod(value_str);
+        } else if (key == "reflectance") {
+            pm.reflectance = std::stod(value_str);
+        }
+    }
+
+    return pm;
+}
 
 Vector GeometryLoader::parseVector(const std::string& str) {
     std::istringstream iss(str);

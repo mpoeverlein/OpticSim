@@ -6,6 +6,7 @@ class OpticalDevice;
 class Vector;
 class SphericalLens;
 class Mirror;
+class ParabolicMirror;
 class ConvexLens;
 
 #include <string>
@@ -22,6 +23,7 @@ public:
     static SphericalLens parseSphericalLensLine (const std::string& line);
     static ConvexLens parseConvexLensLine (const std::string& line);
     static Mirror parseMirror (const std::string& line); 
+    static ParabolicMirror parseParabolicMirror (const std::string& line); 
 };
 
 #endif /* GEOMETRY_LOADER_HPP */
