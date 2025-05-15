@@ -26,6 +26,14 @@ std::vector<Vertex> createSphereVertices(
     const glm::vec3& color = glm::vec3(1.0f, 0.0f, 1.0f)
 );
 std::vector<unsigned int> createSphereIndices(int segments, unsigned int base);
+std::vector<Vertex> createParabolaVertices(
+    const Vector& origin_,
+    const Vector& height,
+    float curvature,
+    int segments,
+    const glm::vec3& color
+);
+
 void visualizeWithGLFW(GeometryLoader& geometry);
 
 #endif /* VISUALIZEWITHGLFW_HPP */

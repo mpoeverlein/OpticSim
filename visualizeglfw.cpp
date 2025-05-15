@@ -130,6 +130,40 @@ std::vector<unsigned int> createSphereIndices(int segments, unsigned int base) {
     return indices;
 }
 
+std::vector<Vertex> createParabolaVertices(
+    const Vector& origin_,
+    const Vector& height,
+    float curvature,
+    int segments,
+    const glm::vec3& color
+) {
+    glm::vec3 origin{origin_.x, origin_.y, origin_.z};
+    const glm::mat4 rotation = orientSphere(height);
+    // create vertices in local coordinates, but push back after translation into world coordinates
+    std::vector<Vertex> vertices;
+    int sectorCount = segments;
+    int stackCount = segments;
+    for (int i = 0; i < stackCount+1; ++i) {
+        float z = float(i) / float(stackCount) * height.magnitude();
+        float radius = sqrt(z/curvature);
+        for (int j = 0; j < sectorCount; ++j) {
+            float sectorAngle = j * M_PI * 2 / sectorCount; // from 0 to 2pi
+
+            float x = radius * cos(sectorAngle);
+            float y = radius * sin(sectorAngle);
+
+            glm::vec3 pos = glm::vec3(x, y, z);
+            pos = glm::vec3(rotation * glm::vec4(pos, 1.0f));
+            glm::vec3 normal = glm::vec3(rotation * glm::vec4(glm::normalize(pos), 0.0f));
+
+            vertices.push_back({glm::vec3(pos+origin), normal, color, 0.7f});
+        }
+    }
+    return vertices;
+}
+
+
+
 class Camera {
 public:
     glm::vec3 position;
@@ -375,6 +409,8 @@ void visualizeWithGLFW(GeometryLoader& geometry) {
         glEnable(GL_BLEND);
 
         glDrawElements(GL_TRIANGLES, indices.size(), GL_UNSIGNED_INT, 0);
+        // glPointSize(10);
+        // glDrawArrays(GL_POINTS, 0, vertices.size());
 
         glDepthMask(GL_TRUE);  // Re-enable depth writing
         glDisable(GL_BLEND);
