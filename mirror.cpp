@@ -117,6 +117,12 @@ double ParabolicMirror::detectCollisionTime(const Ray& ray) const {
     Vector o_local = glm::transpose(R) * (ray.origin - origin);
     Vector d_local = glm::transpose(R) * ray.direction;
 
+    // edge case: ray is perpendicular to mirror's height vector, z value in local coordinates is then given by x and y of o_local
+    if (d_local.cross(Vector(0,0,1)).magnitude() < Config::MIN_EPS) {
+        double z_hit = curvature*(o_local.x*o_local.x + o_local.y*o_local.y);
+        return (z_hit-o_local.z) / d_local.z;
+    }
+
     std::cout << "oloc " << o_local.x << " " << o_local.y << " " << o_local.z << "\n";
     std::cout << "vloc " << d_local.x << " " << d_local.y << " " << d_local.z << "\n";
 
@@ -125,21 +131,21 @@ double ParabolicMirror::detectCollisionTime(const Ray& ray) const {
     double B = 2.0f * curvature * (o_local.x * d_local.x + o_local.y * d_local.y) - d_local.z;
     double C = curvature * (o_local.x * o_local.x + o_local.y * o_local.y) - o_local.z;
 
-    // edge case: ray is perpendicular to mirror's height vector, z value is then given by x and y of o_local
-    if (abs(A) < Config::MIN_EPS) {
-        Vector p_hit{o_local.x,o_local.y,curvature*(o_local.x*o_local.x + o_local.y*o_local.y)};
-        double a = d_local.dot(d_local);
-        double b = 2 * d_local.dot(o_local);
-        double c = o_local.dot(o_local) - p_hit.dot(p_hit);
-        t = solveSecondDegreePolynomial(a,b,c);
-        if (t < Config::MIN_EPS) {
-            t = solveSecondDegreePolynomial(a,b,c,true);
-            if (t < Config::MIN_EPS) {
-                return Inf;
-            }
-        }
-        return t;
-    }
+    // 
+    // if (abs(A) < Config::MIN_EPS) {
+    //     Vector p_hit{o_local.x,o_local.y,curvature*(o_local.x*o_local.x + o_local.y*o_local.y)};
+    //     double a = d_local.dot(d_local);
+    //     double b = 2 * d_local.dot(o_local);
+    //     double c = o_local.dot(o_local) - p_hit.dot(p_hit);
+    //     t = solveSecondDegreePolynomial(a,b,c);
+    //     if (t < Config::MIN_EPS) {
+    //         t = solveSecondDegreePolynomial(a,b,c,true);
+    //         if (t < Config::MIN_EPS) {
+    //             return Inf;
+    //         }
+    //     }
+    //     return t;
+    // }
 
     // 4. Solve quadratic
     double discriminant = B * B - 4 * A * C;
