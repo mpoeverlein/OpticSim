@@ -26,6 +26,7 @@
                 "config_loader.cpp",
                 "geometry_loader.cpp",
                 "visualizeglfw.cpp",
+                "material.cpp",
                 "-o",
                 "${fileDirname}/main",
                 "-std=c++20"
