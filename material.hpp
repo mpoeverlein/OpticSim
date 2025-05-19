@@ -14,4 +14,12 @@ class NonDispersiveMaterial : public Material {
     double getRefractiveIndex(double wavelength) const override;
 };
 
+class Water : public Material {
+    public:
+    double temperature;
+    Water(double temperature_);
+    double getRefractiveIndex(double wavelength) const override;
+    double getDensity() const;   
+};
+
 #endif /* MATERIAL_HPP */
