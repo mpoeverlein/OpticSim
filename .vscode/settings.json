@@ -64,7 +64,22 @@
         "concepts": "cpp",
         "algorithm": "cpp",
         "strstream": "cpp",
-        "deque": "cpp"
+        "deque": "cpp",
+        "__tree": "cpp",
+        "cfenv": "cpp",
+        "charconv": "cpp",
+        "csignal": "cpp",
+        "fstream": "cpp",
+        "list": "cpp",
+        "map": "cpp",
+        "numeric": "cpp",
+        "random": "cpp",
+        "ranges": "cpp",
+        "set": "cpp",
+        "span": "cpp",
+        "stack": "cpp",
+        "typeindex": "cpp",
+        "valarray": "cpp"
     },
     "makefile.launchConfigurations": [
         {
