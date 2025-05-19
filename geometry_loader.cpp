@@ -7,6 +7,8 @@
 #include "ray.hpp"
 #include "lenses.hpp"
 #include "mirror.hpp"
+#include "material.hpp"
+
 
 void GeometryLoader::loadFromFile(const std::string& filename) {
     std::ifstream file(filename);
@@ -41,7 +43,7 @@ void GeometryLoader::loadFromFile(const std::string& filename) {
         if (line.find("$sphericalLens") == 0) {
             try {
                 SphericalLens lens = parseSphericalLensLine(line);
-                devices.push_back(std::make_unique<SphericalLens>(lens.origin, lens.radius, lens.refractiveIndex));
+                devices.push_back(std::make_unique<SphericalLens>(lens.origin, lens.radius, std::move(lens.material)));
             } catch (const std::exception& e) {
                 std::cerr << "Error parsing SphericalLens: " << e.what() << "\n";
                 continue;
@@ -133,7 +135,7 @@ std::vector<Ray> GeometryLoader::parseParallelRays (const std::string& line) {
 SphericalLens GeometryLoader::parseSphericalLensLine (const std::string& line) {
     GeometryObject go = parseLine(line);
     SphericalLens sphericalLens{go.origin, go.r, go.refractiveIndex};
-    if ((sphericalLens.radius == 0) || sphericalLens.refractiveIndex == 1) { throw line;    }
+    if ((sphericalLens.radius == 0) || go.refractiveIndex == 1) { throw line;    }
     return sphericalLens;
 }
 

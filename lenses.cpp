@@ -3,6 +3,7 @@
 #include "mpvector.hpp"
 #include "ray.hpp"
 #include "visualizeglfw.hpp"
+#include "material.hpp"
 #include <sstream>
 #include <iomanip>
 #include <functional>
@@ -10,10 +11,20 @@
 SphericalLens::SphericalLens() {}
 
 SphericalLens::SphericalLens(Vector origin_, double radius_, double n_) {
-    origin = origin_;
-    radius = radius_;
-    refractiveIndex = n_;
+        origin = origin_;
+        radius = radius_;
+        material = std::make_unique<NonDispersiveMaterial>(n_);
 }
+
+SphericalLens::SphericalLens(Vector origin_, double radius_, std::unique_ptr<Material> material)
+    : origin(origin_), radius(radius_), material(std::move(material)) {}
+      
+
+// SphericalLens::SphericalLens(Vector origin_, double radius_, Material material_) {
+//     origin = origin_;
+//     radius = radius_;
+//     material = material_;
+// }
 
 // SphericalLens::SphericalLens(Vector origin_, double radius_, DispersionFunction fn) : refractiveIndexFn_(std::move(fn)) {
 //     origin = origin_;
@@ -27,7 +38,7 @@ SphericalLens::SphericalLens(Vector origin_, double radius_, double n_) {
 Type SphericalLens::type() { return Type::SphericalLens; }
 Vector SphericalLens::getOrigin() { return origin; }
 double SphericalLens::getRadius() { return radius; }
-double SphericalLens::getRefractiveIndex() { return refractiveIndex; }
+double SphericalLens::getRefractiveIndex(double wavelength) { return material->getRefractiveIndex(wavelength); }
 
 /**
  * Calculate collision time between spherical lens and ray as collision time between ray and sphere.
@@ -46,11 +57,12 @@ double SphericalLens::detectCollisionTime(const Ray& ray) const {
 std::vector<Ray> SphericalLens::createNewRays (const Ray& ray) const {
     std::vector<Ray> newRays;
     Vector surfaceNormal;
+    double otherMedium = material->getRefractiveIndex(ray.wavelength);
     double n2;
-    if (ray.refractiveIndex != refractiveIndex) {
+    if (ray.refractiveIndex != otherMedium) {
         // outside
         surfaceNormal = (origin - ray.end).normalized();
-        n2 = refractiveIndex;
+        n2 = otherMedium;
     } else {
         // inside
         surfaceNormal = (ray.end - origin).normalized();
@@ -68,11 +80,12 @@ std::vector<Ray> SphericalLens::createNewRays (const Ray& ray) const {
 std::vector<Ray> SphericalLens::createNewRaysInsideOut (const Ray& ray) const {
     std::vector<Ray> newRays;
     Vector surfaceNormal;
+    double otherMedium = material->getRefractiveIndex(ray.wavelength);
     double n2;
-    if (ray.refractiveIndex != refractiveIndex) {
+    if (ray.refractiveIndex != otherMedium) {
         // outside
         surfaceNormal = (ray.end - origin).normalized();
-        n2 = refractiveIndex;
+        n2 = otherMedium;
     } else {
         // inside
         surfaceNormal = (origin - ray.end).normalized();
@@ -107,7 +120,7 @@ void SphericalLens::createGraphicVertices(std::vector<Vertex>& vertices, std::ve
 }
 
 std::ostream& operator<<(std::ostream& os, const SphericalLens& l) {
-    os << "Lens: Origin: " << l.origin << " Radius: " << l.radius << " n: " << l.refractiveIndex << "\n";
+    os << "Lens: Origin: " << l.origin << " Radius: " << l.radius << " Material: " << l.material << "\n";
     return os;
 }
 
