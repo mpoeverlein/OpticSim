@@ -50,7 +50,6 @@ void GeometryLoader::loadFromFile(const std::string& filename) {
         if (line.find("$parallelRays") == 0) {
             try {
                 std::vector<Ray> raysToAdd = parseParallelRays(line);
-                // std::cout << " AAAA " << raysToAdd.size() << "\n";
                 rays.insert(rays.end(),
                 raysToAdd.begin(),
                 raysToAdd.begin() + std::min(raysToAdd.size(), Config::MAX_RAYS - rays.size()));
@@ -94,8 +93,6 @@ GeometryObject GeometryLoader::parseLine (const std::string& line) {
 
         std::string key = token.substr(0, eq_pos);
         std::string value_str = token.substr(eq_pos + 1);
-        std::cout << " key " << key << " va " << value_str << "\n";
-        // std::cout << " va " << parseVector(value_str) << "\n";
 
         if (key == "o") { go.origin = parseVector(value_str); }
         else if (key == "d") { go.direction = parseVector(value_str); }
@@ -159,7 +156,6 @@ ParabolicMirror GeometryLoader::parseParabolicMirror (const std::string& line) {
 }
 
 Vector GeometryLoader::parseVector(const std::string& str) {
-    std::cout << "Parsing " << str << "\n";
     std::istringstream iss(str);
     char comma;
     double x, y, z;
