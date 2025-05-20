@@ -33,15 +33,18 @@ Ray::Ray(Vector origin_, Vector direction_, double energyDensity_, double n, dou
 
 std::string Ray::forPythonPlot () {
     std::ostringstream oss;
-    std::string color;
-    if (refractiveIndex == 1) {
-        color = "blue";
-    } else {
-        color = "orange";
-    }
+    // std::string color;
+    // if (refractiveIndex == 1) {
+    //     color = "blue";
+    // } else {
+    //     color = "orange";
+    // }
+    glm::vec3 color = wavelengthToRGB(wavelength*1e9);
+    std::cout << "# Wave " << wavelength*1e9 << "\n";
     oss << "ax.plot((" << origin.x << "," << end.x << "), (" 
         << origin.z << "," << end.z << "), linewidth=" 
-        << std::setprecision(6) << 2*energyDensity << ", color='" << color << "')\n"; // Adjust precision as needed
+        << std::setprecision(6) << 2*energyDensity << ", color=(" << color.x << ", " << color.y << ", " << color.z << ")"
+        << ")\n"; // Adjust precision as needed
     return oss.str();
 }
 
