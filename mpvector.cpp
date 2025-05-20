@@ -381,6 +381,8 @@ glm::vec3 wavelengthToRGB(double wavelength) {
     // No clamping as to not change input 
     // // Only consider visible spectrum (380-780 nm)
     // wavelength = std::clamp(wavelength, 380.0, 780.0);
+    // wavelength input in meters, so convert to nanometers
+    wavelength *= 1e9;
     
     // Calculate color based on wavelength
     if (wavelength >= 380 && wavelength < 440) {
