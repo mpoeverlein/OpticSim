@@ -110,6 +110,8 @@ GeometryObject GeometryLoader::parseLine (const std::string& line) {
         else if (key == "b") { go.b = parseVector(value_str); }
         else if (key == "c") { go.curvature = std::stod(value_str); }
         else if (key == "reflectance") { go.reflectance = std::stod(value_str); }
+        else if (key == "material") { go.material = value_str; }
+        else if (key == "temperature") { go.material = std::stod(value_str); }
         else {
             std::cerr << "Unknown key: " << key << "\n";
         }        
@@ -120,23 +122,38 @@ GeometryObject GeometryLoader::parseLine (const std::string& line) {
 Ray GeometryLoader::parseRayLine (const std::string& line) {
     GeometryObject go = parseLine(line);
     Ray ray{go.origin, go.direction, go.energyDensity, go.refractiveIndex, go.wavelength};
-    if ((ray.direction.magnitude() == 0) || ray.energyDensity == 0) { throw line; }
+    if ((ray.direction.magnitude() == 0) || ray.energyDensity == 0) { 
+        throw std::invalid_argument("Invalid argument in Ray: " + line);
+    }
     return ray;
 }
 
 std::vector<Ray> GeometryLoader::parseParallelRays (const std::string& line) {
     GeometryObject go = parseLine(line);
-    if (go.direction.magnitude() * go.first.magnitude() * go.last.magnitude() == 0) { throw line; }
+    if (go.direction.magnitude() * go.first.magnitude() * go.last.magnitude() == 0) { 
+        throw std::invalid_argument("Invalid argument for parallel rays: " + line);; 
+    }
     return makeParallelRays(go.direction, go.first, go.last, go.steps,
         go.energyDensity, 
         go.refractiveIndex, go.wavelength);
 }
 
-SphericalLens GeometryLoader::parseSphericalLensLine (const std::string& line) {
+SphericalLens GeometryLoader::parseSphericalLensLine(const std::string& line) {
     GeometryObject go = parseLine(line);
-    SphericalLens sphericalLens{go.origin, go.r, go.refractiveIndex};
-    if ((sphericalLens.radius == 0) || go.refractiveIndex == 1) { throw line;    }
-    return sphericalLens;
+    
+    if (go.r == 0) {
+        throw std::invalid_argument("Zero radius in spherical lens: " + line);
+    }
+    
+    if (go.refractiveIndex != 1) {
+        return SphericalLens{go.origin, go.r, go.refractiveIndex};
+    }
+    
+    if (go.material == "Water") {
+        return SphericalLens{go.origin, go.r, std::make_unique<Water>(go.temperature)};
+    }
+    return SphericalLens();
+    throw std::invalid_argument("Unsupported material in spherical lens: " + line);
 }
 
 ConvexLens GeometryLoader::parseConvexLensLine (const std::string& line) {
@@ -147,7 +164,9 @@ ConvexLens GeometryLoader::parseConvexLensLine (const std::string& line) {
 Mirror GeometryLoader::parseMirror (const std::string& line) {
     GeometryObject go = parseLine(line);
     Mirror mirror{go.origin, go.a, go.b, go.reflectance};
-    if (mirror.sideA.cross(mirror.sideB).magnitude() == 0) { throw line; }
+    if (mirror.sideA.cross(mirror.sideB).magnitude() == 0) { 
+        throw std::invalid_argument("Mirror sideA and sideB must be non-parallel: " + line);; 
+    }
     mirror.surfaceNormal = mirror.sideA.cross(mirror.sideB).normalized();
     return mirror;
 }

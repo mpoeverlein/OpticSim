@@ -29,6 +29,8 @@ class GeometryObject {
         Vector b;
         double curvature = 1;
         double reflectance = 1;
+        std::string material = "none";
+        double temperature = 298.15;
 };
 
 class GeometryLoader {
