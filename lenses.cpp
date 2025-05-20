@@ -69,7 +69,7 @@ std::vector<Ray> SphericalLens::createNewRays (const Ray& ray) const {
         n2 = 1.;
     }
 
-    return ::createNewRays(ray, surfaceNormal, n2, 0); // reflectance set to 0
+    return ::createNewRays(ray, surfaceNormal, n2, 0.1); // reflectance arbitrarily set to 0.1, should be a dependent on material
 }
 
 /**
@@ -244,17 +244,17 @@ std::vector<Ray> createNewRays (const Ray& ray, Vector surfaceNormal, double n2,
     // the old direction by theta2-theta1
     double dtheta = theta2 - theta1;
     if (theta1 == 0) {
-        newRays.push_back(Ray(ray.end, ray.direction, ray.energyDensity*(1-reflectance), n2));
-        newRays.push_back(Ray(ray.end, -1*ray.direction, ray.energyDensity*reflectance, n1));
+        newRays.push_back(Ray(ray.end, ray.direction, ray.energyDensity*(1-reflectance), n2, ray.wavelength));
+        newRays.push_back(Ray(ray.end, -1*ray.direction, ray.energyDensity*reflectance, n1, ray.wavelength));
         return newRays;
     }
 
     Vector refractionDirection = rotateVectorAboutAxis(ray.direction, rotationAxis, -dtheta);
-    newRays.push_back(Ray(ray.end, refractionDirection, ray.energyDensity*(1-reflectance), n2));
+    newRays.push_back(Ray(ray.end, refractionDirection, ray.energyDensity*(1-reflectance), n2, ray.wavelength));
 
     // create reflection
     Vector reflectionDirection = rotateVectorAboutAxis(ray.direction, rotationAxis, -(M_PI-2*theta1));
-    newRays.push_back(Ray(ray.end, reflectionDirection, ray.energyDensity*reflectance, n1));
+    newRays.push_back(Ray(ray.end, reflectionDirection, ray.energyDensity*reflectance, n1, ray.wavelength));
        
     return newRays;
 }
