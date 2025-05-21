@@ -435,3 +435,14 @@ glm::vec3 wavelengthToRGB(double wavelength) {
     
     return glm::vec3(r,g,b);
 }
+
+bool operator==(Vector a, Vector b) {
+    constexpr double epsilon = 1e-10;
+    return std::abs(a.x - b.x) < epsilon &&
+        std::abs(a.y - b.y) < epsilon &&
+        std::abs(a.z - b.z) < epsilon;
+}
+
+bool operator!=(Vector a, Vector b) {
+    return !(a == b);
+}

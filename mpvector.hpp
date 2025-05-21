@@ -53,5 +53,7 @@ double solveSecondDegreePolynomial(double a, double b, double c);
 double solveSecondDegreePolynomial(double a, double b, double c, bool returnLarger);
 double determinant(std::vector<std::vector<double>> mat);
 glm::vec3 wavelengthToRGB(double wavelength);
+bool operator==(Vector a, Vector b);
+bool operator!=(Vector a, Vector b);
 
 #endif /* MPVECTOR_HPP */
