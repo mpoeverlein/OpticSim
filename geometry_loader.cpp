@@ -13,7 +13,9 @@
 void GeometryLoader::loadFromFile(const std::string& filename) {
     std::ifstream file(filename);
     if (!file.is_open()) {
-        throw std::runtime_error("Failed to open file: " + filename);
+        std::cerr << "Failed to open file: " << filename << "\n"
+            << "Geometry cannot be loaded.\n";
+        return;
     }
     
     std::string line;
@@ -23,14 +25,17 @@ void GeometryLoader::loadFromFile(const std::string& filename) {
         if (line.empty() || line[0] == '#') continue;
 
         if (line.find("$ray") == 0) {
-            try {
-                rays.push_back(parseRayLine(line));
-            } catch (const std::exception& e) {
-                std::cerr << "Error parsing ray: " << e.what() << "\n";
-                continue;
+            Ray ray{parseRayLine(line)};
+            if (ray == Ray()) {
+                std::cerr << "Error parsing ray from this line: " << line << "\n";
+            } else {
+                std::cout << rays.size() << "\n";
+                std::cout << ray << "\n";
+                rays.push_back(ray);
+                std::cout << rays.size() << "\n";
+
             }
-        }
-        if (line.find("$convexLens") == 0) {
+        } else if (line.find("$convexLens") == 0) {
             try {
                 ConvexLens lens = parseConvexLensLine(line);
                 devices.push_back(std::make_unique<ConvexLens>(lens.origin, lens.radius, lens.refractiveIndex, lens.height));
@@ -121,10 +126,15 @@ GeometryObject GeometryLoader::parseLine (const std::string& line) {
 
 Ray GeometryLoader::parseRayLine (const std::string& line) {
     GeometryObject go = parseLine(line);
-    Ray ray{go.origin, go.direction, go.energyDensity, go.refractiveIndex, go.wavelength};
-    if ((ray.direction.magnitude() == 0) || ray.energyDensity == 0) { 
-        throw std::invalid_argument("Invalid argument in Ray: " + line);
+    if (go.direction.magnitude() == 0) {
+        std::cout << "Direction of ray was not initialized.\n";
+        return Ray();
     }
+    if (go.energyDensity == 0) {
+        std::cerr << "Energy density of ray was not initialized.\n";
+        return Ray();
+    }
+    Ray ray{go.origin, go.direction, go.energyDensity, go.refractiveIndex, go.wavelength};
     return ray;
 }
 
