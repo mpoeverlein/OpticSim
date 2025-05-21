@@ -12,6 +12,36 @@
 class OpticalDevice;
 class Ray;
 
+class Sphere {
+    public:
+        Vector origin;
+        double radius;
+        Sphere(Vector origin_, double radius_);
+};
+
+class SphereSection {
+    public:
+        Vector origin;
+        double radius;
+        Vector height; // direction of apex
+        double openingAngle;
+        SphereSection();
+        SphereSection(Vector origin_, double radius_, Vector height_, double openingAngle_);
+};
+
+class Lens : public OpticalDevice {
+    public:
+        std::unique_ptr<Material> material;
+        SphereSection sphereSection1;
+        SphereSection sphereSection2;
+        Lens(Sphere sphere1_, Sphere sphere2_, double refractiveIndex_);
+        // Lens(Sphere sphere1_, Sphere sphere2_, std::unique_ptr<Material> material);
+        double detectCollisionTime(const Ray& ray) const;
+        std::string forPythonPlot() const;
+        std::vector<Ray> createNewRays (const Ray& ray) const;
+        void createGraphicVertices(std::vector<Vertex>& vertices, std::vector<unsigned int>& indices) const;
+};
+
 class SphericalLens : public OpticalDevice {
     public:
         Vector origin = Vector();

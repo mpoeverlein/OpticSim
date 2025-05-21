@@ -8,6 +8,72 @@
 #include <iomanip>
 #include <functional>
 
+Sphere::Sphere(Vector origin_, double radius_)
+    : origin(origin_),
+      radius(radius_)
+{
+    if (radius_ <= 0) {
+        std::cerr << "Sphere radius must be positive. Entered value: " << radius_ << "\n";
+    }    
+}
+
+SphereSection::SphereSection() 
+    : origin(Vector()),
+      radius(1),
+      height(Vector(0,0,1)),  // Normalize height vector
+      openingAngle(M_PI)
+{
+
+}
+
+SphereSection::SphereSection(Vector origin_, double radius_, Vector height_, double openingAngle_)
+    : origin(origin_),
+      radius(radius_),
+      height(height_.normalized()*radius),  // Normalize height vector
+      openingAngle(openingAngle_)
+{
+    // Validate parameters
+    if (radius_ == 0) {
+        std::cerr << "SphereSection radius cannot be zero. Entered value: " << radius_ << "\n";
+    }
+    if (openingAngle_ <= 0 || openingAngle_ > M_PI) {
+        std::cerr << "SphereSection Opening angle must be between 0 and π radians. Entered value: " << openingAngle_ << "\n";
+    }
+    if (height_.magnitude() == 0) {
+        std::cerr << "SphereSection Height vector cannot be zero. Entered value: " << height_ << "\n";
+    }
+}
+
+Lens::Lens(Sphere sphere1_, Sphere sphere2_, double refractiveIndex_) {
+    Vector d = sphere2_.origin-sphere1_.origin;
+    double x1 = 0, x2 = d.magnitude(), r1 = sphere1_.radius, r2 = sphere2_.radius;
+    double xM = 1 / (-2*x2) * (r2*r2 - r1*r1 - x2*x2);
+    Vector h1 = d.normalized() * sphere1_.radius;
+    Vector h2 = -1 * d.normalized() * sphere2_.radius;
+    double a2 = acos(xM/r2);
+    double a1 = acos((d.magnitude()-xM) / r1);
+    sphereSection1 = SphereSection(sphere1_.origin, sphere1_.radius, h1, a1);
+    if (r1 < 0) {
+        sphereSection1 = SphereSection(sphere1_.origin, sphere1_.radius, -1*h1, M_PI-a1);
+    }
+    sphereSection2 = SphereSection(sphere2_.origin, sphere2_.radius, h2, M_PI-a2);
+    if (r2 > 0) {
+        sphereSection2 = SphereSection(sphere2_.origin, sphere2_.radius, -1*h2, a2);
+    }
+    material = std::make_unique<NonDispersiveMaterial>(refractiveIndex_);
+}
+
+double Lens::detectCollisionTime(const Ray& ray) const {
+    double t1, t2;
+    t1 = calculateCollisionTime(ray, sphereSection1);
+    t2 = calculateCollisionTime(ray, sphereSection2);
+    return std::min(t1, t2);
+}
+
+std::string Lens::forPythonPlot() const { return ""; }
+std::vector<Ray> Lens::createNewRays (const Ray& ray) const { std::vector<Ray> newRays; return newRays; }
+void Lens::createGraphicVertices(std::vector<Vertex>& vertices, std::vector<unsigned int>& indices) const {;}
+
 SphericalLens::SphericalLens() {}
 
 SphericalLens::SphericalLens(Vector origin_, double radius_, double n_) {
