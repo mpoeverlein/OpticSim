@@ -19,7 +19,6 @@ class Mirror : public OpticalDevice {
         double transmittance = 0;
         Mirror();
         Mirror(Vector origin_, Vector sideA_, Vector sideB_, double reflectance_);
-        Type type();
         double detectCollisionTime(const Ray& ray) const ;
         std::vector<Ray> createNewRays(const Ray& ray) const;
         std::string forPythonPlot() const;
@@ -38,7 +37,6 @@ class ParabolicMirror : public OpticalDevice {
         ParabolicMirror(Vector origin_, Vector height_, double curvature_);
         ParabolicMirror(Vector origin_, Vector height_, Vector focalPoint_);
         ParabolicMirror(Vector origin_, Vector height_, double curvature_, double reflectance_);
-        Type type();
         glm::mat3 getRotationMatrixForLocalCoordinates() const ;
         double detectCollisionTime(const Ray& ray) const ;
         std::vector<Ray> createNewRays(const Ray& ray) const;

@@ -26,8 +26,6 @@ Mirror::Mirror(Vector origin_, Vector sideA_, Vector sideB_, double reflectance_
     transmittance = 1 - reflectance;
 }
 
-Type Mirror::type() { return Type::Mirror; }
-
 double Mirror::detectCollisionTime(const Ray& ray) const {
     double t_hit = Inf;
     double alpha = Inf;
@@ -106,8 +104,6 @@ ParabolicMirror::ParabolicMirror(Vector origin_, Vector height_, double curvatur
     reflectance = reflectance_;
     focalPoint = origin + 1 / (4*curvature) * height.normalized();
 }
-
-Type ParabolicMirror::type() { return Type::Base; }
 
 glm::mat3 ParabolicMirror::getRotationMatrixForLocalCoordinates() const {
     const Vector Z(0.0f, 0.0f, 1.0f);
