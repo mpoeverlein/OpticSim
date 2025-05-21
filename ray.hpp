@@ -36,6 +36,8 @@ class Ray {
 
 std::vector<Ray> makeParallelRays(Vector direction, Vector first, Vector last, int steps,
     double energyDensity, double n, double wavelength);
+bool operator==(Ray r1, Ray r2);
+bool operator!=(Ray r1, Ray r2);
 
 
 #endif /* RAY_HPP */

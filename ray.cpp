@@ -71,3 +71,16 @@ std::vector<Ray> makeParallelRays(Vector direction, Vector first, Vector last, i
 Vector Ray::getPositionAtTime(double t) const {
     return origin + t * direction;
 }
+
+bool operator==(Ray r1, Ray r2) {
+    constexpr double epsilon = 1e-10;
+    return r1.origin == r2.origin &&
+           r1.direction == r2.direction &&
+           std::abs(r1.energyDensity - r2.energyDensity) < epsilon &&
+           std::abs(r1.wavelength - r2.wavelength) < epsilon &&
+           std::abs(r1.refractiveIndex - r2.refractiveIndex) < epsilon;
+}
+
+bool operator!=(Ray r1, Ray r2) {
+    return !(r1 == r2);
+}
