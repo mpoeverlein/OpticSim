@@ -7,13 +7,10 @@
 class Ray;
 struct Vertex;
 
-enum class Type {Base, Mirror, SphericalLens};
-
 
 class OpticalDevice {
     public:
     virtual ~OpticalDevice() = default;
-    virtual Type type();
     virtual double detectCollisionTime(const Ray& ray) const = 0;
     virtual std::vector<Ray> createNewRays(const Ray& ray) const = 0;
     virtual std::string forPythonPlot() const = 0;

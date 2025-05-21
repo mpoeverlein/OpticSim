@@ -20,22 +20,6 @@ SphericalLens::SphericalLens(Vector origin_, double radius_, std::unique_ptr<Mat
     : origin(origin_), radius(radius_), material(std::move(material)) {}
       
 
-// SphericalLens::SphericalLens(Vector origin_, double radius_, Material material_) {
-//     origin = origin_;
-//     radius = radius_;
-//     material = material_;
-// }
-
-// SphericalLens::SphericalLens(Vector origin_, double radius_, DispersionFunction fn) : refractiveIndexFn_(std::move(fn)) {
-//     origin = origin_;
-//     radius = radius_;
-// }
-
-// double SphericalLens::getRefractiveIndex(double wavelength_nm) const {
-//     return refractiveIndexFn_(wavelength_nm);
-// }
-
-Type SphericalLens::type() { return Type::SphericalLens; }
 Vector SphericalLens::getOrigin() { return origin; }
 double SphericalLens::getRadius() { return radius; }
 double SphericalLens::getRefractiveIndex(double wavelength) { return material->getRefractiveIndex(wavelength); }
