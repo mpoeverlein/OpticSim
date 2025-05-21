@@ -56,4 +56,7 @@ glm::vec3 wavelengthToRGB(double wavelength);
 bool operator==(Vector a, Vector b);
 bool operator!=(Vector a, Vector b);
 
+class Ray; class SphereSection;
+double calculateCollisionTime(Ray ray, SphereSection s);
+
 #endif /* MPVECTOR_HPP */

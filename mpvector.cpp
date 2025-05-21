@@ -1,4 +1,5 @@
 #include "mpvector.hpp"
+#include "lenses.hpp"
 
 Vector::Vector () {
     x = 0.;
@@ -169,6 +170,32 @@ std::vector<double> calculateCollisionTimes(Vector rayOrigin, Vector rayDirectio
 
     return {solveSecondDegreePolynomial(d.dot(d), -2*d.dot(v), v.dot(v)-R*R, false), 
         solveSecondDegreePolynomial(d.dot(d), -2*d.dot(v), v.dot(v)-R*R, true)};
+}
+
+double calculateCollisionTime(Ray ray, SphereSection s) {
+    Vector o = ray.origin;
+    Vector d = ray.direction;
+    Vector c = s.origin;
+    double R = s.radius;
+    Vector v = (c - o);
+    double t_p = v.dot(d);
+
+    Vector p = o + t_p * d;
+    double dSquared = (p - c).magnitude() * (p - c).magnitude();
+
+    if (dSquared > R * R) {
+        return Inf;
+    } else if (dSquared == R * R) {
+        return Inf;
+    }
+
+    double t = solveSecondDegreePolynomial(d.dot(d), -2*d.dot(v), v.dot(v)-R*R, false);
+    if (t <= 0) { t = Inf; }
+    if (angle(ray.getPositionAtTime(t)-c, s.height-c) > s.openingAngle) { t = Inf; }
+    t = solveSecondDegreePolynomial(d.dot(d), -2*d.dot(v), v.dot(v)-R*R, true);
+    if (t <= 0) { t = Inf; }
+    if (angle(ray.getPositionAtTime(t)-c, s.height-c) > s.openingAngle) { t = Inf; }
+    return t;
 }
 
 /**
