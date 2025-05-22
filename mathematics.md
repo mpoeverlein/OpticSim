@@ -15,4 +15,4 @@ When we have two collision points, we can find the time of collision $t_c$ with 
 $$R^2 = | \mathbf{o} + t_c  \mathbf{d} - \mathbf{c} |^2$$
 $$R^2 = | t_c  \mathbf{d} - \mathbf{v}|^2$$
 This gives a quadratic polynomial in $t$.
-$$\mathbf{d}\dot\mathbf{d} t_c^2 - 2\mathbf{d}\dot\mathbf{v} t_c + \mathbf{v}\dot\mathbf{v} - R^2 = 0$$
+$$\mathbf{d}\cdot \mathbf{d} t_c^2 - 2\mathbf{d}\cdot \mathbf{v} t_c + \mathbf{v}\cdot \mathbf{v} - R^2 = 0$$
