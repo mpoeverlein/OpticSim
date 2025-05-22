@@ -18,7 +18,7 @@ This gives a quadratic polynomial in $t$.
 $$\mathbf{d}\cdot \mathbf{d} t_c^2 - 2\mathbf{d}\cdot \mathbf{v} t_c + \mathbf{v}\cdot \mathbf{v} - R^2 = 0$$
 
 ## Collision between plane and line (old version)
-The ray meets the mirror at $$ ar_x(t) + br_y(t) + cr_z(t) = e $$.
+The ray meets the mirror at $$ ar_ x(t) + br_ y(t) + cr_ z(t) = e $$.
 See definitions of a,b,c,e below.
 Since x,y,z are linear in t, we can solve for t.
 
@@ -33,9 +33,11 @@ Since x,y,z are linear in t, we can solve for t.
     e = p1.x*p2.y*p3.z - p1.x*p3.y*p2.z + p2.x*p3.y*p1.z - p2.x*p1.y*p3.z + p3.x*p1.y*p2.z - p3.x*p2.y*p1.z;
 
 Ray is parallel if $ad_ x + bd_ y + cd_ z = 0$.
-Solve for t to find hitting time t_c:
+Solve for t to find hitting time $t_c$:
 $$a(o_ x+xt_ c) + b(o_ y+yt_ c) + c(o_ z+zt_ c) = e$$
+Then,
 $$ f = d - ao_ x - bo_ y - co_ z$$
+Finally,
 $$t_ c = \frac{e}{ad_ x + bd_ y + cd_ z}$$
 
 ## Collision between plane and line (new version)
