@@ -32,11 +32,11 @@ Since x,y,z are linear in t, we can solve for t.
     c = p1.x*p2.y - p2.x*p1.y + p2.x*p3.y - p3.x*p2.y + p3.x*p1.y - p1.x*p3.y;
     e = p1.x*p2.y*p3.z - p1.x*p3.y*p2.z + p2.x*p3.y*p1.z - p2.x*p1.y*p3.z + p3.x*p1.y*p2.z - p3.x*p2.y*p1.z;
 
-Ray is parallel if $ad_x + bd_y + cd_z = 0$.
+Ray is parallel if $ad_ x + bd_ y + cd_ z = 0$.
 Solve for t to find hitting time t_c:
-$$a(o_x+xt_c) + b(o_y+yt_c) + c(o_z+zt_c) = e$$
-$$ f = d - ao_x - bo_y - co_z$$
-$$t_c = \frac{e}{ad_x + bd_y + cd_z}$$
+$$a(o_ x+xt_ c) + b(o_ y+yt_ c) + c(o_ z+zt_ c) = e$$
+$$ f = d - ao_ x - bo_ y - co_ z$$
+$$t_ c = \frac{e}{ad_ x + bd_ y + cd_ z}$$
 
 ## Collision between plane and line (new version)
 Solve system of equations for t:
