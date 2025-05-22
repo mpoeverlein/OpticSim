@@ -189,12 +189,21 @@ double calculateCollisionTime(const Ray& ray, const SphereSection& s) {
         return Inf;
     }
 
-    double t = solveSecondDegreePolynomial(d.dot(d), -2*d.dot(v), v.dot(v)-R*R, false);
-    if (t <= 0) { t = Inf; }
-    if (angle(ray.getPositionAtTime(t)-c, s.height-c) > s.openingAngle) { t = Inf; }
-    t = solveSecondDegreePolynomial(d.dot(d), -2*d.dot(v), v.dot(v)-R*R, true);
-    if (t <= 0) { t = Inf; }
-    if (angle(ray.getPositionAtTime(t)-c, s.height-c) > s.openingAngle) { t = Inf; }
+    double a1 = d.dot(d), a2 = -2*d.dot(v), a3 = v.dot(v)-R*R;
+
+    double t = (-a2 - sqrt(a2*a2 - 4*a1*a3)) / (2*a1);
+    if (t <= 0) { 
+        t = Inf; 
+    } else {
+        if (angle(ray.getPositionAtTime(t)-c, s.height-c) > s.openingAngle) { t = Inf; }
+    } 
+    if (t != Inf) { return t; }
+    t = (-a2 + sqrt(a2*a2 - 4*a1*a3)) / (2*a1);
+    if (t <= 0) { 
+        t = Inf; 
+    } else {
+        if (angle(ray.getPositionAtTime(t)-c, s.height-c) > s.openingAngle) { t = Inf; }
+    }
     return t;
 }
 
@@ -205,34 +214,7 @@ double calculateCollisionTime(const Ray& ray, const SphereSection& s) {
  * @return collision time
  */
 double calculateCollisionTime(Vector rayOrigin, Vector rayDirection, Vector sphereOrigin, double sphereRadius) {
-    /** 
-     * the ray trajectory is given by
-     *    r(t) = o + t * d
-     * r: position at time t,
-     * o: origin of ray,
-     * d: unit direction of ray.
-     * 
-     * the shortest distance between ray and sphere center
-     * can be derived from projection. 
-     *     t_p = v (dot) d
-     * v: vector between sphere origin and ray origin, c - o
-     * 
-     * if t_p < 0, ray will never collide
-     * 
-     * The point of the ray closest to the sphere is here:
-     *     p = o + t_p * d
-     * 
-     * Compute squared distance:
-     *     D^2 = norm(p - c)^2
-     * 
-     * Scenarios:
-     *     D^2 < R^2: two collisions
-     *     D^2 > R^2: miss
-     *     D^2 = R^2: exactly one collision
-     * 
-     * if no collision occurs, the return value is Infinity!
-     * 
-     */
+    // mathematical derivation in mathematics.md
     Vector o = rayOrigin;
     Vector d = rayDirection;
     Vector c = sphereOrigin;
@@ -251,16 +233,7 @@ double calculateCollisionTime(Vector rayOrigin, Vector rayDirection, Vector sphe
     } else if (dSquared == R * R) {
         return Inf;
     }
-    /**
-     * from here: dSquared < R * R, so a hit!
-     * hit! create new ray based on first collision
-     * we need to find t for
-     * R^2 = | o + t*d - c |^2
-     *    = | t*d - v |^2
-     * the resulting quadratic is
-     * (d(dot)d) t^2 - 2t d(dot)v + v(dot)v - R^2 = 0
-     * we solve for t
-     */
+
     double t = solveSecondDegreePolynomial(d.dot(d), -2*d.dot(v), v.dot(v)-R*R);
     if (t < 0) { return Inf; }
     return t;   
@@ -290,45 +263,8 @@ void calculateCollisionTime(
     Vector rayOrigin, Vector rayDirection, 
     Vector planeOrigin, Vector planeSideA, Vector planeSideB, 
     double& t_hit, double& alpha, double& beta) {
-    // /** 
-    //  * the ray meets the mirror at
-    //  *  a * x(t) + b * y(t) + c * z(t) = d
-    //  * See definitions of a,b,c,d in code (define over three points of mirror)
-    //  * Since x,y,z are linear in t, we can solve for t
-    //  */
-    // Vector p1, p2, p3;
-    // p1 = planeOrigin;
-    // p2 = p1 + planeSideA;
-    // p3 = p1 + planeSideB;
+    // mathematical derivation in mathematics.md
 
-    // double a, b, c, d;
-    // a = p1.y*p2.z - p2.y*p1.z + p2.y*p3.z - p3.y*p2.z + p3.y*p1.z - p1.y*p3.z;
-    // b = p1.z*p2.x - p2.z*p1.x + p2.z*p3.x - p3.z*p2.x + p3.z*p1.x - p1.z*p3.x;
-    // c = p1.x*p2.y - p2.x*p1.y + p2.x*p3.y - p3.x*p2.y + p3.x*p1.y - p1.x*p3.y;
-    // d = p1.x*p2.y*p3.z - p1.x*p3.y*p2.z + p2.x*p3.y*p1.z - p2.x*p1.y*p3.z + p3.x*p1.y*p2.z - p3.x*p2.y*p1.z;
-
-    // Vector mirrorVector(a,b,c);
-
-    // // check if ray is parrallel to mirror
-    // if (mirrorVector.dot(rayDirection) == 0) {
-    //     return Inf; 
-    // }
-
-    // /**
-    //  * solve for t and find hitting point
-    //  * a*x(t) + b*y(t) + c*z(t) = d
-    //  * a*(ox+x*t) + b*(oy+y*t) + c*(oz+z*t) = d
-    //  * e = d - a*ox - b*oy - c*oz
-    //  * x*t + y*t + z*t = e
-    //  */
-    // double e = d - a*rayOrigin.x - b*rayOrigin.y - c*rayOrigin.z;
-
-    // double t_hit = d / (mirrorVector.dot(rayDirection));
-    // return t_hit;    
-    /**
-     * solve system of equations for t:
-     *   o_ray + t*d_ray = o_plane + alpha*sideA + beta*sideB
-     */
     std::vector<std::vector<double>> coeff = {
         {rayDirection.x, -planeSideA.x, -planeSideB.x},
         {rayDirection.y, -planeSideA.y, -planeSideB.y},
@@ -368,13 +304,6 @@ void calculateCollisionTime(
  * @return direction of the new ray
  */
 Vector calculateReflectionDirection(Vector rayDirection, Vector surfaceNormal) {
-    // if (rayDirection.cross(surfaceNormal).magnitude() == 0) {
-    //     // 90 deg angle between ray and mirror surface
-    //     return -1 * rayDirection;
-    // }
-    // Vector rotationAxis = rayDirection.cross(surfaceNormal).normalized();
-    // double theta1 = angle(surfaceNormal, rayDirection);
-    // return rotateVectorAboutAxis(rayDirection, rotationAxis, -(M_PI-2*theta1));
     return rayDirection - 2 * (rayDirection.dot(surfaceNormal)) * surfaceNormal;
 }
 
