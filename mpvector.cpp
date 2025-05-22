@@ -172,7 +172,7 @@ std::vector<double> calculateCollisionTimes(Vector rayOrigin, Vector rayDirectio
         solveSecondDegreePolynomial(d.dot(d), -2*d.dot(v), v.dot(v)-R*R, true)};
 }
 
-double calculateCollisionTime(Ray ray, SphereSection s) {
+double calculateCollisionTime(const Ray& ray, const SphereSection& s) {
     Vector o = ray.origin;
     Vector d = ray.direction;
     Vector c = s.origin;

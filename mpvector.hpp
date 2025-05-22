@@ -57,6 +57,6 @@ bool operator==(Vector a, Vector b);
 bool operator!=(Vector a, Vector b);
 
 class Ray; class SphereSection;
-double calculateCollisionTime(Ray ray, SphereSection s);
+double calculateCollisionTime(const Ray& ray, const SphereSection& s);
 
 #endif /* MPVECTOR_HPP */
