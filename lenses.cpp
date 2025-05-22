@@ -48,6 +48,11 @@ double SphereSection::detectCollisionTime(const Ray& ray) const {
     return calculateCollisionTime(ray, *this);
 }
 
+Vector SphereSection::getSurfaceNormal(const Ray& ray) const {
+    return (origin - ray.end).normalized();
+}
+
+
 Lens::Lens(Sphere sphere1_, Sphere sphere2_, double refractiveIndex_) {
     Vector o1 = sphere1_.origin, o2 = sphere2_.origin;
     Vector d = o2-o1;
@@ -65,8 +70,6 @@ Lens::Lens(Sphere sphere1_, Sphere sphere2_, double refractiveIndex_) {
     surfaceGeometries.push_back(std::make_unique<SphereSection>(o1, r1, h1, a1));
     SphereSection sphereSection2{sphere2_.origin, sphere2_.radius, h2, M_PI-a2};
     if (r2 > 0) {
-        std::cout << "o2 " << sphere2_.origin << "r2 " << sphere2_.radius << "h2 " << h2 << "a2 " << a2*180/M_PI << "\n";
-        // sphereSection2 = SphereSection(sphere2_.origin, sphere2_.radius, -1*h2, a2);
         h2 = -1 * h2;
         a2 = M_PI - a2;
     }
@@ -75,16 +78,39 @@ Lens::Lens(Sphere sphere1_, Sphere sphere2_, double refractiveIndex_) {
 
 }
 
-double Lens::detectCollisionTime(const Ray& ray) const {
+std::vector<double> Lens::determineCollisionTimes(const Ray& ray) const {
     std::vector<double> tTimes;
     for (int i = 0; i < surfaceGeometries.size(); i++) {
         tTimes.push_back(surfaceGeometries[i]->detectCollisionTime(ray));
     }
+    return tTimes;
+}
+
+double Lens::detectCollisionTime(const Ray& ray) const {
+    std::vector<double> tTimes = determineCollisionTimes(ray);
     return *std::min_element(tTimes.begin(), tTimes.end());
 }
 
 std::string Lens::forPythonPlot() const { return ""; }
-std::vector<Ray> Lens::createNewRays (const Ray& ray) const { std::vector<Ray> newRays; return newRays; }
+
+std::vector<Ray> Lens::createNewRays (const Ray& ray) const {
+    std::vector<double> tTimes = determineCollisionTimes(ray);
+    SurfaceGeometry* sg = surfaceGeometries[std::min_element(tTimes.begin(), tTimes.end())-tTimes.begin()].get();
+
+    std::vector<Ray> newRays;
+    Vector surfaceNormal = sg->getSurfaceNormal(ray);
+    double otherMedium = material->getRefractiveIndex(ray.wavelength);
+    double n2;
+    // ray outside or inside
+    if (ray.refractiveIndex != otherMedium) {
+        n2 = otherMedium;
+    } else {
+        surfaceNormal = -1 * surfaceNormal;
+        n2 = 1.;
+    }
+    return ::createNewRays(ray, surfaceNormal, n2, 0.1);    
+}
+
 void Lens::createGraphicVertices(std::vector<Vertex>& vertices, std::vector<unsigned int>& indices) const {;}
 
 SphericalLens::SphericalLens() {}

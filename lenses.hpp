@@ -16,6 +16,7 @@ class SurfaceGeometry {
     public:
         virtual ~SurfaceGeometry() = default;
         virtual double detectCollisionTime(const Ray& ray) const = 0;
+        virtual Vector getSurfaceNormal(const Ray& ray) const = 0;
 };
 
 class Sphere {
@@ -34,16 +35,15 @@ class SphereSection : public SurfaceGeometry {
         SphereSection();
         SphereSection(Vector origin_, double radius_, Vector height_, double openingAngle_);
         double detectCollisionTime(const Ray& ray) const;
+        Vector getSurfaceNormal(const Ray& ray) const;
 };
 
 class Lens : public OpticalDevice {
     public:
         std::unique_ptr<Material> material;
         std::vector<std::unique_ptr<SurfaceGeometry>> surfaceGeometries;
-        // SphereSection sphereSection1;
-        // SphereSection sphereSection2;
         Lens(Sphere sphere1_, Sphere sphere2_, double refractiveIndex_);
-        // Lens(Sphere sphere1_, Sphere sphere2_, std::unique_ptr<Material> material);
+        std::vector<double> determineCollisionTimes(const Ray& ray) const;
         double detectCollisionTime(const Ray& ray) const;
         std::string forPythonPlot() const;
         std::vector<Ray> createNewRays (const Ray& ray) const;
