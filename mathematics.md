@@ -40,5 +40,5 @@ $$t_c = \frac{e}{ad_x + bd_y + cd_z}$$
 
 ## Collision between plane and line (new version)
 Solve system of equations for t:
-$$\mathbf{o}\sb{\mathrm{ray}} + t\mathbf{d}_\mathrm{ray} = \mathbf{o}_\mathrm{plane} + \alpha \mathbf{a}_\mathrm{plane} + \beta\mathbf{b}_\mathrm{plane}$$
+$$\mathbf{o}_ \mathrm{ray} + t\mathbf{d}_ \mathrm{ray} = \mathbf{o}_ \mathrm{plane} + \alpha \mathbf{a}_ \mathrm{plane} + \beta\mathbf{b}_ \mathrm{plane}$$
 A solution for $t,\alpha,\beta$ can be found, e.g., with Cramer's rule.
