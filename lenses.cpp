@@ -44,30 +44,43 @@ SphereSection::SphereSection(Vector origin_, double radius_, Vector height_, dou
     }
 }
 
+double SphereSection::detectCollisionTime(const Ray& ray) const {
+    return calculateCollisionTime(ray, *this);
+}
+
 Lens::Lens(Sphere sphere1_, Sphere sphere2_, double refractiveIndex_) {
-    Vector d = sphere2_.origin-sphere1_.origin;
+    Vector o1 = sphere1_.origin, o2 = sphere2_.origin;
+    Vector d = o2-o1;
     double x1 = 0, x2 = d.magnitude(), r1 = sphere1_.radius, r2 = sphere2_.radius;
     double xM = 1 / (-2*x2) * (r2*r2 - r1*r1 - x2*x2);
     Vector h1 = d.normalized() * sphere1_.radius;
     Vector h2 = -1 * d.normalized() * sphere2_.radius;
-    double a2 = acos(xM/r2);
     double a1 = acos((d.magnitude()-xM) / r1);
-    sphereSection1 = SphereSection(sphere1_.origin, sphere1_.radius, h1, a1);
+    double a2 = acos(xM/r2);
+    SphereSection sphereSection1{sphere1_.origin, sphere1_.radius, h1, a1};
     if (r1 < 0) {
-        sphereSection1 = SphereSection(sphere1_.origin, sphere1_.radius, -1*h1, M_PI-a1);
+        h1 = -1 * h1;
+        a1 = M_PI - a1;
     }
-    sphereSection2 = SphereSection(sphere2_.origin, sphere2_.radius, h2, M_PI-a2);
+    surfaceGeometries.push_back(std::make_unique<SphereSection>(o1, r1, h1, a1));
+    SphereSection sphereSection2{sphere2_.origin, sphere2_.radius, h2, M_PI-a2};
     if (r2 > 0) {
-        sphereSection2 = SphereSection(sphere2_.origin, sphere2_.radius, -1*h2, a2);
+        std::cout << "o2 " << sphere2_.origin << "r2 " << sphere2_.radius << "h2 " << h2 << "a2 " << a2*180/M_PI << "\n";
+        // sphereSection2 = SphereSection(sphere2_.origin, sphere2_.radius, -1*h2, a2);
+        h2 = -1 * h2;
+        a2 = M_PI - a2;
     }
+    surfaceGeometries.push_back(std::make_unique<SphereSection>(o2, r2, h2, a2));
     material = std::make_unique<NonDispersiveMaterial>(refractiveIndex_);
+
 }
 
 double Lens::detectCollisionTime(const Ray& ray) const {
-    double t1, t2;
-    t1 = calculateCollisionTime(ray, sphereSection1);
-    t2 = calculateCollisionTime(ray, sphereSection2);
-    return std::min(t1, t2);
+    std::vector<double> tTimes;
+    for (int i = 0; i < surfaceGeometries.size(); i++) {
+        tTimes.push_back(surfaceGeometries[i]->detectCollisionTime(ray));
+    }
+    return *std::min_element(tTimes.begin(), tTimes.end());
 }
 
 std::string Lens::forPythonPlot() const { return ""; }

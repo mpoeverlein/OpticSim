@@ -12,6 +12,12 @@
 class OpticalDevice;
 class Ray;
 
+class SurfaceGeometry {
+    public:
+        virtual ~SurfaceGeometry() = default;
+        virtual double detectCollisionTime(const Ray& ray) const = 0;
+};
+
 class Sphere {
     public:
         Vector origin;
@@ -19,7 +25,7 @@ class Sphere {
         Sphere(Vector origin_, double radius_);
 };
 
-class SphereSection {
+class SphereSection : public SurfaceGeometry {
     public:
         Vector origin;
         double radius;
@@ -27,13 +33,15 @@ class SphereSection {
         double openingAngle;
         SphereSection();
         SphereSection(Vector origin_, double radius_, Vector height_, double openingAngle_);
+        double detectCollisionTime(const Ray& ray) const;
 };
 
 class Lens : public OpticalDevice {
     public:
         std::unique_ptr<Material> material;
-        SphereSection sphereSection1;
-        SphereSection sphereSection2;
+        std::vector<std::unique_ptr<SurfaceGeometry>> surfaceGeometries;
+        // SphereSection sphereSection1;
+        // SphereSection sphereSection2;
         Lens(Sphere sphere1_, Sphere sphere2_, double refractiveIndex_);
         // Lens(Sphere sphere1_, Sphere sphere2_, std::unique_ptr<Material> material);
         double detectCollisionTime(const Ray& ray) const;
