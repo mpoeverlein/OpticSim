@@ -17,6 +17,7 @@ class SurfaceGeometry {
         virtual ~SurfaceGeometry() = default;
         virtual double detectCollisionTime(const Ray& ray) const = 0;
         virtual Vector getSurfaceNormal(const Ray& ray) const = 0;
+        virtual void createGraphicVertices(std::vector<Vertex>& vertices, std::vector<unsigned int>& indices) const = 0;
 };
 
 class Sphere {
@@ -24,6 +25,7 @@ class Sphere {
         Vector origin;
         double radius;
         Sphere(Vector origin_, double radius_);
+        Sphere(const SphereSection& ss);
 };
 
 class SphereSection : public SurfaceGeometry {
@@ -34,20 +36,37 @@ class SphereSection : public SurfaceGeometry {
         double openingAngle;
         SphereSection();
         SphereSection(Vector origin_, double radius_, Vector height_, double openingAngle_);
+        SphereSection(const Sphere& s);
         double detectCollisionTime(const Ray& ray) const;
         Vector getSurfaceNormal(const Ray& ray) const;
+        void createGraphicVertices(std::vector<Vertex>& vertices, std::vector<unsigned int>& indices) const;
+};
+
+class Disc : public SurfaceGeometry {
+    public:
+        Vector surfaceNormal;
+        double radius;
+};
+
+class Parallelogram : public SurfaceGeometry {
+    public:
+        Vector origin;
+        Vector sideA;
+        Vector sideB;
 };
 
 class Lens : public OpticalDevice {
     public:
         std::unique_ptr<Material> material;
         std::vector<std::unique_ptr<SurfaceGeometry>> surfaceGeometries;
+        Lens(std::vector<std::unique_ptr<SurfaceGeometry>> surfaceGeometries_, std::unique_ptr<Material> material_);
         Lens(Sphere sphere1_, Sphere sphere2_, double refractiveIndex_);
         std::vector<double> determineCollisionTimes(const Ray& ray) const;
         double detectCollisionTime(const Ray& ray) const;
         std::string forPythonPlot() const;
         std::vector<Ray> createNewRays (const Ray& ray) const;
         void createGraphicVertices(std::vector<Vertex>& vertices, std::vector<unsigned int>& indices) const;
+        Lens makeSphericalLens(Sphere s, std::unique_ptr<Material> m) const;
 };
 
 class SphericalLens : public OpticalDevice {

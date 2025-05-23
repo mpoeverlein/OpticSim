@@ -12,10 +12,13 @@ Sphere::Sphere(Vector origin_, double radius_)
     : origin(origin_),
       radius(radius_)
 {
-    if (radius_ <= 0) {
-        std::cerr << "Sphere radius must be positive. Entered value: " << radius_ << "\n";
+    if (radius_ == 0) {
+        std::cerr << "Sphere radius cannot be zero. Entered value: " << radius_ << "\n";
     }    
 }
+
+Sphere::Sphere(const SphereSection& ss) 
+        : origin(ss.origin), radius(ss.radius) {}
 
 SphereSection::SphereSection() 
     : origin(Vector()),
@@ -44,6 +47,9 @@ SphereSection::SphereSection(Vector origin_, double radius_, Vector height_, dou
     }
 }
 
+SphereSection::SphereSection(const Sphere& s)
+        : origin(s.origin), radius(s.radius), height(Vector(0,0,s.radius)), openingAngle(M_PI) {}
+
 double SphereSection::detectCollisionTime(const Ray& ray) const {
     return calculateCollisionTime(ray, *this);
 }
@@ -52,6 +58,26 @@ Vector SphereSection::getSurfaceNormal(const Ray& ray) const {
     return (origin - ray.end).normalized();
 }
 
+void SphereSection::createGraphicVertices(std::vector<Vertex>& vertices, std::vector<unsigned int>& indices) const {
+    std::cout << "creating vertices" << radius << " opening angle " << openingAngle << "\n";
+    std::cout << " for " << origin << " " << height.normalized() << "\n";
+    int segments = 16;
+    std::vector<Vertex> sphereVerts = createSphereVertices(origin, height.normalized(), abs(radius), openingAngle, segments);
+    vertices.insert(vertices.end(), sphereVerts.begin(), sphereVerts.end());
+
+    unsigned int current = 0; 
+    if (indices.size() > 0) {
+        current = *std::max_element(indices.begin(),indices.end())+1; 
+    }
+    std::vector<unsigned int> sphereIndices = createSphereIndices(segments, current);
+    indices.insert(indices.end(), sphereIndices.begin(), sphereIndices.end());    
+}
+
+
+Lens::Lens(std::vector<std::unique_ptr<SurfaceGeometry>> sgs, 
+         std::unique_ptr<Material> m)  // Parameter by value
+        : surfaceGeometries(std::move(sgs)), 
+          material(std::move(m)) {}
 
 Lens::Lens(Sphere sphere1_, Sphere sphere2_, double refractiveIndex_) {
     Vector o1 = sphere1_.origin, o2 = sphere2_.origin;
@@ -61,17 +87,15 @@ Lens::Lens(Sphere sphere1_, Sphere sphere2_, double refractiveIndex_) {
     Vector h1 = d.normalized() * sphere1_.radius;
     Vector h2 = -1 * d.normalized() * sphere2_.radius;
     double a1 = acos((d.magnitude()-xM) / r1);
-    double a2 = acos(xM/r2);
-    SphereSection sphereSection1{sphere1_.origin, sphere1_.radius, h1, a1};
+    double a2 = acos(xM/abs(r2));
     if (r1 < 0) {
         h1 = -1 * h1;
-        a1 = M_PI - a1;
+        // a1 = M_PI - a1;
     }
     surfaceGeometries.push_back(std::make_unique<SphereSection>(o1, r1, h1, a1));
-    SphereSection sphereSection2{sphere2_.origin, sphere2_.radius, h2, M_PI-a2};
     if (r2 > 0) {
         h2 = -1 * h2;
-        a2 = M_PI - a2;
+        // a2 = a2;
     }
     surfaceGeometries.push_back(std::make_unique<SphereSection>(o2, r2, h2, a2));
     material = std::make_unique<NonDispersiveMaterial>(refractiveIndex_);
@@ -82,6 +106,7 @@ std::vector<double> Lens::determineCollisionTimes(const Ray& ray) const {
     std::vector<double> tTimes;
     for (int i = 0; i < surfaceGeometries.size(); i++) {
         tTimes.push_back(surfaceGeometries[i]->detectCollisionTime(ray));
+        std::cout << tTimes[i] << "\n";
     }
     return tTimes;
 }
@@ -111,7 +136,18 @@ std::vector<Ray> Lens::createNewRays (const Ray& ray) const {
     return ::createNewRays(ray, surfaceNormal, n2, 0.1);    
 }
 
-void Lens::createGraphicVertices(std::vector<Vertex>& vertices, std::vector<unsigned int>& indices) const {;}
+void Lens::createGraphicVertices(std::vector<Vertex>& vertices, std::vector<unsigned int>& indices) const {
+    for (const auto& sg : surfaceGeometries) {
+        sg->createGraphicVertices(vertices, indices);
+    }    
+}
+
+Lens Lens::makeSphericalLens(Sphere s, std::unique_ptr<Material> m) const {
+    Vector h = Vector(0,0,abs(s.radius));
+    std::vector<std::unique_ptr<SurfaceGeometry>> sgs;
+    sgs.push_back(std::make_unique<SphereSection>(s.origin, s.radius, h, M_PI));
+    return Lens(std::move(sgs), std::move(m));
+}
 
 SphericalLens::SphericalLens() {}
 
