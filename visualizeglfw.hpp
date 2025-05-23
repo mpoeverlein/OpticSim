@@ -34,6 +34,15 @@ std::vector<Vertex> createParabolaVertices(
     const glm::vec3& color
 );
 
+std::vector<Vertex> createDiscVertices(
+    const Vector& origin_,
+    const Vector& surfaceNormal_,
+    const double radius_,
+    int segments = 16,
+    const glm::vec3& color = glm::vec3(1.0f, 0.0f, 1.0f)
+);
+std::vector<unsigned int> createDiscIndices(int segments, unsigned int base);
+
 void visualizeWithGLFW(GeometryLoader& geometry);
 
 #endif /* VISUALIZEWITHGLFW_HPP */
