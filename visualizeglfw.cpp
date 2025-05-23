@@ -167,8 +167,8 @@ std::vector<Vertex> createDiscVertices(
     const Vector& origin_,
     const Vector& surfaceNormal_,
     const double radius_,
-    int segments = 16,
-    const glm::vec3& color = glm::vec3(1.0f, 0.0f, 1.0f)
+    int segments,
+    const glm::vec3& color
 ) {
     std::vector<Vertex> vertices;
     glm::vec3 origin{origin_.x, origin_.y, origin_.z};
@@ -192,7 +192,13 @@ std::vector<Vertex> createDiscVertices(
     return vertices;
 }
 std::vector<unsigned int> createDiscIndices(int segments, unsigned int base) {
-
+    std::vector<unsigned int> indices;
+    unsigned int sectorCount = segments;
+    for (unsigned int i = 1; i < sectorCount; i++) {
+        indices.insert(indices.end(), {base, base+i, base+i+1});
+    }
+    indices.insert(indices.end(), {base, base+sectorCount, base+1});
+    return indices;
 }
 
 
