@@ -2,8 +2,6 @@
 #include "mpvector.hpp"
 #include <sstream>
 #include <iomanip> 
-#include "lenses.hpp"
-#include "mirror.hpp"
 #include "optdev.hpp"
 
 Ray::Ray () {

@@ -3,9 +3,8 @@
 
 #include "mpvector.hpp"
 #include "constants.hpp"
-#include "lenses.hpp"
-#include "mirror.hpp"
-// #include "optdev.hpp"
+
+class OpticalDevice;
 
 class Ray {
     public:

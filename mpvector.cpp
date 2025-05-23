@@ -1,5 +1,6 @@
 #include "mpvector.hpp"
 #include "lenses.hpp"
+#include "surfacegeometry.hpp"
 
 Vector::Vector () {
     x = 0.;
@@ -149,33 +150,6 @@ Vector rotateVectorAboutAxis(const Vector& v, const Vector& u, double angle) {
     return Vector(bx, by, bz);
 }
 
-/**
- * Calculate both collision times for ray interacting with sphere.
- * @param rayOrigin, rayDirection starting vector and direction vector of ray
- * @param sphereOrigin, sphereRadius center point and radius of sphere
- * @return vector<double> of the two collision times
- */
-std::vector<double> calculateCollisionTimes(Vector rayOrigin, Vector rayDirection, Vector sphereOrigin, double sphereRadius) {
-    Vector o = rayOrigin;
-    Vector d = rayDirection;
-    Vector c = sphereOrigin;
-    double R = sphereRadius;
-    Vector v = (c - o);
-    double t_p = v.dot(d);
-
-    Vector p = o + t_p * d;
-    double dSquared = (p - c).magnitude() * (p - c).magnitude();
-
-    if (dSquared > R * R) {
-        return {Inf, Inf};
-    } else if (dSquared == R * R) {
-        return {Inf, Inf};
-    }
-
-    return {solveSecondDegreePolynomial(d.dot(d), -2*d.dot(v), v.dot(v)-R*R, false), 
-        solveSecondDegreePolynomial(d.dot(d), -2*d.dot(v), v.dot(v)-R*R, true)};
-}
-
 double calculateCollisionTime(const Ray& ray, const SphereSection& s) {
     Vector o = ray.origin;
     Vector d = ray.direction;
@@ -217,48 +191,61 @@ double calculateCollisionTime(const Ray& ray, const Plane& plane) {
     return (plane.origin - ray.origin).dot(plane.surfaceNormal) / ray.direction.dot(plane.surfaceNormal);    
 }
 
-/**
- * Calculate smallest collision time between ray and sphere.
- * @param rayOrigin, rayDirection starting vector and direction vector of ray
- * @param sphereOrigin, sphereRadius center point and radius of sphere
- * @return collision time
- */
-double calculateCollisionTime(Vector rayOrigin, Vector rayDirection, Vector sphereOrigin, double sphereRadius) {
-    // mathematical derivation in mathematics.md
-    Vector o = rayOrigin;
-    Vector d = rayDirection;
-    Vector c = sphereOrigin;
-    double R = sphereRadius;
-    Vector v = (c - o);
-    double t_p = v.dot(d);
-    if (t_p <= Config::MIN_EPS ) {
-        return Inf; 
-    } 
+double calculateCollisionTime(const Ray& ray, const Parabola& parabola) {
+    double t;
+    // transform mirror and ray such that mirror is defined by k*(x^2+y^2) = z.
+    // 1. Compute rotation matrix
+    glm::mat3 R = parabola.getRotationMatrixForLocalCoordinates();
 
-    Vector p = o + t_p * d;
-    double dSquared = (p - c).magnitude() * (p - c).magnitude();
+    // 2. Transform ray to parabola's local space
+    Vector o_local = glm::transpose(R) * (ray.origin - parabola.origin);
+    Vector d_local = glm::transpose(R) * ray.direction;
+    // std::cout << "# MY DLOCA " << d_local << "\n";
+    // std::cout << "# DLCO x Z " <<  d_local.cross(Vector(0,0,1)).magnitude() << "\n";
+    // std::cout << "# DLCO dot Z " << d_local.normalized().dot(Vector(0,0,1)) << "\n";
 
-    if (dSquared > R * R) {
-        return Inf;
-    } else if (dSquared == R * R) {
-        return Inf;
+    // edge case: ray is parallel to mirror's height vector, z value in local coordinates is then given by x and y of o_local
+    // if (d_local.cross(Vector(0,0,1)).magnitude() < 1e-8) {
+    if (1 - abs(d_local.normalized().dot(Vector(0,0,1))) < 1e-4) {
+        double z_hit = parabola.curvature*(o_local.x*o_local.x + o_local.y*o_local.y);
+        if (z_hit > parabola.height.magnitude()) { return Inf; }
+        t = (z_hit-o_local.z) / d_local.z;
+        if (t < Config::MIN_EPS) {
+            return Inf;
+        }
+        return t;
     }
 
-    double t = solveSecondDegreePolynomial(d.dot(d), -2*d.dot(v), v.dot(v)-R*R);
-    if (t < 0) { return Inf; }
-    return t;   
+    // 3. Compute quadratic coefficients
+    double A = parabola.curvature * (d_local.x * d_local.x + d_local.y * d_local.y);
+    double B = 2.0f * parabola.curvature * (o_local.x * d_local.x + o_local.y * d_local.y) - d_local.z;
+    double C = parabola.curvature * (o_local.x * o_local.x + o_local.y * o_local.y) - o_local.z;
+
+    // 4. Solve quadratic
+    double discriminant = B * B - 4 * A * C;
+    if (discriminant < 0) return Inf; // No intersection
+    // std::cout << "# DISC " << discriminant << "\n";
+    // std::cout << "# A " << A << "\n";
+
+    t = (-B - sqrt(discriminant)) / (2 * A);
+    if ((o_local + t * d_local).z > parabola.height.magnitude()) { t = 0; }
+
+    if (t < Config::MIN_EPS) {
+        t = (-B + sqrt(discriminant)) / (2 * A); // Try other solution
+        if ((o_local + t * d_local).z > parabola.height.magnitude()) { t = Inf; }
+        if (t < Config::MIN_EPS) { t = Inf; } // Both solutions behind ray
+        if (t > Config::MAX_T) { t = Inf; }
+    }
+    // std::cout << "# T " << t << "\n";
+    return t;
 }
 
-/**
- * Calculate collision time between ray and plane.
- * @param rayOrigin, rayDirection starting vector and direction vector of ray
- * @param planeOrigin, planeNormal origin location of the plane and its surface normal vector
- * @return collision time
- */
-double calculateCollisionTime(Vector rayOrigin, Vector rayDirection, Vector planeOrigin, Vector planeNormal) {
-    // check if surface and ray are parallel
-    if (planeNormal.dot(rayDirection) == 0) { return Inf; }
-    return (planeOrigin - rayOrigin).dot(planeNormal) / rayDirection.dot(planeNormal);
+double calculateCollisionTime(const Ray& ray, const Parallelogram& p) {
+    double t_hit, alpha, beta;
+    calculateCollisionTime(ray.origin, ray.direction, p.origin, p.sideA, p.sideB, t_hit, alpha, beta);
+    if ((alpha <= 0) || (alpha >= 1)) { t_hit = Inf; }
+    if ((beta <= 0) || (beta >= 1)) { t_hit = Inf; }
+    return t_hit;
 }
 
 /**

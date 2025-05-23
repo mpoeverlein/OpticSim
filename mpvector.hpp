@@ -39,9 +39,9 @@ Vector operator*(const glm::mat3 m, const Vector v);
 std::ostream& operator<<(std::ostream& os, const Vector& v);
 
 std::vector<double> calculateCollisionTimes(Vector rayOrigin, Vector rayDirection, Vector sphereOrigin, double sphereRadius);
-double calculateCollisionTime(Vector rayOrigin, Vector rayDirection, Vector sphereOrigin, double sphereRadius);
-double calculateCollisionTime(Vector rayOrigin, Vector rayDirection, Vector planeOrigin, Vector planeNormal);
 void calculateCollisionTime(Vector rayOrigin, Vector rayDirection, Vector planeOrigin, Vector planeSideA, Vector planeSideB, double& t_hit, double& alpha, double& beta);
+
+
 Vector calculateReflectionDirection(Vector rayDirection, Vector surfaceNormal);
 bool pointIsOnDome(Vector p, Vector sphereOrigin, Vector apex, double openingAngle);
 
@@ -57,8 +57,9 @@ glm::vec3 wavelengthToRGB(double wavelength);
 bool operator==(Vector a, Vector b);
 bool operator!=(Vector a, Vector b);
 
-class Ray; class SphereSection; class Plane;
+class Ray; class SphereSection; class Plane; class Parabola;
 double calculateCollisionTime(const Ray& ray, const SphereSection& s);
 double calculateCollisionTime(const Ray& ray, const Plane& plane);
+double calculateCollisionTime(const Ray& ray, const Parabola& parabola);
 
 #endif /* MPVECTOR_HPP */
