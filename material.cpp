@@ -9,6 +9,10 @@ double NonDispersiveMaterial::getRefractiveIndex(double wavelength) const {
     return refractiveIndex;
 }
 
+double NonDispersiveMaterial::getReflectance(double wavelength) const {
+    return 0.1;
+}
+
 Water::Water(double temperature_) : temperature(temperature_) {}
 
 double Water::getRefractiveIndex(double wavelength) const {
@@ -40,6 +44,10 @@ double Water::getRefractiveIndex(double wavelength) const {
         a7 * rhoBar * rhoBar;
     rhs *= rhoBar;
     return solveSecondDegreePolynomial(rhs-1, 0, 2*rhs+1);
+}
+
+double Water::getReflectance(double wavelength) const {
+    return 0.1;
 }
 
 double Water::getDensity() const {

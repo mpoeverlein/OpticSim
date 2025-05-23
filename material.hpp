@@ -5,6 +5,7 @@ class Material {
     public:
     virtual ~Material() = default;
     virtual double getRefractiveIndex(double wavelength) const = 0;
+    virtual double getReflectance(double wavelength) const = 0;
 };
 
 class NonDispersiveMaterial : public Material {
@@ -12,6 +13,7 @@ class NonDispersiveMaterial : public Material {
     double refractiveIndex;
     NonDispersiveMaterial(double n_);
     double getRefractiveIndex(double wavelength) const override;
+    double getReflectance(double wavelength) const override;
 };
 
 class Water : public Material {
@@ -20,6 +22,7 @@ class Water : public Material {
     Water(double temperature_);
     double getRefractiveIndex(double wavelength) const override;
     double getDensity() const;   
+    double getReflectance(double wavelength) const override;
 };
 
 #endif /* MATERIAL_HPP */
