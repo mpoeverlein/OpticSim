@@ -16,6 +16,14 @@ struct Vertex {
 
 class Vector;
 
+std::vector<Vertex> createCylinder(
+    const Vector& start_, 
+    const Vector& end_, 
+    float radius, 
+    int segments = 16,
+    const glm::vec3& color = glm::vec3(1.0f, 1.0f, 1.0f)
+);
+
 
 std::vector<Vertex> createSphereVertices(
     const Vector& origin_,
