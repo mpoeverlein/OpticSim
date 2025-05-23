@@ -59,6 +59,7 @@ class Lens : public OpticalDevice {
     public:
         std::unique_ptr<Material> material;
         std::vector<std::unique_ptr<SurfaceGeometry>> surfaceGeometries;
+        Lens();
         Lens(std::vector<std::unique_ptr<SurfaceGeometry>> surfaceGeometries_, std::unique_ptr<Material> material_);
         Lens(Sphere sphere1_, Sphere sphere2_, double refractiveIndex_);
         std::vector<double> determineCollisionTimes(const Ray& ray) const;
@@ -66,7 +67,7 @@ class Lens : public OpticalDevice {
         std::string forPythonPlot() const;
         std::vector<Ray> createNewRays (const Ray& ray) const;
         void createGraphicVertices(std::vector<Vertex>& vertices, std::vector<unsigned int>& indices) const;
-        Lens makeSphericalLens(Sphere s, std::unique_ptr<Material> m) const;
+        static Lens makeSphericalLens(Sphere s, std::unique_ptr<Material> m);
 };
 
 class SphericalLens : public OpticalDevice {

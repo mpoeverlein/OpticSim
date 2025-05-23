@@ -73,6 +73,7 @@ void SphereSection::createGraphicVertices(std::vector<Vertex>& vertices, std::ve
     indices.insert(indices.end(), sphereIndices.begin(), sphereIndices.end());    
 }
 
+Lens::Lens() {}
 
 Lens::Lens(std::vector<std::unique_ptr<SurfaceGeometry>> sgs, 
          std::unique_ptr<Material> m)  // Parameter by value
@@ -142,7 +143,7 @@ void Lens::createGraphicVertices(std::vector<Vertex>& vertices, std::vector<unsi
     }    
 }
 
-Lens Lens::makeSphericalLens(Sphere s, std::unique_ptr<Material> m) const {
+Lens Lens::makeSphericalLens(Sphere s, std::unique_ptr<Material> m) {
     Vector h = Vector(0,0,abs(s.radius));
     std::vector<std::unique_ptr<SurfaceGeometry>> sgs;
     sgs.push_back(std::make_unique<SphereSection>(s.origin, s.radius, h, M_PI));
