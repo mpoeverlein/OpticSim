@@ -2,6 +2,7 @@
 #include "geometry_loader.hpp"
 #include "ray.hpp"
 #include "shaders.hpp"
+#include "optdev.hpp"
 
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>  // For transformations (e.g., glm::translate)
