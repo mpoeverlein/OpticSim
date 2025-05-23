@@ -163,6 +163,38 @@ std::vector<Vertex> createParabolaVertices(
     return vertices;
 }
 
+std::vector<Vertex> createDiscVertices(
+    const Vector& origin_,
+    const Vector& surfaceNormal_,
+    const double radius_,
+    int segments = 16,
+    const glm::vec3& color = glm::vec3(1.0f, 0.0f, 1.0f)
+) {
+    std::vector<Vertex> vertices;
+    glm::vec3 origin{origin_.x, origin_.y, origin_.z};
+    // make center vertex for construction of triangles in shape of cut pie
+    vertices.push_back({glm::vec3(origin), surfaceNormal_, color, 0.7f});
+
+    const glm::mat4 rotation = orientSphere(surfaceNormal_);
+    int sectorCount = segments;
+    for (int i = 0; i < sectorCount; i++) {
+        float sectorAngle = i * M_PI * 2 / sectorCount; // from 0 to 2pi
+
+        float x = radius_ * cos(sectorAngle);
+        float y = radius_ * sin(sectorAngle);
+
+        glm::vec3 pos = glm::vec3(x, y, 0);
+        pos = glm::vec3(rotation * glm::vec4(pos, 1.0f));
+        glm::vec3 normal = glm::vec3(rotation * glm::vec4(glm::normalize(pos), 0.0f));
+
+        vertices.push_back({glm::vec3(pos+origin), normal, color, 0.7f});        
+    }
+    return vertices;
+}
+std::vector<unsigned int> createDiscIndices(int segments, unsigned int base) {
+
+}
+
 
 
 class Camera {
