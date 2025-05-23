@@ -1,6 +1,6 @@
 #include "mpvector.hpp"
-#include "lenses.hpp"
 #include "surfacegeometry.hpp"
+#include "ray.hpp"
 
 Vector::Vector () {
     x = 0.;
