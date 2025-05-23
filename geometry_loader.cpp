@@ -47,10 +47,10 @@ void GeometryLoader::loadFromFile(const std::string& filename) {
 
         if (line.find("$sphericalLens") == 0) {
             try {
-                SphericalLens lens = parseSphericalLensLine(line);
-                devices.push_back(std::make_unique<SphericalLens>(lens.origin, lens.radius, std::move(lens.material)));
+                Lens lens = parseSphericalLensLine(line);
+                devices.push_back(std::make_unique<Lens>(std::move(lens)));
             } catch (const std::exception& e) {
-                std::cerr << "Error parsing SphericalLens: " << e.what() << "\n";
+                std::cerr << "Error parsing spherical lens: " << e.what() << "\n";
                 continue;
             }
         }
@@ -148,7 +148,7 @@ std::vector<Ray> GeometryLoader::parseParallelRays (const std::string& line) {
         go.refractiveIndex, go.wavelength);
 }
 
-SphericalLens GeometryLoader::parseSphericalLensLine(const std::string& line) {
+Lens GeometryLoader::parseSphericalLensLine(const std::string& line) {
     GeometryObject go = parseLine(line);
     
     if (go.r == 0) {
@@ -156,14 +156,14 @@ SphericalLens GeometryLoader::parseSphericalLensLine(const std::string& line) {
     }
     
     if (go.refractiveIndex != 1) {
-        return SphericalLens{go.origin, go.r, go.refractiveIndex};
+        return Lens::makeSphericalLens(Sphere(go.origin, go.r), std::make_unique<NonDispersiveMaterial>(go.refractiveIndex));
     }
     
     if (go.material == "Water") {
-        return SphericalLens{go.origin, go.r, std::make_unique<Water>(go.temperature)};
+        return Lens::makeSphericalLens(Sphere(go.origin, go.r), std::make_unique<Water>(go.temperature));
     }
-    return SphericalLens();
-    throw std::invalid_argument("Unsupported material in spherical lens: " + line);
+    std::cerr << "Unsupported material: " << go.material << "\n";
+    return Lens();
 }
 
 ConvexLens GeometryLoader::parseConvexLensLine (const std::string& line) {
