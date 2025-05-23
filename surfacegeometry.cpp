@@ -8,17 +8,32 @@
 #include <glm/gtc/matrix_transform.hpp>
 
 Disc::Disc() : origin(Vector()), surfaceNormal(Vector(1,0,0)), radius(1) {}
+
 Disc::Disc(Vector origin_, Vector surfaceNormal_, double radius_) 
         : origin(origin_), surfaceNormal(surfaceNormal_), radius(radius_) {}
 
 double Disc::detectCollisionTime(const Ray& ray) const {
-    return 1;
+    Plane tempPlane{origin, surfaceNormal};
+    double t = calculateCollisionTime(ray, tempPlane);
+    if ((ray.getPositionAtTime(t)-origin).magnitude() > radius) { t = Inf; }
+    return t;
 }
+
 Vector Disc::getSurfaceNormal(const Ray& ray) const {
     return surfaceNormal;
 }
+
 void Disc::createGraphicVertices(std::vector<Vertex>& vertices, std::vector<unsigned int>& indices) const {
-    ;
+    int segments = 16;
+    std::vector<Vertex> discVerts = createDiscVertices(origin, surfaceNormal, radius);
+    vertices.insert(vertices.end(), discVerts.begin(), discVerts.end());
+
+    unsigned int current = 0; 
+    if (indices.size() > 0) {
+        current = *std::max_element(indices.begin(),indices.end())+1; 
+    }
+    std::vector<unsigned int> discIndices = createDiscIndices(segments, current);
+    indices.insert(indices.end(), discIndices.begin(), discIndices .end());     
 }
 
 std::string Disc::toString() const {
@@ -113,8 +128,8 @@ Vector SphereSection::getSurfaceNormal(const Ray& ray) const {
 }
 
 void SphereSection::createGraphicVertices(std::vector<Vertex>& vertices, std::vector<unsigned int>& indices) const {
-    std::cout << "creating vertices" << radius << " opening angle " << openingAngle << "\n";
-    std::cout << " for " << origin << " " << height.normalized() << "\n";
+    // std::cout << "creating vertices" << radius << " opening angle " << openingAngle << "\n";
+    // std::cout << " for " << origin << " " << height.normalized() << "\n";
     int segments = 16;
     std::vector<Vertex> sphereVerts = createSphereVertices(origin, height.normalized(), abs(radius), openingAngle, segments);
     vertices.insert(vertices.end(), sphereVerts.begin(), sphereVerts.end());
