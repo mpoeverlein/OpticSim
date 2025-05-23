@@ -30,6 +30,7 @@ class Vector
     operator glm::vec3() const {
         return glm::vec3(x, y, z);
     }
+    std::string toString() const;
 };
 
 Vector operator*(const double scalar, const Vector& v);

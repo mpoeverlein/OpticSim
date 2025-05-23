@@ -81,6 +81,10 @@ std::ostream& operator<<(std::ostream& os, const Vector& v) {
     return os;
 }
 
+std::string Vector::toString() const {
+    return "Vector (" + std::to_string(x) + ", " + std::to_string(y) + ", " + std::to_string(z) + ")\n";
+}
+
 /**
  * Return the smallest positive solution for the 2nd degree polynomial
  *   f(x) = a*x^2 + b*x + c.
@@ -192,17 +196,18 @@ double calculateCollisionTime(const Ray& ray, const SphereSection& s) {
     double a1 = d.dot(d), a2 = -2*d.dot(v), a3 = v.dot(v)-R*R;
 
     double t = (-a2 - sqrt(a2*a2 - 4*a1*a3)) / (2*a1);
-    if (t <= 0) { 
+    if (t <= Config::MIN_EPS) { 
         t = Inf; 
     } else {
-        if (angle(ray.getPositionAtTime(t)-c, s.height-c) > s.openingAngle) { t = Inf; }
+        if (angle(ray.getPositionAtTime(t)-c, s.height) > s.openingAngle) { t = Inf; }
     } 
     if (t != Inf) { return t; }
+
     t = (-a2 + sqrt(a2*a2 - 4*a1*a3)) / (2*a1);
-    if (t <= 0) { 
+    if (t <= Config::MIN_EPS) { 
         t = Inf; 
     } else {
-        if (angle(ray.getPositionAtTime(t)-c, s.height-c) > s.openingAngle) { t = Inf; }
+        if (angle(ray.getPositionAtTime(t)-c, s.height) > s.openingAngle) { t = Inf; }
     }
     return t;
 }
