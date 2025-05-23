@@ -115,7 +115,7 @@ std::vector<double> Lens::determineCollisionTimes(const Ray& ray) const {
     std::vector<double> tTimes;
     for (int i = 0; i < surfaceGeometries.size(); i++) {
         tTimes.push_back(surfaceGeometries[i]->detectCollisionTime(ray));
-        std::cout << tTimes[i] << "\n";
+        // std::cout << tTimes[i] << "\n";
     }
     return tTimes;
 }
@@ -157,6 +157,23 @@ Lens Lens::makeSphericalLens(Sphere s, std::unique_ptr<Material> m) {
     sgs.push_back(std::make_unique<SphereSection>(s.origin, s.radius, h, M_PI));
     return Lens(std::move(sgs), std::move(m));
 }
+
+Lens Lens::makeConvexLens(Vector origin_, double radius_, Vector height_, std::unique_ptr<Material> m) {
+    if (radius_ <= 0) { std::cerr << "Radius to make symmetric convex lens must be positve. Entered value: " << radius_ << "\n"; }
+    std::vector<std::unique_ptr<SurfaceGeometry>> sgs;
+    Vector o1 = origin_ + height_ - height_.normalized()*radius_;
+    double a1 = acos((radius_ - height_.magnitude()) / radius_);
+    sgs.push_back(std::make_unique<SphereSection>(o1, radius_, height_.normalized(), a1));
+
+    Vector o2 = origin_ - height_ + height_.normalized()*radius_;
+    sgs.push_back(std::make_unique<SphereSection>(o2, radius_, -1*height_.normalized(), a1));
+
+
+    return Lens(std::move(sgs), std::move(m));
+}
+
+
+
 
 SphericalLens::SphericalLens() {}
 
