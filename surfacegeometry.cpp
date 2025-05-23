@@ -68,6 +68,7 @@ double CylinderSide::detectCollisionTime(const Ray& ray) const {
         t = Inf; 
     } else {
         if ((ray.getPositionAtTime(t)-origin).dot(height.normalized()) > 1) { t = Inf; }
+        if ((ray.getPositionAtTime(t)-origin).dot(height.normalized()) < 0) { t = Inf; }
     } 
     if (t != Inf) { return t; }
 
@@ -75,13 +76,15 @@ double CylinderSide::detectCollisionTime(const Ray& ray) const {
     if (t <= Config::MIN_EPS) { 
         t = Inf; 
     } else {
-        if ((ray.getPositionAtTime(t)-origin).dot(height.normalized()) > 1) { t = Inf; }
+        if ((ray.getPositionAtTime(t)-origin).dot(height.normalized()) < 0) { t = Inf; }
     }
     return t;
 }
 
 Vector CylinderSide::getSurfaceNormal(const Ray& ray) const {
-    return Vector(1,0,0);
+    Vector p{ray.end};
+    Vector center = p - (p.dot(height.normalized())) * height.normalized();    
+    return ray.direction - center;
 }
 
 void CylinderSide::createGraphicVertices(std::vector<Vertex>& vertices, std::vector<unsigned int>& indices) const {
