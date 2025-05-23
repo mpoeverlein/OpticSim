@@ -5,9 +5,9 @@
 #include <sstream>
 #include <iostream>
 #include "ray.hpp"
-#include "lenses.hpp"
-#include "mirror.hpp"
 #include "material.hpp"
+#include "surfacegeometry.hpp"
+#include "optdev.hpp"
 
 
 void GeometryLoader::loadFromFile(const std::string& filename) {
