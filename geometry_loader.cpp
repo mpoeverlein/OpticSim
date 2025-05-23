@@ -37,10 +37,10 @@ void GeometryLoader::loadFromFile(const std::string& filename) {
             }
         } else if (line.find("$convexLens") == 0) {
             try {
-                ConvexLens lens = parseConvexLensLine(line);
-                devices.push_back(std::make_unique<ConvexLens>(lens.origin, lens.radius, lens.refractiveIndex, lens.height));
+                Lens lens = parseConvexLensLine(line);
+                devices.push_back(std::make_unique<Lens>(std::move(lens)));
             } catch (const std::exception& e) {
-                std::cerr << "Error parsing Convex: " << e.what() << "\n";
+                std::cerr << "Error parsing symmetric convex lens: " << e.what() << "\n";
                 continue;
             }
         }
@@ -166,9 +166,17 @@ Lens GeometryLoader::parseSphericalLensLine(const std::string& line) {
     return Lens();
 }
 
-ConvexLens GeometryLoader::parseConvexLensLine (const std::string& line) {
+Lens GeometryLoader::parseConvexLensLine (const std::string& line) {
     GeometryObject go = parseLine(line);
-    return ConvexLens(go.origin, go.r, go.refractiveIndex, go.height);
+    if (go.refractiveIndex != 1) {
+        return Lens::makeConvexLens(go.origin, go.r, go.height, std::make_unique<NonDispersiveMaterial>(go.refractiveIndex));
+    }
+    
+    if (go.material == "Water") {
+        return Lens::makeConvexLens(go.origin, go.r, go.height, std::make_unique<Water>(go.temperature));
+    }
+    std::cerr << "Unsupported material: " << go.material << "\n";
+    return Lens();
 }    
 
 Mirror GeometryLoader::parseMirror (const std::string& line) {
