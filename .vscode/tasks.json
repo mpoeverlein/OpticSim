@@ -17,9 +17,7 @@
                 "main.cpp",
                 "${fileDirname}/glad/src/glad.c",
                 "optdev.cpp",
-                "mirror.cpp",
                 "ray.cpp",
-                "lenses.cpp",
                 "mpvector.cpp",
                 "mpio.cpp",
                 "constants.cpp",
@@ -27,6 +25,7 @@
                 "geometry_loader.cpp",
                 "visualizeglfw.cpp",
                 "material.cpp",
+                "surfacegeometry.cpp",
                 "-o",
                 "${fileDirname}/main",
                 "-std=c++20"
