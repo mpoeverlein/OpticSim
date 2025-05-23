@@ -3,6 +3,7 @@
 #include <sstream>
 #include "ray.hpp"
 #include "geometry_loader.hpp"
+#include "optdev.hpp"
 
 /**
  * @return Python import statements as a string
