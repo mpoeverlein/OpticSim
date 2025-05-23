@@ -48,6 +48,61 @@ std::string Disc::toString() const {
     return oss.str();    
 }
 
+CylinderSide::CylinderSide() : origin(Vector()), height(Vector(0,0,1)), radius(1) {}
+CylinderSide::CylinderSide(Vector origin_, Vector height_, double radius_) 
+        : origin(origin_), height(height_), radius(radius_) {}
+
+double CylinderSide::detectCollisionTime(const Ray& ray) const {
+    if (angle(height, ray.direction) == 0) { return Inf; }
+    if (angle(height, ray.direction) == M_PI) { return Inf; }
+
+    Vector A = (ray.origin - origin).cross(height);
+    Vector B = ray.direction.cross(height);
+    double a1 = B.magnitude() * B.magnitude(), a2 = 2 * A.dot(B), a3 = A.magnitude()*A.magnitude() - radius*radius * height.magnitude()*height.magnitude();
+
+    double discriminant = sqrt(a2*a2 - 4 * a1 * a3);
+    if (discriminant <= 0) { return Inf; }
+    double t = (-a2 - discriminant) / (2*a1);
+
+    if (t <= Config::MIN_EPS) { 
+        t = Inf; 
+    } else {
+        if ((ray.getPositionAtTime(t)-origin).dot(height.normalized()) > 1) { t = Inf; }
+    } 
+    if (t != Inf) { return t; }
+
+    t = (-a2 + discriminant) / (2*a1);
+    if (t <= Config::MIN_EPS) { 
+        t = Inf; 
+    } else {
+        if ((ray.getPositionAtTime(t)-origin).dot(height.normalized()) > 1) { t = Inf; }
+    }
+    return t;
+}
+
+Vector CylinderSide::getSurfaceNormal(const Ray& ray) const {
+    return Vector(1,0,0);
+}
+
+void CylinderSide::createGraphicVertices(std::vector<Vertex>& vertices, std::vector<unsigned int>& indices) const {
+    int segments = 16;
+    std::vector<Vertex> verticesToAdd = createCylinder(origin, origin+height, radius, segments, glm::vec3(0.4,0.4,0.1));
+    vertices.insert(vertices.end(), verticesToAdd.begin(), verticesToAdd.end());
+    unsigned int firstIndex = 0;
+    if (indices.size() > 0) {
+        firstIndex = *std::max_element(indices.begin(), indices.end()) + 1;
+    }
+    for (int i = 0; i < segments; ++i) {
+        unsigned int base = firstIndex + i * 2;
+        indices.insert(indices.end(), {base, base + 1, base + 2});
+        indices.insert(indices.end(), {base + 1, base + 3, base + 2});
+    }    
+}
+
+std::string CylinderSide::toString() const {
+    return "CylinderSide";
+}
+
 Plane::Plane(Vector origin_, Vector surfaceNormal_) : origin(origin_), surfaceNormal(surfaceNormal_) {}
 Plane::Plane(const Disc& d) : origin(d.origin), surfaceNormal(d.surfaceNormal) {}
 

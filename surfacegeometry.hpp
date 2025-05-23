@@ -81,5 +81,18 @@ class Disc : public SurfaceGeometry {
         std::string toString() const;
 };
 
+class CylinderSide : public SurfaceGeometry {
+    public:
+        Vector origin;
+        Vector height;
+        double radius;
+        CylinderSide();
+        CylinderSide(Vector origin_, Vector height_, double radius_);
+        double detectCollisionTime(const Ray& ray) const;
+        Vector getSurfaceNormal(const Ray& ray) const;
+        void createGraphicVertices(std::vector<Vertex>& vertices, std::vector<unsigned int>& indices) const;
+        std::string toString() const;    
+};
+
 
 #endif /* SURFACEGEOMETRY_HPP */
