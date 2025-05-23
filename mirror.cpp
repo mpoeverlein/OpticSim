@@ -77,6 +77,12 @@ void Mirror::createGraphicVertices(std::vector<Vertex>& vertices, std::vector<un
 
 }
 
+
+std::string Mirror::toString() const {
+    return "Mirror "; 
+}
+
+
 //////////
 
 ParabolicMirror::ParabolicMirror() {
@@ -193,4 +199,8 @@ void ParabolicMirror::createGraphicVertices(std::vector<Vertex>& vertices, std::
     }
     std::vector<unsigned int> parabolaIndices = createSphereIndices(segments, current);
     indices.insert(indices.end(), parabolaIndices.begin(), parabolaIndices.end());
+}
+
+std::string ParabolicMirror::toString() const {
+    return "Parabolic Mirror "; 
 }

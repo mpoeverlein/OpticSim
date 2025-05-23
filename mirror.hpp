@@ -23,6 +23,7 @@ class Mirror : public OpticalDevice {
         std::vector<Ray> createNewRays(const Ray& ray) const;
         std::string forPythonPlot() const;
         void createGraphicVertices(std::vector<Vertex>& vertices, std::vector<unsigned int>& indices) const;
+        std::string toString() const;
 };
 
 class ParabolicMirror : public OpticalDevice {
@@ -42,6 +43,7 @@ class ParabolicMirror : public OpticalDevice {
         std::vector<Ray> createNewRays(const Ray& ray) const;
         std::string forPythonPlot() const;
         void createGraphicVertices(std::vector<Vertex>& vertices, std::vector<unsigned int>& indices) const;
+        std::string toString() const;
 };
 
 #endif /* MIRROR_HPP */
