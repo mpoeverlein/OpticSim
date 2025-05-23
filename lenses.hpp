@@ -28,6 +28,24 @@ class Sphere {
         Sphere(const SphereSection& ss);
 };
 
+
+class Disc : public SurfaceGeometry {
+    public:
+        Vector origin;
+        Vector surfaceNormal;
+        double radius;
+        Disc();
+        Disc(Vector origin_, Vector surfaceNormal_, double radius_);
+};
+
+class Plane {
+    public:
+        Vector origin;
+        Vector surfaceNormal;
+        Plane(Vector origin_, Vector surfaceNormal_);
+        Plane(const Disc& d);
+};
+
 class SphereSection : public SurfaceGeometry {
     public:
         Vector origin;
@@ -42,11 +60,6 @@ class SphereSection : public SurfaceGeometry {
         void createGraphicVertices(std::vector<Vertex>& vertices, std::vector<unsigned int>& indices) const;
 };
 
-class Disc : public SurfaceGeometry {
-    public:
-        Vector surfaceNormal;
-        double radius;
-};
 
 class Parallelogram : public SurfaceGeometry {
     public:

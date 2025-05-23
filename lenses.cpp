@@ -8,6 +8,14 @@
 #include <iomanip>
 #include <functional>
 
+Disc::Disc() : origin(Vector()), surfaceNormal(Vector(1,0,0)), radius(1) {}
+Disc::Disc(Vector origin_, Vector surfaceNormal_, double radius_) 
+        : origin(origin_), surfaceNormal(surfaceNormal_), radius(radius_) {}
+
+
+Plane::Plane(Vector origin_, Vector surfaceNormal_) : origin(origin_), surfaceNormal(surfaceNormal_) {}
+Plane::Plane(const Disc& d) : origin(d.origin), surfaceNormal(d.surfaceNormal) {}
+
 Sphere::Sphere(Vector origin_, double radius_)
     : origin(origin_),
       radius(radius_)
