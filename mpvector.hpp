@@ -24,7 +24,7 @@ class Vector
     // Vector operator*(const glm::mat3 m);
     Vector operator/(const double scalar);
     Vector cross(const Vector& other) const;
-    double dot(const Vector& other);
+    double dot(const Vector& other) const;
     double magnitude() const;
     Vector normalized() const;
     operator glm::vec3() const {
@@ -56,7 +56,8 @@ glm::vec3 wavelengthToRGB(double wavelength);
 bool operator==(Vector a, Vector b);
 bool operator!=(Vector a, Vector b);
 
-class Ray; class SphereSection;
+class Ray; class SphereSection; class Plane;
 double calculateCollisionTime(const Ray& ray, const SphereSection& s);
+double calculateCollisionTime(const Ray& ray, const Plane& plane);
 
 #endif /* MPVECTOR_HPP */

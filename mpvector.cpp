@@ -59,7 +59,7 @@ Vector Vector::cross(const Vector& other) const {
     );
 }
 
-double Vector::dot(const Vector& other) {
+double Vector::dot(const Vector& other) const {
     return x * other.x + y * other.y + z * other.z;
 }
 
@@ -205,6 +205,11 @@ double calculateCollisionTime(const Ray& ray, const SphereSection& s) {
         if (angle(ray.getPositionAtTime(t)-c, s.height-c) > s.openingAngle) { t = Inf; }
     }
     return t;
+}
+
+double calculateCollisionTime(const Ray& ray, const Plane& plane) {
+    if (plane.surfaceNormal.dot(ray.direction) == 0) { return Inf; }
+    return (plane.origin - ray.origin).dot(plane.surfaceNormal) / ray.direction.dot(plane.surfaceNormal);    
 }
 
 /**
