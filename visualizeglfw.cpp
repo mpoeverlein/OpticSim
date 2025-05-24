@@ -26,13 +26,13 @@ std::vector<Vertex> createCylinderSideVertices(
     glm::vec3 end{end_.x, end_.y, end_.z};
     std::vector<Vertex> vertices;
     glm::vec3 axis = glm::normalize(end - start);
-    float height = glm::length(end - start);
+    // float height = glm::length(end - start);
 
     // Generate two rings of vertices
     for (int i = 0; i <= segments; ++i) {
         float angle = 2.0f * M_PI * i / segments;
         glm::vec3 circleDir(cos(angle), sin(angle), 0.0f);
-        glm::vec3 normal = glm::normalize(circleDir);
+        // glm::vec3 normal = glm::normalize(circleDir);
         // glm::vec3 normal{1,0,0};
 
         // Rotate circleDir to align with the cylinder axis
@@ -118,8 +118,8 @@ std::vector<Vertex> createSphereVertices(
 
 std::vector<unsigned int> createSphereIndices(int segments, unsigned int base) {
     std::vector<unsigned int> indices;
-    int stackCount = segments;
-    int sectorCount = segments;
+    unsigned int stackCount = segments;
+    unsigned int sectorCount = segments;
     for (unsigned int i = 0; i < stackCount; i++) {
         unsigned int k1 = i * sectorCount + base;     // beginning of current stack
         unsigned int k2 = k1 + sectorCount;      // beginning of next stack
@@ -322,7 +322,7 @@ void addRays(const std::vector<Ray>& rays,
         if ((ray.wavelength > 380e-9) && (ray.wavelength < 780e-9)) {
             color = wavelengthToRGB(ray.wavelength);
         }
-        std::vector<Vertex> cylinderSideVerts = createCylinderSideVertices(ray.origin, ray.end, 0.005f*ray.energyDensity, segments=segments, color=color);
+        std::vector<Vertex> cylinderSideVerts = createCylinderSideVertices(ray.origin, ray.end, 0.005f*ray.energyDensity, segments, color);
         vertices.insert(vertices.end(), cylinderSideVerts.begin(), cylinderSideVerts.end());
         if (indices.size() > 0) {
             firstIndex = *std::max_element(indices.begin(), indices.end()) + 1;
@@ -371,7 +371,7 @@ void visualizeWithGLFW(GeometryLoader& geometry) {
     std::vector<unsigned int> indices;
     addRays(geometry.rays, vertices, indices, segments);
 
-    OpticalDevice* d = geometry.devices[0].get();
+    // OpticalDevice* d = geometry.devices[0].get();
     for (const auto& device : geometry.devices) {
         device->createGraphicVertices(vertices, indices);
     }
@@ -446,7 +446,7 @@ void visualizeWithGLFW(GeometryLoader& geometry) {
         glm::mat4 model = glm::mat4(1.0f);
         glm::mat4 view = camera.getViewMatrix();
 
-        glm::mat4 mvp = projection * view * glm::mat4(1.0f);
+        // glm::mat4 mvp = projection * view * model;
         glUseProgram(program);
         // glUniformMatrix4fv(glGetUniformLocation(program, "MVP"), 1, GL_FALSE, glm::value_ptr(mvp));
         glUniformMatrix4fv(glGetUniformLocation(program, "model"), 1, GL_FALSE, glm::value_ptr(model));
