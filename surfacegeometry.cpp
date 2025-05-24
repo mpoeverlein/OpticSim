@@ -7,6 +7,9 @@
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 
+glm::vec3 color{0.7,0.7,0.9};
+float opacity = 0.6f;
+
 Disc::Disc() : origin(Vector()), surfaceNormal(Vector(1,0,0)), radius(1) {}
 
 Disc::Disc(Vector origin_, Vector surfaceNormal_, double radius_) 
@@ -25,7 +28,7 @@ Vector Disc::getSurfaceNormal(const Ray& ray) const {
 
 void Disc::createGraphicVertices(std::vector<Vertex>& vertices, std::vector<unsigned int>& indices) const {
     int segments = 16;
-    std::vector<Vertex> discVerts = createDiscVertices(origin, surfaceNormal, radius);
+    std::vector<Vertex> discVerts = createDiscVertices(origin, surfaceNormal, radius, segments, color, opacity);
     vertices.insert(vertices.end(), discVerts.begin(), discVerts.end());
 
     unsigned int current = 0; 
@@ -89,7 +92,7 @@ Vector CylinderSide::getSurfaceNormal(const Ray& ray) const {
 
 void CylinderSide::createGraphicVertices(std::vector<Vertex>& vertices, std::vector<unsigned int>& indices) const {
     int segments = 16;
-    std::vector<Vertex> verticesToAdd = createCylinderSideVertices(origin, origin+height, radius, segments, glm::vec3(0.4,0.4,0.1));
+    std::vector<Vertex> verticesToAdd = createCylinderSideVertices(origin, origin+height, radius, segments, color, opacity);
     vertices.insert(vertices.end(), verticesToAdd.begin(), verticesToAdd.end());
 
     unsigned int firstIndex = 0;
@@ -187,7 +190,7 @@ void SphereSection::createGraphicVertices(std::vector<Vertex>& vertices, std::ve
     // std::cout << "creating vertices" << radius << " opening angle " << openingAngle << "\n";
     // std::cout << " for " << origin << " " << height.normalized() << "\n";
     int segments = 16;
-    std::vector<Vertex> sphereVerts = createSphereVertices(origin, height.normalized(), abs(radius), openingAngle, segments);
+    std::vector<Vertex> sphereVerts = createSphereVertices(origin, height.normalized(), abs(radius), openingAngle, segments, color, opacity);
     vertices.insert(vertices.end(), sphereVerts.begin(), sphereVerts.end());
 
     unsigned int current = 0; 
