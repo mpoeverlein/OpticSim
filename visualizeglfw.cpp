@@ -18,7 +18,8 @@ std::vector<Vertex> createCylinderSideVertices(
     const Vector& end_, 
     float radius, 
     int segments,
-    const glm::vec3& color
+    const glm::vec3& color,
+    float opacity
 )
 {
     glm::vec3 start{start_.x, start_.y, start_.z};
@@ -41,8 +42,8 @@ std::vector<Vertex> createCylinderSideVertices(
         circleDir = glm::vec3(rotation * glm::vec4(circleDir, 0.0f));
 
         // Bottom and top vertices
-        vertices.push_back({start + circleDir * radius, circleDir, color, 1.0f});
-        vertices.push_back({end + circleDir * radius, circleDir, color, 1.0f});
+        vertices.push_back({start + circleDir * radius, circleDir, color, opacity});
+        vertices.push_back({end + circleDir * radius, circleDir, color, opacity});
     }
 
     return vertices;  // Combine with indices for rendering
@@ -83,7 +84,8 @@ std::vector<Vertex> createSphereVertices(
     float radius,
     float openingAngle,
     int segments,
-    const glm::vec3& color
+    const glm::vec3& color,
+    float opacity
 ) {
     std::vector<Vertex> vertices;
     glm::vec3 origin{origin_.x, origin_.y, origin_.z};
@@ -107,7 +109,7 @@ std::vector<Vertex> createSphereVertices(
             pos = glm::vec3(rotation * glm::vec4(pos, 1.0f));
             glm::vec3 normal = glm::vec3(rotation * glm::vec4(glm::normalize(pos), 0.0f));
 
-            vertices.push_back({glm::vec3(pos+origin), normal, color, 0.7f});
+            vertices.push_back({glm::vec3(pos+origin), normal, color, opacity});
         }
     }
     return vertices;
@@ -139,7 +141,8 @@ std::vector<Vertex> createParabolaVertices(
     const Vector& height,
     float curvature,
     int segments,
-    const glm::vec3& color
+    const glm::vec3& color,
+    float opacity
 ) {
     glm::vec3 origin{origin_.x, origin_.y, origin_.z};
     const glm::mat4 rotation = orientSphere(height);
@@ -160,7 +163,7 @@ std::vector<Vertex> createParabolaVertices(
             pos = glm::vec3(rotation * glm::vec4(pos, 1.0f));
             glm::vec3 normal = glm::vec3(rotation * glm::vec4(glm::normalize(pos), 0.0f));
 
-            vertices.push_back({glm::vec3(pos+origin), normal, color, 0.7f});
+            vertices.push_back({glm::vec3(pos+origin), normal, color, opacity});
         }
     }
     return vertices;
@@ -171,7 +174,8 @@ std::vector<Vertex> createDiscVertices(
     const Vector& surfaceNormal_,
     const double radius_,
     int segments,
-    const glm::vec3& color
+    const glm::vec3& color,
+    float opacity
 ) {
     std::vector<Vertex> vertices;
     glm::vec3 origin{origin_.x, origin_.y, origin_.z};
@@ -190,7 +194,7 @@ std::vector<Vertex> createDiscVertices(
         pos = glm::vec3(rotation * glm::vec4(pos, 1.0f));
         glm::vec3 normal = glm::vec3(rotation * glm::vec4(glm::normalize(pos), 0.0f));
 
-        vertices.push_back({glm::vec3(pos+origin), normal, color, 0.7f});        
+        vertices.push_back({glm::vec3(pos+origin), normal, color, opacity});        
     }
     return vertices;
 }
