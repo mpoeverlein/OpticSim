@@ -26,12 +26,10 @@ Lens::Lens(Sphere sphere1_, Sphere sphere2_, double refractiveIndex_) {
     double a2 = acos(xM/abs(r2));
     if (r1 < 0) {
         h1 = -1 * h1;
-        // a1 = M_PI - a1;
     }
     surfaceGeometries.push_back(std::make_unique<SphereSection>(o1, r1, h1, a1));
     if (r2 > 0) {
         h2 = -1 * h2;
-        // a2 = a2;
     }
     surfaceGeometries.push_back(std::make_unique<SphereSection>(o2, r2, h2, a2));
     material = std::make_unique<NonDispersiveMaterial>(refractiveIndex_);
@@ -42,7 +40,6 @@ std::vector<double> Lens::determineCollisionTimes(const Ray& ray) const {
     std::vector<double> tTimes;
     for (int i = 0; i < surfaceGeometries.size(); i++) {
         tTimes.push_back(surfaceGeometries[i]->detectCollisionTime(ray));
-        // std::cout << tTimes[i] << "\n";
     }
     return tTimes;
 }
@@ -69,7 +66,7 @@ std::vector<Ray> Lens::createNewRays (const Ray& ray) const {
         surfaceNormal = -1 * surfaceNormal;
         n2 = 1.;
     }
-    return ::createNewRays(ray, surfaceNormal, n2, 0.1);    
+    return ::createNewRays(ray, surfaceNormal, n2, material->getReflectance(ray.wavelength));    
 }
 
 void Lens::createGraphicVertices(std::vector<Vertex>& vertices, std::vector<unsigned int>& indices) const {
@@ -101,12 +98,40 @@ Lens Lens::makeConvexLens(Vector origin_, double radius_, Vector height_, std::u
 
 
 std::string Lens::toString() const {
-    std::cout << "CALLED LENS::toString\n";
     std::string result;
     for (const auto& sg : surfaceGeometries) {
         result += sg->toString();
     }
     return result;
+}
+
+void Lens::setTransverseRadius(double newRadius) {
+    if (surfaceGeometries.size() != 2) { 
+        std::cerr << "To set transverse radius, the system must comprise two surface geometries.\n";
+        std::cerr << "The current object has: " << surfaceGeometries.size() << " surface geometries.\n";
+        return;
+    }
+    double transverseRadius1, transverseRadius2;
+    SphereSection* ss1 = dynamic_cast<SphereSection*>(surfaceGeometries[0].get());
+    if (ss1) { transverseRadius1 = abs(ss1->radius) * sin(ss1->openingAngle); }
+    SphereSection* ss2 = dynamic_cast<SphereSection*>(surfaceGeometries[1].get());
+    if (ss2) { transverseRadius2 = abs(ss2->radius) * sin(ss2->openingAngle); }
+    std::cout << "tr1 " << transverseRadius1 << " tr2 " << transverseRadius2 << "\n";
+    if (transverseRadius1 != transverseRadius2) {
+        std::cerr << "Transverse radii should match. Entered values: " << transverseRadius1 << ", " << transverseRadius2 << "\n";
+    }
+    if (newRadius >= transverseRadius1) {
+        std::cerr << "New radius must be smaller than current radius: " << newRadius << ", " << transverseRadius1 << "\n";
+    }
+    ss1->openingAngle = asin(newRadius/ss1->radius);
+    ss2->openingAngle = asin(newRadius/ss2->radius);
+
+    // add cylinder
+    Vector csOrigin = ss1->origin + ss1->height.normalized() * cos(ss1->openingAngle);
+    Vector csEnd = ss2->origin + ss2->height.normalized() * cos(ss2->openingAngle);
+    Vector csHeight = csEnd - csOrigin;
+    CylinderSide cs{csOrigin, csHeight, newRadius};
+    surfaceGeometries.push_back(std::make_unique<CylinderSide>(std::move(cs)));
 }
 
 

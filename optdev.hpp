@@ -35,6 +35,7 @@ class Lens : public OpticalDevice {
         static Lens makeSphericalLens(Sphere s, std::unique_ptr<Material> m);
         static Lens makeConvexLens(Vector origin_, double radius_, Vector height_, std::unique_ptr<Material> m);
         std::string toString() const;
+        void setTransverseRadius(double newRadius);
 };
 
 class Aperture : public OpticalDevice {
