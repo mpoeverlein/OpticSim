@@ -13,14 +13,7 @@
 #define GLFW_INCLUDE_NONE
 #include <GLFW/glfw3.h>
 
-
-struct RayVertex {
-    float x, y, z;  // Position
-    float r, g, b;  // Color (optional)
-};
-
-
-std::vector<Vertex> createCylinder(
+std::vector<Vertex> createCylinderSideVertices(
     const Vector& start_, 
     const Vector& end_, 
     float radius, 
@@ -53,6 +46,16 @@ std::vector<Vertex> createCylinder(
     }
 
     return vertices;  // Combine with indices for rendering
+}
+
+std::vector<unsigned int> createCylinderSideIndices(int segments, unsigned int base) {
+    std::vector<unsigned int> indices;
+    for (int i = 0; i < segments; ++i) {
+        unsigned int k = base + i * 2;
+        indices.insert(indices.end(), {k, k + 1, k + 2});
+        indices.insert(indices.end(), {k + 1, k + 3, k + 2});
+    }
+    return indices;
 }
 
 glm::mat4 orientSphere(const glm::vec3& targetDirection) {
@@ -315,19 +318,13 @@ void addRays(const std::vector<Ray>& rays,
         if ((ray.wavelength > 380e-9) && (ray.wavelength < 780e-9)) {
             color = wavelengthToRGB(ray.wavelength);
         }
-        auto cylinderVerts = createCylinder(ray.origin, ray.end, 0.005f*ray.energyDensity, segments=segments, color=color);
-        for (const Vertex& cv: cylinderVerts) {
-            vertices.push_back(cv);
-        }
-
+        std::vector<Vertex> cylinderSideVerts = createCylinderSideVertices(ray.origin, ray.end, 0.005f*ray.energyDensity, segments=segments, color=color);
+        vertices.insert(vertices.end(), cylinderSideVerts.begin(), cylinderSideVerts.end());
         if (indices.size() > 0) {
             firstIndex = *std::max_element(indices.begin(), indices.end()) + 1;
         }
-        for (int i = 0; i < segments; ++i) {
-            unsigned int base = firstIndex + i * 2;
-            indices.insert(indices.end(), {base, base + 1, base + 2});
-            indices.insert(indices.end(), {base + 1, base + 3, base + 2});
-        }
+        std::vector<unsigned int> csIndices = createCylinderSideIndices(segments, firstIndex);
+        indices.insert(indices.end(), csIndices.begin(), csIndices.end());
     }
 }
 

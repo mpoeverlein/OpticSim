@@ -16,7 +16,7 @@ struct Vertex {
 
 class Vector;
 
-std::vector<Vertex> createCylinder(
+std::vector<Vertex> createCylinderSideVertices(
     const Vector& start_, 
     const Vector& end_, 
     float radius, 
@@ -24,6 +24,7 @@ std::vector<Vertex> createCylinder(
     const glm::vec3& color = glm::vec3(1.0f, 1.0f, 1.0f)
 );
 
+std::vector<unsigned int> createCylinderSideIndices(int segments, unsigned int base);
 
 std::vector<Vertex> createSphereVertices(
     const Vector& origin_,
@@ -33,7 +34,9 @@ std::vector<Vertex> createSphereVertices(
     int segments = 16,
     const glm::vec3& color = glm::vec3(1.0f, 0.0f, 1.0f)
 );
+
 std::vector<unsigned int> createSphereIndices(int segments, unsigned int base);
+
 std::vector<Vertex> createParabolaVertices(
     const Vector& origin_,
     const Vector& height,
@@ -49,6 +52,7 @@ std::vector<Vertex> createDiscVertices(
     int segments = 16,
     const glm::vec3& color = glm::vec3(1.0f, 0.0f, 1.0f)
 );
+
 std::vector<unsigned int> createDiscIndices(int segments, unsigned int base);
 
 void visualizeWithGLFW(GeometryLoader& geometry);
