@@ -16,7 +16,7 @@ LIB_DIRS = -L/Users/max/Programs/glfw-3.4/build/src
 
 # Source files
 C_SRCS = glad/src/glad.c
-CPP_SRCS = main.cpp optdev.cpp mirror.cpp ray.cpp lenses.cpp mpvector.cpp mpio.cpp constants.cpp config_loader.cpp geometry_loader.cpp visualizeglfw.cpp material.cpp
+CPP_SRCS = main.cpp optdev.cpp surfacegeometry.cpp material.cpp ray.cpp mpvector.cpp mpio.cpp constants.cpp config_loader.cpp geometry_loader.cpp visualizeglfw.cpp material.cpp
 OBJS = $(CPP_SRCS:.cpp=.o) $(C_SRCS:.c=.o)
 # OBJS := $(addprefix $(OBJDIR)/,$(notdir $(OBJS)))
 
