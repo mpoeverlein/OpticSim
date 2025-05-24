@@ -119,9 +119,11 @@ void Lens::setTransverseRadius(double newRadius) {
     std::cout << "tr1 " << transverseRadius1 << " tr2 " << transverseRadius2 << "\n";
     if (transverseRadius1 != transverseRadius2) {
         std::cerr << "Transverse radii should match. Entered values: " << transverseRadius1 << ", " << transverseRadius2 << "\n";
+        return;
     }
     if (newRadius >= transverseRadius1) {
         std::cerr << "New radius must be smaller than current radius: " << newRadius << ", " << transverseRadius1 << "\n";
+        return;
     }
     ss1->openingAngle = asin(newRadius/ss1->radius);
     ss2->openingAngle = asin(newRadius/ss2->radius);
