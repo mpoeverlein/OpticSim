@@ -3,7 +3,7 @@
 
 #include "mpvector.hpp"
 
-class Ray; class Vertex; class SphereSection; class Disc;
+class Ray; struct Vertex; class SphereSection; class Disc;
 
 class Sphere {
     public:
