@@ -89,17 +89,15 @@ Vector CylinderSide::getSurfaceNormal(const Ray& ray) const {
 
 void CylinderSide::createGraphicVertices(std::vector<Vertex>& vertices, std::vector<unsigned int>& indices) const {
     int segments = 16;
-    std::vector<Vertex> verticesToAdd = createCylinder(origin, origin+height, radius, segments, glm::vec3(0.4,0.4,0.1));
+    std::vector<Vertex> verticesToAdd = createCylinderSideVertices(origin, origin+height, radius, segments, glm::vec3(0.4,0.4,0.1));
     vertices.insert(vertices.end(), verticesToAdd.begin(), verticesToAdd.end());
+
     unsigned int firstIndex = 0;
     if (indices.size() > 0) {
         firstIndex = *std::max_element(indices.begin(), indices.end()) + 1;
     }
-    for (int i = 0; i < segments; ++i) {
-        unsigned int base = firstIndex + i * 2;
-        indices.insert(indices.end(), {base, base + 1, base + 2});
-        indices.insert(indices.end(), {base + 1, base + 3, base + 2});
-    }    
+    std::vector<unsigned int> csIndices = createCylinderSideIndices(segments, firstIndex);
+    indices.insert(indices.end(), csIndices.begin(), csIndices .end());     
 }
 
 std::string CylinderSide::toString() const {
