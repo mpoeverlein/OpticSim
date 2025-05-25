@@ -105,6 +105,20 @@ Lens Lens::makeConvexLens(Vector origin_, double radius_, Vector height_, std::u
     return Lens(std::move(sgs), std::move(m));
 }
 
+Lens Lens::makeConcaveLens(Vector origin_, double radius_, Vector height_, std::unique_ptr<Material> m) {
+    std::vector<std::unique_ptr<SurfaceGeometry>> sgs;
+
+    Vector o1 = origin_ - height_/2 - height_.normalized()*radius_;
+    double a1 = M_PI_2;
+    sgs.push_back(std::make_unique<SphereSection>(o1, radius_, height_.normalized(), a1));
+
+    Vector o2 = origin_ + height_/2 + height_.normalized()*radius_;
+    sgs.push_back(std::make_unique<SphereSection>(o2, radius_, -1*height_.normalized(), a1));
+
+    return Lens(std::move(sgs), std::move(m));
+}
+
+
 
 std::string Lens::toString() const {
     std::string result;
@@ -126,29 +140,30 @@ void Lens::setTransverseRadius(double newRadius) {
     SphereSection* ss2 = dynamic_cast<SphereSection*>(surfaceGeometries[1].get());
     if (ss2) { transverseRadius2 = abs(ss2->radius) * sin(ss2->openingAngle); }
     std::cout << "tr1 " << transverseRadius1 << " tr2 " << transverseRadius2 << "\n";
-    if (transverseRadius1 != transverseRadius2) {
+    if (ss1 && ss2 && (transverseRadius1 != transverseRadius2)) {
         std::cerr << "Transverse radii should match. Entered values: " << transverseRadius1 << ", " << transverseRadius2 << "\n";
         return;
     }
-    if (newRadius >= transverseRadius1) {
-        std::cerr << "New radius must be smaller than current radius: " << newRadius << ", " << transverseRadius1 << "\n";
-        return;
-    }
-    ss1->openingAngle = asin(newRadius/ss1->radius);
-    ss2->openingAngle = asin(newRadius/ss2->radius);
+
+    if (ss1) { ss1->openingAngle = asin(newRadius/ss1->radius); }
+    if (ss2) { ss2->openingAngle = asin(newRadius/ss2->radius); }
 
     Vector csOrigin, csEnd;
-    // convex
-    // if ((ss1->origin-ss2->origin).magnitude() < abs(ss1->radius)+abs(ss2->radius)) {
-    csOrigin = ss1->origin + abs(ss1->radius) * ss1->height.normalized() * cos(ss1->openingAngle);
-    csEnd = ss2->origin + abs(ss2->radius) * ss2->height.normalized() * cos(ss2->openingAngle);
-    // std::cout << "orgiin " << ss1->origin << " " << ss2->origin << "\n";
-    // std::cout << " heights " << ss1->height << " " << ss2->height << "\n";
-    // std::cout << " openigng ang " << ss1->openingAngle/M_PI*180 << " " << ss2->openingAngle/M_PI*180 << "\n";
-    // std::cout << "end origin " << csOrigin << " " << csEnd << "\n";
-    // } else {
+    if (ss1) {
+        csOrigin = ss1->origin + abs(ss1->radius) * ss1->height.normalized() * cos(ss1->openingAngle);
+    } else {
+        Disc* d1 = dynamic_cast<Disc*>(surfaceGeometries[0].get());
+        d1->radius = newRadius;
+        csOrigin = d1->origin;
+    }
 
-    // }
+    if (ss2) {
+        csEnd = ss2->origin + abs(ss2->radius) * ss2->height.normalized() * cos(ss2->openingAngle);
+    } else {
+        Disc* d2 = dynamic_cast<Disc*>(surfaceGeometries[1].get());
+        d2->radius = newRadius;
+        csEnd = d2->origin;
+    }
 
     Vector csHeight = csEnd - csOrigin;
     CylinderSide cs{csOrigin, csHeight, newRadius};

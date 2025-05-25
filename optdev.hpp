@@ -34,6 +34,7 @@ class Lens : public OpticalDevice {
         void createGraphicVertices(std::vector<Vertex>& vertices, std::vector<unsigned int>& indices) const;
         static Lens makeSphericalLens(Sphere s, std::unique_ptr<Material> m);
         static Lens makeConvexLens(Vector origin_, double radius_, Vector height_, std::unique_ptr<Material> m);
+        static Lens makeConcaveLens(Vector origin_, double radius_, Vector height_, std::unique_ptr<Material> m);
         static Lens makePlanoConcaveLens(Vector origin_, double radius_, Vector height_, std::unique_ptr<Material> m);
         static Lens makePlanoConvexLens(Vector origin_, double radius_, Vector height_, std::unique_ptr<Material> m);
         std::string toString() const;
