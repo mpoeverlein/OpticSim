@@ -9,6 +9,17 @@
 #include "surfacegeometry.hpp"
 #include "optdev.hpp"
 
+std::unique_ptr<Material> GeometryObject::createMaterial () {
+    if (refractiveIndex != 1) {
+        return std::make_unique<NonDispersiveMaterial>(refractiveIndex);
+    }
+    if (material == "Water") {
+        return std::make_unique<Water>(temperature);
+    }
+    std::cerr << "Unsupported material: " << material << "\n";
+    return std::make_unique<NonDispersiveMaterial>(refractiveIndex);
+}
+
 
 void GeometryLoader::loadFromFile(const std::string& filename) {
     std::ifstream file(filename);
@@ -29,40 +40,21 @@ void GeometryLoader::loadFromFile(const std::string& filename) {
             if (ray == Ray()) {
                 std::cerr << "Error parsing ray from this line: " << line << "\n";
             } else {
-                std::cout << rays.size() << "\n";
-                std::cout << ray << "\n";
                 rays.push_back(ray);
-                std::cout << rays.size() << "\n";
-
             }
         } else if (line.find("$convexLens") == 0) {
-            try {
-                Lens lens = parseConvexLensLine(line);
-                devices.push_back(std::make_unique<Lens>(std::move(lens)));
-            } catch (const std::exception& e) {
-                std::cerr << "Error parsing symmetric convex lens: " << e.what() << "\n";
-                continue;
-            }
+            Lens lens = parseConvexLensLine(line);
+            devices.push_back(std::make_unique<Lens>(std::move(lens)));
         }
 
         if (line.find("$concaveLens") == 0) {
-            try {
-                Lens lens = parseConcaveLensLine(line);
-                devices.push_back(std::make_unique<Lens>(std::move(lens)));
-            } catch (const std::exception& e) {
-                std::cerr << "Error parsing symmetric concave lens: " << e.what() << "\n";
-                continue;
-            }
+            Lens lens = parseConcaveLensLine(line);
+            devices.push_back(std::make_unique<Lens>(std::move(lens)));
         }
 
         if (line.find("$sphericalLens") == 0) {
-            try {
-                Lens lens = parseSphericalLensLine(line);
-                devices.push_back(std::make_unique<Lens>(std::move(lens)));
-            } catch (const std::exception& e) {
-                std::cerr << "Error parsing spherical lens: " << e.what() << "\n";
-                continue;
-            }
+            Lens lens = parseSphericalLensLine(line);
+            devices.push_back(std::make_unique<Lens>(std::move(lens)));
         }
 
         if (line.find("$planoConvexLens") == 0) {
@@ -173,73 +165,46 @@ std::vector<Ray> GeometryLoader::parseParallelRays (const std::string& line) {
 
 Lens GeometryLoader::parseSphericalLensLine(const std::string& line) {
     GeometryObject go = parseLine(line);
+    std::unique_ptr<Material> m = go.createMaterial();
     
     if (go.r == 0) {
         throw std::invalid_argument("Zero radius in spherical lens: " + line);
     }
+
+    return Lens::makeSphericalLens(Sphere(go.origin, go.r), std::move(m));
     
-    if (go.refractiveIndex != 1) {
-        return Lens::makeSphericalLens(Sphere(go.origin, go.r), std::make_unique<NonDispersiveMaterial>(go.refractiveIndex));
-    }
-    
-    if (go.material == "Water") {
-        return Lens::makeSphericalLens(Sphere(go.origin, go.r), std::make_unique<Water>(go.temperature));
-    }
-    std::cerr << "Unsupported material: " << go.material << "\n";
-    return Lens();
 }
 
 Lens GeometryLoader::parseConvexLensLine (const std::string& line) {
     GeometryObject go = parseLine(line);
-    if (go.refractiveIndex != 1) {
-        Lens l{Lens::makeConvexLens(go.origin, go.r, go.height, std::make_unique<NonDispersiveMaterial>(go.refractiveIndex))};
-        l.setTransverseRadius(go.transverseRadius);
-        return l;
-    }
-    std::cerr << "Unsupported material: " << go.material << "\n";
-    return Lens();
+    std::unique_ptr<Material> m = go.createMaterial();
+    Lens l{Lens::makeConvexLens(go.origin, go.r, go.height, std::move(m))};
+    l.setTransverseRadius(go.transverseRadius);
+    return l;
 }
 
 Lens GeometryLoader::parsePlanoConvexLensLine (const std::string& line) {
     GeometryObject go = parseLine(line);
-    if (go.refractiveIndex != 1) {
-        Lens l{Lens::makePlanoConvexLens(go.origin, go.r, go.height, std::make_unique<NonDispersiveMaterial>(go.refractiveIndex))};
-        l.setTransverseRadius(go.transverseRadius);
-        return l;
-    }
-    
-    // if (go.material == "Water") {
-    //     return Lens::makePlanoConvexLens(go.origin, go.r, go.height, std::make_unique<Water>(go.temperature));
-    // }
-    std::cerr << "Unsupported material: " << go.material << "\n";
-    return Lens();
+    std::unique_ptr<Material> m = go.createMaterial();
+    Lens l{Lens::makePlanoConvexLens(go.origin, go.r, go.height, std::move(m))};
+    l.setTransverseRadius(go.transverseRadius);
+    return l;
 }
 
 Lens GeometryLoader::parsePlanoConcaveLensLine (const std::string& line) {
     GeometryObject go = parseLine(line);
-    if (go.refractiveIndex != 1) {
-        Lens l{Lens::makePlanoConcaveLens(go.origin, go.r, go.height, std::make_unique<NonDispersiveMaterial>(go.refractiveIndex))};
-        l.setTransverseRadius(go.transverseRadius);
-        return l;    
-    }
-    
-    // if (go.material == "Water") {
-    //     return Lens::makePlanoConvexLens(go.origin, go.r, go.height, std::make_unique<Water>(go.temperature));
-    // }
-    std::cerr << "Unsupported material: " << go.material << "\n";
-    return Lens();
+    std::unique_ptr<Material> m = go.createMaterial();
+    Lens l{Lens::makePlanoConcaveLens(go.origin, go.r, go.height, std::move(m))};
+    l.setTransverseRadius(go.transverseRadius);
+    return l;    
 }
 
 Lens GeometryLoader::parseConcaveLensLine (const std::string& line) {
     GeometryObject go = parseLine(line);
-    if (go.refractiveIndex != 1) {
-        Lens l{Lens::makeConcaveLens(go.origin, go.r, go.height, std::make_unique<NonDispersiveMaterial>(go.refractiveIndex))};
-        l.setTransverseRadius(go.transverseRadius);
-        return l;
-    }
-
-    std::cerr << "Unsupported material: " << go.material << "\n";
-    return Lens();
+    std::unique_ptr<Material> m = go.createMaterial();
+    Lens l{Lens::makeConcaveLens(go.origin, go.r, go.height, std::move(m))};
+    l.setTransverseRadius(go.transverseRadius);
+    return l;
 }
 
 Mirror GeometryLoader::parseMirror (const std::string& line) {

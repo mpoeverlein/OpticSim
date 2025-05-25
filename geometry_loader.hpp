@@ -8,8 +8,8 @@ class OpticalDevice;
 class SphericalLens;
 class Mirror;
 class ParabolicMirror;
-class ConvexLens;
 class Lens;
+class Material;
 
 #include <string>
 #include <unordered_map>
@@ -33,6 +33,7 @@ class GeometryObject {
         std::string material = "none";
         double temperature = 298.15;
         double transverseRadius = 1;
+        std::unique_ptr<Material> createMaterial();
 };
 
 class GeometryLoader {
