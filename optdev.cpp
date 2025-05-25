@@ -66,6 +66,7 @@ std::vector<Ray> Lens::createNewRays (const Ray& ray) const {
         surfaceNormal = -1 * surfaceNormal;
         n2 = 1.;
     }
+    std::cout << "surface normal " << surfaceNormal << "\n";
     return ::createNewRays(ray, surfaceNormal, n2, material->getReflectance(ray.wavelength));    
 }
 
@@ -135,6 +136,20 @@ void Lens::setTransverseRadius(double newRadius) {
     CylinderSide cs{csOrigin, csHeight, newRadius};
     surfaceGeometries.push_back(std::make_unique<CylinderSide>(std::move(cs)));
 }
+
+Lens Lens::makePlanoConvexLens(Vector origin_, double radius_, Vector height_, std::unique_ptr<Material> m) {
+    std::vector<std::unique_ptr<SurfaceGeometry>> sgs;
+    Vector o1 = origin_ + height_ - height_.normalized()*radius_;
+    double a1 = acos((radius_ - height_.magnitude()) / radius_);
+    sgs.push_back(std::make_unique<SphereSection>(o1, radius_, height_.normalized(), a1));
+
+    Vector o = origin_ - height_ + height_.normalized()*radius_;
+    double discRadius = radius_ * sin(a1);
+    sgs.push_back(std::make_unique<Disc>(origin_, -1*height_.normalized(), discRadius));
+
+    return Lens(std::move(sgs), std::move(m));    
+}
+
 
 
 /** Create reflection and refraction rays according to Snell's law.
