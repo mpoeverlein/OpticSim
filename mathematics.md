@@ -44,3 +44,15 @@ $$t_ c = \frac{e}{ad_ x + bd_ y + cd_ z}$$
 Solve system of equations for t:
 $$\mathbf{o}_ \mathrm{ray} + t\mathbf{d}_ \mathrm{ray} = \mathbf{o}_ \mathrm{plane} + \alpha \mathbf{a}_ \mathrm{plane} + \beta\mathbf{b}_ \mathrm{plane}$$
 A solution for $t,\alpha,\beta$ can be found, e.g., with Cramer's rule.
+
+## Collision between line and cylinder
+The line is given by $$\mathbf{r}_ l(t) = \mathbf{o}_ l + t  \mathbf{d}_ l$$. 
+The cylinder is given by $$\mathbf{r}_ c(\alpha) = \mathbf{o}_ c + \alpha  \mathbf{d}_ c$$ with a radius $r$. 
+
+The distance between the line and the cylinder as a function of time is given by:
+$$ D(t) = \frac{|\mathbf{r}_ l(t)\times \mathbf{d}_ c|}{|\mathbf{d}_ c|}$$
+
+The numerator can be expressed as:
+$$\mathbf{r}_ l(t)\times \mathbf{d}_ c = (\mathbf{o}_ l\times \mathbf{o}_ c)\times \mathbf{d}_ c + t (\mathbf{d}_ l \times \mathbf{d}_ c) = \mathbf{A} + t\mathbf{B}$$
+This leads to:
+$$t^2  |\mathbf{B}|^2 + t\cdot 2(\mathbf{A}\cdot\mathbf{B}) + |\mathbf{A}|^2 - D^2_{\mathrm{target}} |\mathbf{d}_ c|^2$$
