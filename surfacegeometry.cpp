@@ -19,6 +19,7 @@ double Disc::detectCollisionTime(const Ray& ray) const {
     Plane tempPlane{origin, surfaceNormal};
     double t = calculateCollisionTime(ray, tempPlane);
     if ((ray.getPositionAtTime(t)-origin).magnitude() > radius) { t = Inf; }
+    if (t < Config::MIN_EPS) { t = Inf; }
     return t;
 }
 
