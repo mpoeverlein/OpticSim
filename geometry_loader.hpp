@@ -45,6 +45,7 @@ public:
     static std::vector<Ray> parseParallelRays (const std::string& line);
     static Lens parseSphericalLensLine (const std::string& line);
     static Lens parseConvexLensLine (const std::string& line);
+    static Lens parsePlanoConvexLensLine (const std::string& line);
     static Mirror parseMirror (const std::string& line); 
     static ParabolicMirror parseParabolicMirror (const std::string& line); 
 };
