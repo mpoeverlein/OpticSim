@@ -80,7 +80,9 @@
         "stack": "cpp",
         "typeindex": "cpp",
         "valarray": "cpp",
-        "functional": "cpp"
+        "functional": "cpp",
+        "format": "cpp",
+        "memory_resource": "cpp"
     },
     "makefile.launchConfigurations": [
         {
