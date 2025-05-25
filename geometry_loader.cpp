@@ -60,6 +60,11 @@ void GeometryLoader::loadFromFile(const std::string& filename) {
             devices.push_back(std::make_unique<Lens>(std::move(lens)));
         }
 
+        if (line.find("$planoConcaveLens") == 0) {
+            Lens lens = parsePlanoConcaveLensLine(line);
+            devices.push_back(std::make_unique<Lens>(std::move(lens)));
+        }
+
 
         if (line.find("$parallelRays") == 0) {
             try {
@@ -190,6 +195,19 @@ Lens GeometryLoader::parsePlanoConvexLensLine (const std::string& line) {
     GeometryObject go = parseLine(line);
     if (go.refractiveIndex != 1) {
         return Lens::makePlanoConvexLens(go.origin, go.r, go.height, std::make_unique<NonDispersiveMaterial>(go.refractiveIndex));
+    }
+    
+    // if (go.material == "Water") {
+    //     return Lens::makePlanoConvexLens(go.origin, go.r, go.height, std::make_unique<Water>(go.temperature));
+    // }
+    std::cerr << "Unsupported material: " << go.material << "\n";
+    return Lens();
+}
+
+Lens GeometryLoader::parsePlanoConcaveLensLine (const std::string& line) {
+    GeometryObject go = parseLine(line);
+    if (go.refractiveIndex != 1) {
+        return Lens::makePlanoConcaveLens(go.origin, go.r, go.height, std::make_unique<NonDispersiveMaterial>(go.refractiveIndex));
     }
     
     // if (go.material == "Water") {
