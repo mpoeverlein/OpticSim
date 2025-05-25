@@ -19,19 +19,28 @@ Lens::Lens(Sphere sphere1_, Sphere sphere2_, double refractiveIndex_) {
     Vector o1 = sphere1_.origin, o2 = sphere2_.origin;
     Vector d = o2-o1;
     double x1 = 0, x2 = d.magnitude(), r1 = sphere1_.radius, r2 = sphere2_.radius;
-    double xM = 1 / (-2*x2) * (r2*r2 - r1*r1 - x2*x2);
-    Vector h1 = d.normalized() * sphere1_.radius;
-    Vector h2 = -1 * d.normalized() * sphere2_.radius;
-    double a1 = acos((d.magnitude()-xM) / r1);
-    double a2 = acos(xM/abs(r2));
-    if (r1 < 0) {
-        h1 = -1 * h1;
+    if (x2 < abs(r1)+abs(r2)) { // convex
+        double xM = 1 / (-2*x2) * (r2*r2 - r1*r1 - x2*x2);
+        Vector h1 = d.normalized() * abs(sphere1_.radius);
+        Vector h2 = -1 * d.normalized() * abs(sphere2_.radius);
+        double a1 = acos((d.magnitude()-xM) / r1);
+        double a2 = acos(xM/abs(r2));
+        if (r1 < 0) {
+            h1 = -1 * h1;
+        }
+        surfaceGeometries.push_back(std::make_unique<SphereSection>(o1, r1, h1, a1));
+        if (r2 > 0) {
+            h2 = -1 * h2;
+        }
+        surfaceGeometries.push_back(std::make_unique<SphereSection>(o2, r2, h2, a2));
+    } else {
+        double a1 = M_PI/2, a2 = M_PI/2;
+        Vector h1 = d.normalized() * abs(sphere1_.radius);
+        Vector h2 = -1 * d.normalized() * abs(sphere2_.radius);
+        surfaceGeometries.push_back(std::make_unique<SphereSection>(o1, abs(r1), h1, a1));
+        surfaceGeometries.push_back(std::make_unique<SphereSection>(o2, abs(r2), h2, a2));    
     }
-    surfaceGeometries.push_back(std::make_unique<SphereSection>(o1, r1, h1, a1));
-    if (r2 > 0) {
-        h2 = -1 * h2;
-    }
-    surfaceGeometries.push_back(std::make_unique<SphereSection>(o2, r2, h2, a2));
+
     material = std::make_unique<NonDispersiveMaterial>(refractiveIndex_);
 
 }
@@ -66,7 +75,6 @@ std::vector<Ray> Lens::createNewRays (const Ray& ray) const {
         surfaceNormal = -1 * surfaceNormal;
         n2 = 1.;
     }
-    std::cout << "surface normal " << surfaceNormal << "\n";
     return ::createNewRays(ray, surfaceNormal, n2, material->getReflectance(ray.wavelength));    
 }
 
@@ -129,9 +137,19 @@ void Lens::setTransverseRadius(double newRadius) {
     ss1->openingAngle = asin(newRadius/ss1->radius);
     ss2->openingAngle = asin(newRadius/ss2->radius);
 
-    // add cylinder
-    Vector csOrigin = ss1->origin + ss1->height.normalized() * cos(ss1->openingAngle);
-    Vector csEnd = ss2->origin + ss2->height.normalized() * cos(ss2->openingAngle);
+    Vector csOrigin, csEnd;
+    // convex
+    // if ((ss1->origin-ss2->origin).magnitude() < abs(ss1->radius)+abs(ss2->radius)) {
+    csOrigin = ss1->origin + abs(ss1->radius) * ss1->height.normalized() * cos(ss1->openingAngle);
+    csEnd = ss2->origin + abs(ss2->radius) * ss2->height.normalized() * cos(ss2->openingAngle);
+    // std::cout << "orgiin " << ss1->origin << " " << ss2->origin << "\n";
+    // std::cout << " heights " << ss1->height << " " << ss2->height << "\n";
+    // std::cout << " openigng ang " << ss1->openingAngle/M_PI*180 << " " << ss2->openingAngle/M_PI*180 << "\n";
+    // std::cout << "end origin " << csOrigin << " " << csEnd << "\n";
+    // } else {
+
+    // }
+
     Vector csHeight = csEnd - csOrigin;
     CylinderSide cs{csOrigin, csHeight, newRadius};
     surfaceGeometries.push_back(std::make_unique<CylinderSide>(std::move(cs)));
