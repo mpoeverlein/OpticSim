@@ -168,6 +168,19 @@ Lens Lens::makePlanoConvexLens(Vector origin_, double radius_, Vector height_, s
     return Lens(std::move(sgs), std::move(m));    
 }
 
+Lens Lens::makePlanoConcaveLens(Vector origin_, double radius_, Vector height_, std::unique_ptr<Material> m) {
+    std::vector<std::unique_ptr<SurfaceGeometry>> sgs;
+    Vector o1 = origin_ - height_/2 - height_.normalized()*radius_;
+    double a1 = M_PI_2;
+    sgs.push_back(std::make_unique<SphereSection>(o1, radius_, height_.normalized(), a1));
+
+    Vector o = origin_ + height_/2;
+    double discRadius = radius_;
+    sgs.push_back(std::make_unique<Disc>(origin_, -1*height_.normalized(), discRadius));
+
+    return Lens(std::move(sgs), std::move(m));    
+}
+
 
 
 /** Create reflection and refraction rays according to Snell's law.
