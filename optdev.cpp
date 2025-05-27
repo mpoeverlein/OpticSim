@@ -234,11 +234,13 @@ std::vector<Ray> createNewRays (const Ray& ray, Vector surfaceNormal, double n2,
         return newRays;
     }
 
-    Vector refractionDirection = rotateVectorAboutAxis(ray.direction, rotationAxis, -dtheta);
+    // Vector refractionDirection = rotateVectorAboutAxis(ray.direction, rotationAxis, -dtheta);
+    Vector refractionDirection = (1/n2) * (n1*ray.direction + (n2*cos(theta2)-n1*cos(theta1)) * surfaceNormal);
     newRays.push_back(Ray(ray.end, refractionDirection, ray.energyDensity*(1-reflectance), n2, ray.wavelength));
 
     // create reflection
-    Vector reflectionDirection = rotateVectorAboutAxis(ray.direction, rotationAxis, -(M_PI-2*theta1));
+    // Vector reflectionDirection = rotateVectorAboutAxis(ray.direction, rotationAxis, -(M_PI-2*theta1));
+    Vector reflectionDirection = ray.direction - 2*(ray.direction.dot(surfaceNormal))*surfaceNormal;
     newRays.push_back(Ray(ray.end, reflectionDirection, ray.energyDensity*reflectance, n1, ray.wavelength));
        
     return newRays;
