@@ -24,6 +24,7 @@ double Disc::detectCollisionTime(const Ray& ray) const {
 }
 
 Vector Disc::getSurfaceNormal(const Ray& ray) const {
+    if (angle(ray.direction, surfaceNormal) > M_PI_2) { return -1 * surfaceNormal; }
     return surfaceNormal;
 }
 
@@ -71,8 +72,8 @@ double CylinderSide::detectCollisionTime(const Ray& ray) const {
     if (t <= Config::MIN_EPS) { 
         t = Inf; 
     } else {
-        if ((ray.getPositionAtTime(t)-origin).dot(height.normalized()) > 1) { t = Inf; }
-        if ((ray.getPositionAtTime(t)-origin).dot(height.normalized()) < 0) { t = Inf; }
+        if ((ray.getPositionAtTime(t)-origin).dot(height.normalized())/height.magnitude() > 1) { t = Inf; }
+        if ((ray.getPositionAtTime(t)-origin).dot(height.normalized())/height.magnitude() < 0) { t = Inf; }
     } 
     if (t != Inf) { return t; }
 
@@ -80,7 +81,8 @@ double CylinderSide::detectCollisionTime(const Ray& ray) const {
     if (t <= Config::MIN_EPS) { 
         t = Inf; 
     } else {
-        if ((ray.getPositionAtTime(t)-origin).dot(height.normalized()) < 0) { t = Inf; }
+        if ((ray.getPositionAtTime(t)-origin).dot(height.normalized())/height.magnitude() > 1) { t = Inf; }
+        if ((ray.getPositionAtTime(t)-origin).dot(height.normalized())/height.magnitude() < 0) { t = Inf; }
     }
     return t;
 }
@@ -105,8 +107,15 @@ void CylinderSide::createGraphicVertices(std::vector<Vertex>& vertices, std::vec
 }
 
 std::string CylinderSide::toString() const {
-    return "CylinderSide";
-}
+    std::ostringstream oss;
+    oss << std::fixed << std::setprecision(2); // Control decimal places
+    
+    oss << "Cylinder Side:\n"
+        << "  Origin: " << origin.toString() << "\n"
+        << "  Radius: " << radius << " m\n"
+        << "  Height: " << height.toString() << "\n";
+    std::cout << oss.str();
+    return oss.str();}
 
 Plane::Plane(Vector origin_, Vector surfaceNormal_) : origin(origin_), surfaceNormal(surfaceNormal_) {}
 Plane::Plane(const Disc& d) : origin(d.origin), surfaceNormal(d.surfaceNormal) {}
@@ -184,12 +193,12 @@ double SphereSection::detectCollisionTime(const Ray& ray) const {
 }
 
 Vector SphereSection::getSurfaceNormal(const Ray& ray) const {
-    return (origin - ray.end).normalized();
+    Vector surfaceNormal = (origin - ray.end).normalized();
+    if (angle(ray.direction, surfaceNormal) > M_PI_2) { surfaceNormal *= -1; }
+    return surfaceNormal;
 }
 
 void SphereSection::createGraphicVertices(std::vector<Vertex>& vertices, std::vector<unsigned int>& indices) const {
-    // std::cout << "creating vertices" << radius << " opening angle " << openingAngle << "\n";
-    // std::cout << " for " << origin << " " << height.normalized() << "\n";
     int segments = 16;
     std::vector<Vertex> sphereVerts = createSphereVertices(origin, height.normalized(), abs(radius), openingAngle, segments, color, opacity);
     vertices.insert(vertices.end(), sphereVerts.begin(), sphereVerts.end());
