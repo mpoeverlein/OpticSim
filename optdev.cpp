@@ -63,16 +63,16 @@ std::string Lens::forPythonPlot() const { return ""; }
 std::vector<Ray> Lens::createNewRays (const Ray& ray) const {
     std::vector<double> tTimes = determineCollisionTimes(ray);
     SurfaceGeometry* sg = surfaceGeometries[std::min_element(tTimes.begin(), tTimes.end())-tTimes.begin()].get();
+    std::cout << "SIDE " << sg->toString() << "\n";
 
     std::vector<Ray> newRays;
     Vector surfaceNormal = sg->getSurfaceNormal(ray);
     double otherMedium = material->getRefractiveIndex(ray.wavelength);
     double n2;
     // ray outside or inside
-    if (ray.refractiveIndex != otherMedium) {
+    if (ray.refractiveIndex == Config::VACUUM_REFRACTIVE_INDEX) {
         n2 = otherMedium;
     } else {
-        surfaceNormal = -1 * surfaceNormal;
         n2 = 1.;
     }
     return ::createNewRays(ray, surfaceNormal, n2, material->getReflectance(ray.wavelength));    
@@ -100,7 +100,6 @@ Lens Lens::makeConvexLens(Vector origin_, double radius_, Vector height_, std::u
 
     Vector o2 = origin_ - height_ + height_.normalized()*radius_;
     sgs.push_back(std::make_unique<SphereSection>(o2, radius_, -1*height_.normalized(), a1));
-
 
     return Lens(std::move(sgs), std::move(m));
 }
@@ -178,7 +177,7 @@ Lens Lens::makePlanoConvexLens(Vector origin_, double radius_, Vector height_, s
 
     Vector o = origin_ - height_ + height_.normalized()*radius_;
     double discRadius = radius_ * sin(a1);
-    sgs.push_back(std::make_unique<Disc>(origin_, -1*height_.normalized(), discRadius));
+    sgs.push_back(std::make_unique<Disc>(origin_, height_.normalized(), discRadius));
 
     return Lens(std::move(sgs), std::move(m));    
 }
@@ -214,38 +213,25 @@ std::vector<Ray> createNewRays (const Ray& ray, Vector surfaceNormal, double n2,
     */
     std::vector<Ray> newRays;
     double n1 = ray.refractiveIndex;
-
-    Vector rotationAxis = ray.direction.cross(surfaceNormal).normalized();
-
     double theta1 = angle(surfaceNormal, ray.direction);
-    if (theta1 > M_PI_2) {
-        // this happens if the ray is inside the lens!
-        rotationAxis = ray.direction.cross(-1*surfaceNormal).normalized();
-        theta1 = angle(-1*surfaceNormal, ray.direction);
-        n2 = Config::VACUUM_REFRACTIVE_INDEX;
-    }
     double theta2 = n1 / n2 * sin(theta1);
-    // we create a new direction for the ray by rotating
-    // the old direction by theta2-theta1
-    double dtheta = theta2 - theta1;
     if (theta1 == 0) {
         newRays.push_back(Ray(ray.end, ray.direction, ray.energyDensity*(1-reflectance), n2, ray.wavelength));
         newRays.push_back(Ray(ray.end, -1*ray.direction, ray.energyDensity*reflectance, n1, ray.wavelength));
         return newRays;
     }
 
-    // Vector refractionDirection = rotateVectorAboutAxis(ray.direction, rotationAxis, -dtheta);
+    std::cout << "Create new rays at " << ray.end << "\n";
+
     Vector refractionDirection = (1/n2) * (n1*ray.direction + (n2*cos(theta2)-n1*cos(theta1)) * surfaceNormal);
     newRays.push_back(Ray(ray.end, refractionDirection, ray.energyDensity*(1-reflectance), n2, ray.wavelength));
 
     // create reflection
-    // Vector reflectionDirection = rotateVectorAboutAxis(ray.direction, rotationAxis, -(M_PI-2*theta1));
     Vector reflectionDirection = ray.direction - 2*(ray.direction.dot(surfaceNormal))*surfaceNormal;
     newRays.push_back(Ray(ray.end, reflectionDirection, ray.energyDensity*reflectance, n1, ray.wavelength));
        
     return newRays;
 }
-
 
 
 
